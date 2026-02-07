@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "../components/PageTransition";
@@ -9,6 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import DepositConfigStep from "@/components/brand-wizard/DepositConfigStep";
+import WithdrawalConfigStep from "@/components/brand-wizard/WithdrawalConfigStep";
+import {
+  DepositMethod, WithdrawalMethod, BankDetails, WireTransferDetails, GlobalSettings,
+  DEFAULT_DEPOSIT_METHODS, DEFAULT_WITHDRAWAL_METHODS, DEFAULT_BANK_DETAILS, DEFAULT_WIRE_DETAILS, DEFAULT_GLOBAL_SETTINGS,
+} from "@/types/brand-config";
 
 const TOTAL_STEPS = 13;
 
@@ -39,17 +45,14 @@ const CreateBrand = () => {
   const [step, setStep] = useState(1);
   const [brands, setBrands] = useState([{ name: "", domain: "" }]);
 
-  // Step 2 state
-  const [depositProviders, setDepositProviders] = useState<Record<string, boolean>>({
-    "Fiat Payments": true, "Crypto Payments": false, "Wire Transfer": true,
-    "Bank Deposit": false, "Loan": false, "iPay": false,
-    "FUTURE PAY": false, "cryptopay": false, "TOKEN PAYMENTS": false,
-  });
+  // Step 2 state - Deposit config
+  const [depositMethods, setDepositMethods] = useState<Record<string, DepositMethod>>({ ...DEFAULT_DEPOSIT_METHODS });
+  const [bankDetails, setBankDetails] = useState<BankDetails>({ ...DEFAULT_BANK_DETAILS });
+  const [wireDetails, setWireDetails] = useState<WireTransferDetails>({ ...DEFAULT_WIRE_DETAILS });
 
-  // Step 3
-  const [withdrawalMethods, setWithdrawalMethods] = useState<Record<string, boolean>>({
-    "Wire Transfer": true, "Crypto Payments": true, "Bank Deposit": false,
-  });
+  // Step 3 - Withdrawal config
+  const [withdrawalMethods, setWithdrawalMethods] = useState<Record<string, WithdrawalMethod>>({ ...DEFAULT_WITHDRAWAL_METHODS });
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({ ...DEFAULT_GLOBAL_SETTINGS });
 
   // Step 4
   const [kycEnabled, setKycEnabled] = useState(true);
@@ -139,28 +142,28 @@ const CreateBrand = () => {
 
       case 2:
         return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Payment Deposit Providers</h2>
-            <p className="text-sm text-muted-foreground">{brandLabel}: {brands[0]?.domain || "domain.com"}</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {Object.entries(depositProviders).map(([key, val]) => (
-                <CheckCard key={key} label={key} checked={val} onChange={(v) => setDepositProviders({ ...depositProviders, [key]: v })} />
-              ))}
-            </div>
-          </div>
+          <DepositConfigStep
+            brandLabel={brandLabel}
+            brandDomain={brands[0]?.domain || "domain.com"}
+            methods={depositMethods}
+            onMethodsChange={setDepositMethods}
+            bankDetails={bankDetails}
+            onBankDetailsChange={setBankDetails}
+            wireDetails={wireDetails}
+            onWireDetailsChange={setWireDetails}
+          />
         );
 
       case 3:
         return (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">Withdrawal Methods</h2>
-            <p className="text-sm text-muted-foreground">{brandLabel}: {brands[0]?.domain || "domain.com"}</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {Object.entries(withdrawalMethods).map(([key, val]) => (
-                <CheckCard key={key} label={key} checked={val} onChange={(v) => setWithdrawalMethods({ ...withdrawalMethods, [key]: v })} />
-              ))}
-            </div>
-          </div>
+          <WithdrawalConfigStep
+            brandLabel={brandLabel}
+            brandDomain={brands[0]?.domain || "domain.com"}
+            methods={withdrawalMethods}
+            onMethodsChange={setWithdrawalMethods}
+            globalSettings={globalSettings}
+            onGlobalSettingsChange={setGlobalSettings}
+          />
         );
 
       case 4:
