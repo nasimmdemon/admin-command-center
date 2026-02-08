@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "../components/PageTransition";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DepositConfigStep from "@/components/brand-wizard/DepositConfigStep";
 import WithdrawalConfigStep from "@/components/brand-wizard/WithdrawalConfigStep";
+import InteractiveWorldMap from "@/components/brand-wizard/InteractiveWorldMap";
+import { isValidISOCountryCode, isValidPhoneCountryCode, isValidPhoneCodeFormat } from "@/utils/countryCodes";
 import {
   DepositMethod, WithdrawalMethod, BankDetails, WireTransferDetails, GlobalSettings,
   DEFAULT_DEPOSIT_METHODS, DEFAULT_WITHDRAWAL_METHODS, DEFAULT_BANK_DETAILS, DEFAULT_WIRE_DETAILS, DEFAULT_GLOBAL_SETTINGS,
@@ -65,12 +67,66 @@ const CreateBrand = () => {
   const [privacyPolicy, setPrivacyPolicy] = useState("");
   const [terms, setTerms] = useState("");
 
-  // Step 9
-  const [rejectedCodes, setRejectedCodes] = useState(["+1", "+44"]);
-  const [newCode, setNewCode] = useState("");
-  const [blockedEmails, setBlockedEmails] = useState<Record<string, boolean>>({
-    "tempmail.com": true, "guerrillamail.com": true, "mailinator.com": true,
+  // Step 6 - Communication Providers
+  const [emailProvider, setEmailProvider] = useState<"maileroo" | "alexders">("maileroo");
+  const [voipProvider, setVoipProvider] = useState<"voicex" | null>("voicex");
+  const [voipPhoneNumbers, setVoipPhoneNumbers] = useState("50");
+  const [voipCountries, setVoipCountries] = useState("25");
+  const [voipCoverageMap, setVoipCoverageMap] = useState<Record<string, string[]>>({
+    "US": ["CA", "MX", "GB", "FR", "DE"],
+    "GB": ["US", "FR", "DE", "ES", "IT"],
+    "FR": ["GB", "DE", "ES", "IT", "BE"],
+  }); // Format: { "from_country": ["to_country1", "to_country2", ...] }
+  const [providersMapData, setProvidersMapData] = useState(() => {
+    // Initialize with default coverage map formatted as JSON
+    return JSON.stringify({
+      "US": ["CA", "MX", "GB", "FR", "DE"],
+      "GB": ["US", "FR", "DE", "ES", "IT"],
+      "FR": ["GB", "DE", "ES", "IT", "BE"],
+    }, null, 2);
   });
+  const [selectedEmailTemplates, setSelectedEmailTemplates] = useState<Record<string, boolean>>({
+    "ClientChangeCreds": true,
+    "ClientSendEmailToUser": true,
+    "ListAllEmailsSendByUser": true,
+    "ListAllEmailsSentToClient": true,
+    "UserChangeCreds": true,
+    "WorkerToClientSendEmailClientCard": true,
+    "ClientAuth": true,
+  });
+
+  // Step 9 - TRANSFORM (Auto Rejection)
+  const [blockedCountries, setBlockedCountries] = useState<string[]>([]); // Array of country codes like ["US", "CA"]
+  const [newCountryCode, setNewCountryCode] = useState(""); // Input for adding country codes
+  const [countryCodeError, setCountryCodeError] = useState(""); // Error message for invalid country code
+
+  // Clean up any invalid country codes - filter out invalid codes (only run once on mount)
+  useEffect(() => {
+    const validCountries = blockedCountries.filter(code => {
+      const normalized = code.toUpperCase().trim();
+      return normalized.length === 2 && isValidISOCountryCode(normalized);
+    });
+    if (validCountries.length !== blockedCountries.length) {
+      setBlockedCountries(validCountries);
+    }
+    
+    // Also clean up invalid phone codes
+    const validPhoneCodes = rejectedCodes.filter(code => {
+      const normalized = code.trim();
+      return isValidPhoneCodeFormat(normalized) && isValidPhoneCountryCode(normalized);
+    });
+    if (validPhoneCodes.length !== rejectedCodes.length) {
+      setRejectedCodes(validPhoneCodes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount to clean up any pre-existing invalid codes
+  const [rejectedCodes, setRejectedCodes] = useState(["+1", "+44"]); // Phone country codes to reject
+  const [newPhoneCode, setNewPhoneCode] = useState(""); // Input for adding phone country codes
+  const [phoneCodeError, setPhoneCodeError] = useState(""); // Error message for invalid phone code
+  const [blockedEmailProviders, setBlockedEmailProviders] = useState<string[]>([
+    "tempmail.com", "guerrillamail.com", "mailinator.com"
+  ]); // Array of email provider domains
+  const [newEmailProvider, setNewEmailProvider] = useState("");
   const [autoGenPassword, setAutoGenPassword] = useState(false);
   const [recoverLeads, setRecoverLeads] = useState(true);
 
@@ -216,25 +272,322 @@ const CreateBrand = () => {
 
       case 6:
         return (
-          <div className="space-y-5">
+          <div className="space-y-6">
             <h2 className="text-lg font-semibold text-foreground">Communication Providers</h2>
+            
+            {/* Email Provider Selection */}
             <div className="space-y-3">
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Email Provider</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <CheckCard label="Maileroo" checked={true} onChange={() => {}} />
-                <CheckCard label="Alexders Moldova Solution" checked={false} onChange={() => {}} />
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setEmailProvider("maileroo")}
+                  className={`rounded-lg border p-4 text-left transition-all duration-300 ${
+                    emailProvider === "maileroo"
+                      ? "bg-primary/10 border-primary shadow-sm"
+                      : "bg-card hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      emailProvider === "maileroo" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {emailProvider === "maileroo" && <Check className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">Maileroo</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Free option</p>
+                    </div>
+                  </div>
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setEmailProvider("alexders")}
+                  className={`rounded-lg border p-4 text-left transition-all duration-300 ${
+                    emailProvider === "alexders"
+                      ? "bg-primary/10 border-primary shadow-sm"
+                      : "bg-card hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      emailProvider === "alexders" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {emailProvider === "alexders" && <Check className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">Alexders Moldova Solution</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Premium option</p>
+                    </div>
+                  </div>
+                </motion.button>
               </div>
               <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
                 <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-muted-foreground">With Alexnder: more cost per month, no spam risk. Free option may land in spam.</p>
               </div>
             </div>
+
+            {/* Email Templates Section */}
             <div className="space-y-3">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Email Templates</Label>
+              <p className="text-sm text-muted-foreground">Select which email templates to enable for this brand</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {Object.entries({
+                  "ClientChangeCreds": "Client Change Credentials",
+                  "ClientSendEmailToUser": "Client Send Email to User",
+                  "ListAllEmailsSendByUser": "List All Emails Sent By User",
+                  "ListAllEmailsSentToClient": "List All Emails Sent To Client",
+                  "UserChangeCreds": "User Change Credentials",
+                  "WorkerToClientSendEmailClientCard": "Worker to Client Email",
+                  "ClientAuth": "Client Authentication",
+                }).map(([key, label]) => (
+                  <CheckCard
+                    key={key}
+                    label={label}
+                    checked={selectedEmailTemplates[key] || false}
+                    onChange={(checked) => setSelectedEmailTemplates({ ...selectedEmailTemplates, [key]: checked })}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* VoIP Provider Selection */}
+            <div className="space-y-4">
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">VoIP Provider</Label>
-              <CheckCard label="VoiceX" checked={true} onChange={() => {}} />
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => setVoipProvider(voipProvider === "voicex" ? null : "voicex")}
+                className={`w-full rounded-lg border p-4 text-left transition-all duration-300 ${
+                  voipProvider === "voicex"
+                    ? "bg-primary/10 border-primary shadow-sm"
+                    : "bg-card hover:border-muted-foreground/50"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                    voipProvider === "voicex" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                  }`}>
+                    {voipProvider === "voicex" && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">VoiceX</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">VoIP communication service</p>
+                  </div>
+                </div>
+              </motion.button>
+
+              {voipProvider === "voicex" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  {/* VoIP Stats */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-3 bg-card">
+                      <p className="text-xs text-muted-foreground mb-1">Phone Numbers</p>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={voipPhoneNumbers}
+                          onChange={(e) => setVoipPhoneNumbers(e.target.value)}
+                          className="h-8 text-lg font-semibold"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="rounded-lg border p-3 bg-card">
+                      <p className="text-xs text-muted-foreground mb-1">Countries</p>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={voipCountries}
+                          onChange={(e) => setVoipCountries(e.target.value)}
+                          className="h-8 text-lg font-semibold"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coverage Map Visualization */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium text-foreground">Calling Coverage Map</Label>
+                        <p className="text-xs text-muted-foreground">Visual representation: From Country → To Countries</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {Object.keys(voipCoverageMap).length} from countries
+                      </span>
+                    </div>
+                    <div className="rounded-lg border p-4 bg-gradient-to-br from-secondary/20 to-secondary/10 min-h-[280px]">
+                      {/* World Map Background */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+                        <Globe className="w-40 h-40 text-foreground" />
+                      </div>
+                      
+                      {/* Coverage Grid */}
+                      <div className="relative z-10 space-y-3">
+                        {Object.entries(voipCoverageMap).length > 0 ? (
+                          Object.entries(voipCoverageMap).map(([fromCountry, toCountries], idx) => (
+                            <motion.div
+                              key={fromCountry}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: idx * 0.1 }}
+                              className="rounded-lg border bg-card/80 backdrop-blur-sm p-3 hover:shadow-sm transition-shadow duration-300"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                  <span className="text-sm font-bold text-primary">{fromCountry}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-medium text-foreground mb-1.5">
+                                    Can call to {toCountries.length} {toCountries.length === 1 ? "country" : "countries"}:
+                                  </p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {toCountries.map((country) => (
+                                      <span
+                                        key={country}
+                                        className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/10 text-success border border-success/20"
+                                      >
+                                        {country}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))
+                        ) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Globe className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                            <p className="text-sm">No coverage data yet</p>
+                            <p className="text-xs mt-1">Add coverage in Providers Map below</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Providers Map Input */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium text-foreground">Providers Map</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Input coverage data in JSON format: {"{"}"FROM_COUNTRY_CODE": ["TO_COUNTRY_CODE1", "TO_COUNTRY_CODE2"]{"}"}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setProvidersMapData(JSON.stringify(voipCoverageMap, null, 2));
+                        }}
+                        className="text-xs"
+                      >
+                        Load Current
+                      </Button>
+                    </div>
+                    <div className="relative">
+                      <Textarea
+                        placeholder={`{\n  "US": ["CA", "MX", "GB", "FR", "DE"],\n  "GB": ["US", "FR", "DE", "ES", "IT"],\n  "FR": ["GB", "DE", "ES", "IT", "BE"],\n  "DE": ["FR", "GB", "ES", "IT", "NL"],\n  "CA": ["US", "MX"]\n}`}
+                        value={providersMapData || JSON.stringify(voipCoverageMap, null, 2)}
+                        onChange={(e) => {
+                          setProvidersMapData(e.target.value);
+                        }}
+                        rows={10}
+                        className="font-mono text-xs"
+                      />
+                      {providersMapData && (() => {
+                        try {
+                          JSON.parse(providersMapData);
+                          return null;
+                        } catch {
+                          return (
+                            <div className="absolute top-2 right-2 bg-destructive/10 border border-destructive/20 rounded px-2 py-1">
+                              <p className="text-xs text-destructive">Invalid JSON</p>
+                            </div>
+                          );
+                        }
+                      })()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          try {
+                            const parsed = JSON.parse(providersMapData || "{}");
+                            if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+                              // Validate structure: all values should be arrays
+                              const isValid = Object.values(parsed).every(
+                                (val) => Array.isArray(val) && val.every((item) => typeof item === "string")
+                              );
+                              
+                              if (isValid) {
+                                setVoipCoverageMap(parsed);
+                                // Update countries count (unique countries from both keys and values)
+                                const uniqueCountries = new Set([
+                                  ...Object.keys(parsed),
+                                  ...Object.values(parsed).flat() as string[]
+                                ]);
+                                setVoipCountries(uniqueCountries.size.toString());
+                                // Update phone numbers estimate (countries * average phones per country)
+                                const estimatedPhones = Math.max(uniqueCountries.size * 2, 10);
+                                setVoipPhoneNumbers(estimatedPhones.toString());
+                              } else {
+                                alert("Invalid format: All values must be arrays of country codes (strings)");
+                              }
+                            } else {
+                              alert("Invalid format: Expected an object with country codes as keys");
+                            }
+                          } catch (e) {
+                            alert(`Invalid JSON format: ${e instanceof Error ? e.message : "Please check your input"}`);
+                          }
+                        }}
+                        className="flex-1"
+                      >
+                        Apply & Update Coverage
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setVoipCoverageMap({});
+                          setProvidersMapData("");
+                          setVoipCountries("0");
+                          setVoipPhoneNumbers("0");
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                    <div className="rounded-lg border p-2 bg-primary/5">
+                      <p className="text-xs text-muted-foreground">
+                        <strong>Format:</strong> Country codes (ISO 2-letter) as keys, arrays of destination country codes as values.
+                        Example: {"{"}"US": ["CA", "MX"]{"}"} means calls FROM US TO Canada and Mexico are supported.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
                 <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">You'll get from us the covering area of this service.</p>
+                <p className="text-xs text-muted-foreground">You'll get from us the covering area of this service. Configure the providers map to define calling coverage.</p>
               </div>
             </div>
           </div>
@@ -280,50 +633,315 @@ const CreateBrand = () => {
             <h2 className="text-lg font-semibold text-foreground">TRANSFORM (Auto Rejection)</h2>
             <p className="text-sm text-muted-foreground">{brandLabel}</p>
 
+            {/* Reject clients from those countries */}
             <div className="space-y-2">
-              <Label>Reject clients from those countries</Label>
-              <div className="rounded-lg border p-4 bg-secondary/30 flex items-center justify-center h-40">
-                <div className="text-center text-muted-foreground">
-                  <Globe className="w-8 h-8 mx-auto mb-2" />
-                  <p className="text-xs">Interactive world map — click countries to toggle</p>
-                </div>
+              <Label>Reject clients from those countries:</Label>
+              <div className="rounded-lg border p-4 bg-secondary/30 min-h-[300px] max-h-[500px] overflow-auto">
+                <InteractiveWorldMap
+                  key={blockedCountries.join(",")} // Force re-render when countries change
+                  selectedCountries={blockedCountries.filter(code => isValidISOCountryCode(code.toUpperCase().trim()))}
+                  onCountryToggle={(countryCode) => {
+                    const normalized = countryCode.toUpperCase().trim();
+                    if (!isValidISOCountryCode(normalized)) return; // Don't allow invalid codes
+                    
+                    const normalizedBlocked = blockedCountries.map(c => c.toUpperCase().trim());
+                    if (normalizedBlocked.includes(normalized)) {
+                      setBlockedCountries(blockedCountries.filter((c) => c.toUpperCase().trim() !== normalized));
+                    } else {
+                      setBlockedCountries([...blockedCountries, normalized]);
+                    }
+                  }}
+                  className="w-full"
+                />
               </div>
+              {blockedCountries.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="flex flex-wrap gap-2 p-2 bg-secondary/50 rounded-lg"
+                >
+                  {blockedCountries
+                    .filter(code => isValidISOCountryCode(code.toUpperCase().trim())) // Only show valid codes
+                    .map((country) => {
+                      const normalized = country.toUpperCase().trim();
+                      return (
+                        <motion.span
+                          key={normalized}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
+                        >
+                          {normalized}
+                          <button
+                            onClick={() => setBlockedCountries(blockedCountries.filter((c) => c.toUpperCase().trim() !== normalized))}
+                            className="hover:text-destructive/70 ml-1"
+                          >
+                            ×
+                          </button>
+                        </motion.span>
+                      );
+                    })}
+                </motion.div>
+              )}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    placeholder="Country code (e.g., US, CA, GB, BD)"
+                    value={newCountryCode}
+                    onChange={(e) => {
+                      const value = e.target.value.toUpperCase().trim().slice(0, 2); // Limit to 2 characters
+                      setNewCountryCode(value);
+                      if (value.length === 2) {
+                        if (isValidISOCountryCode(value)) {
+                          setCountryCodeError("");
+                        } else {
+                          setCountryCodeError("Invalid country code. Please use a valid ISO 3166-1 alpha-2 code (e.g., US, BD, GB)");
+                        }
+                      } else {
+                        setCountryCodeError("");
+                      }
+                    }}
+                    className={`flex-1 ${countryCodeError ? "border-destructive" : ""}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newCountryCode && !countryCodeError) {
+                        if (isValidISOCountryCode(newCountryCode) && !blockedCountries.includes(newCountryCode)) {
+                          setBlockedCountries([...blockedCountries, newCountryCode]);
+                          setNewCountryCode("");
+                          setCountryCodeError("");
+                        }
+                      }
+                    }}
+                  />
+                  {countryCodeError && (
+                    <p className="text-xs text-destructive mt-1">{countryCodeError}</p>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const code = newCountryCode.toUpperCase().trim();
+                    // Double-check validation before adding
+                    if (code && code.length === 2 && isValidISOCountryCode(code) && !blockedCountries.includes(code)) {
+                      setBlockedCountries([...blockedCountries, code]);
+                      setNewCountryCode("");
+                      setCountryCodeError("");
+                    } else if (code && !isValidISOCountryCode(code)) {
+                      setCountryCodeError("Invalid country code. Please use a valid ISO 3166-1 alpha-2 code (e.g., US, BD, GB)");
+                    }
+                  }}
+                  disabled={
+                    !newCountryCode || 
+                    newCountryCode.length !== 2 || 
+                    !!countryCodeError || 
+                    !isValidISOCountryCode(newCountryCode.toUpperCase().trim()) || 
+                    blockedCountries.includes(newCountryCode.toUpperCase().trim())
+                  }
+                >
+                  Add
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Click countries on the map to toggle selection, or add valid ISO country codes manually (2 letters, e.g., US, BD, GB). Rejected countries are highlighted in <span className="text-destructive font-medium">red</span> on the map. Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">country_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_countries</code>.
+              </p>
             </div>
 
+            {/* Reject clients with these country codes (phone) */}
             <div className="space-y-2">
-              <Label>Reject clients with these country codes</Label>
+              <Label>Reject clients with these country codes:</Label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {rejectedCodes.map((code) => (
-                  <span key={code} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
-                    {code}
-                    <button onClick={() => setRejectedCodes(rejectedCodes.filter((c) => c !== code))} className="hover:text-destructive/70">×</button>
-                  </span>
+                {rejectedCodes
+                  .filter(code => isValidPhoneCodeFormat(code.trim()) && isValidPhoneCountryCode(code.trim())) // Only show valid codes
+                  .map((code) => {
+                    const normalized = code.trim();
+                    return (
+                      <motion.span
+                        key={normalized}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
+                      >
+                        {normalized}
+                        <button
+                          onClick={() => setRejectedCodes(rejectedCodes.filter((c) => c.trim() !== normalized))}
+                          className="hover:text-destructive/70 ml-1"
+                        >
+                          ×
+                        </button>
+                      </motion.span>
+                    );
+                  })}
+              </div>
+              <div className="space-y-1">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="+XX"
+                    value={newPhoneCode}
+                    onChange={(e) => {
+                      let value = e.target.value.trim();
+                      
+                      // Only allow + followed by digits
+                      if (value && !value.startsWith("+")) {
+                        // If user types without +, add it
+                        if (/^\d/.test(value)) {
+                          value = "+" + value;
+                        } else {
+                          // If it's not a digit, don't allow it
+                          return;
+                        }
+                      }
+                      
+                      // After +, only allow digits (max 4 digits for country codes)
+                      if (value.startsWith("+")) {
+                        const afterPlus = value.slice(1);
+                        // Remove any non-digit characters
+                        const digitsOnly = afterPlus.replace(/\D/g, "");
+                        // Limit to 4 digits max
+                        const limited = digitsOnly.slice(0, 4);
+                        value = "+" + limited;
+                      }
+                      
+                      setNewPhoneCode(value);
+                      
+                      // Validate format and existence
+                      if (value.length > 1) {
+                        if (!isValidPhoneCodeFormat(value)) {
+                          setPhoneCodeError("Invalid format. Use + followed by 1-4 digits (e.g., +1, +44, +880)");
+                        } else if (!isValidPhoneCountryCode(value)) {
+                          setPhoneCodeError("Phone country code not recognized. Use a valid dial code (e.g., +1, +44, +880)");
+                        } else {
+                          setPhoneCodeError("");
+                        }
+                      } else if (value === "+") {
+                        setPhoneCodeError("");
+                      } else {
+                        setPhoneCodeError("");
+                      }
+                    }}
+                    className={`w-24 ${phoneCodeError ? "border-destructive" : ""}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newPhoneCode && !phoneCodeError) {
+                        if (isValidPhoneCountryCode(newPhoneCode) && !rejectedCodes.includes(newPhoneCode)) {
+                          setRejectedCodes([...rejectedCodes, newPhoneCode]);
+                          setNewPhoneCode("");
+                          setPhoneCodeError("");
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const code = newPhoneCode.trim();
+                      // Double-check validation before adding
+                      if (code && isValidPhoneCodeFormat(code) && isValidPhoneCountryCode(code) && !rejectedCodes.includes(code)) {
+                        setRejectedCodes([...rejectedCodes, code]);
+                        setNewPhoneCode("");
+                        setPhoneCodeError("");
+                      } else if (code && !isValidPhoneCodeFormat(code)) {
+                        setPhoneCodeError("Invalid format. Use + followed by 1-4 digits (e.g., +1, +44, +880)");
+                      } else if (code && !isValidPhoneCountryCode(code)) {
+                        setPhoneCodeError("Phone country code not recognized. Use a valid dial code (e.g., +1, +44, +880)");
+                      }
+                    }}
+                    disabled={
+                      !newPhoneCode || 
+                      !isValidPhoneCodeFormat(newPhoneCode.trim()) ||
+                      !isValidPhoneCountryCode(newPhoneCode.trim()) ||
+                      !!phoneCodeError || 
+                      rejectedCodes.includes(newPhoneCode.trim())
+                    }
+                  >
+                    Add
+                  </Button>
+                </div>
+                {phoneCodeError && (
+                  <p className="text-xs text-destructive">{phoneCodeError}</p>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Reject clients whose phone numbers have these country codes. Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">phone_country_match_criteria</code> or <code className="text-xs bg-secondary px-1 py-0.5 rounded">phone_format_criteria</code>.
+              </p>
+            </div>
+
+            {/* Reject clients with these email providers */}
+            <div className="space-y-2">
+              <Label>Reject clients with these email providers:</Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {blockedEmailProviders.map((provider) => (
+                  <motion.span
+                    key={provider}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
+                  >
+                    {provider}
+                    <button
+                      onClick={() => setBlockedEmailProviders(blockedEmailProviders.filter((p) => p !== provider))}
+                      className="hover:text-destructive/70 ml-1"
+                    >
+                      ×
+                    </button>
+                  </motion.span>
                 ))}
               </div>
               <div className="flex gap-2">
-                <Input placeholder="+XX" value={newCode} onChange={(e) => setNewCode(e.target.value)} className="w-24" />
-                <Button variant="outline" size="sm" onClick={() => { if (newCode) { setRejectedCodes([...rejectedCodes, newCode]); setNewCode(""); } }}>Add</Button>
+                <Input
+                  placeholder="tempmail.com"
+                  value={newEmailProvider}
+                  onChange={(e) => setNewEmailProvider(e.target.value.toLowerCase().trim())}
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newEmailProvider && !blockedEmailProviders.includes(newEmailProvider)) {
+                      setBlockedEmailProviders([...blockedEmailProviders, newEmailProvider]);
+                      setNewEmailProvider("");
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (newEmailProvider && !blockedEmailProviders.includes(newEmailProvider)) {
+                      setBlockedEmailProviders([...blockedEmailProviders, newEmailProvider]);
+                      setNewEmailProvider("");
+                    }
+                  }}
+                >
+                  Add
+                </Button>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Reject clients using these email provider domains. Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">email_provider_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_providers</code>.
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label>Reject clients with these email providers</Label>
-              <div className="space-y-2">
-                {Object.entries(blockedEmails).map(([key, val]) => (
-                  <CheckCard key={key} label={key} checked={val} onChange={(v) => setBlockedEmails({ ...blockedEmails, [key]: v })} />
-                ))}
-              </div>
-            </div>
-
+            {/* Auto gen password for leads */}
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="flex items-center gap-2">
                 <Label>Auto gen password for leads</Label>
-                <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                <div className="group relative">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-popover border rounded-lg shadow-lg text-xs text-muted-foreground z-50">
+                    If auto-gen is marked False, then interactivity is False and there is a mark of security concerns and no ability to auto reject based on inactivity. Uses <code className="text-xs">generate_password_if_missing</code> in transform config.
+                  </div>
+                </div>
               </div>
               <Switch checked={autoGenPassword} onCheckedChange={setAutoGenPassword} />
             </div>
+
+            {/* Recover Leads & Export Reports */}
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <Label>Recover Leads & Export Reports</Label>
+              <div className="flex items-center gap-2">
+                <Label>Recover Leads & Export Reports</Label>
+                <div className="group relative">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-popover border rounded-lg shadow-lg text-xs text-muted-foreground z-50">
+                    This allows for Client → Lead if not logged in for 14 days since Lead was approved by either auto approve or manual. Uses <code className="text-xs">interactivity_check</code> in transform config.
+                  </div>
+                </div>
+              </div>
               <Switch checked={recoverLeads} onCheckedChange={setRecoverLeads} />
             </div>
           </div>
