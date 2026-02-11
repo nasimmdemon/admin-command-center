@@ -1,0 +1,12 @@
+export { StepBrands } from "./StepBrands";
+export { StepKyc } from "./StepKyc";
+export { StepTerms } from "./StepTerms";
+export { StepCommunicationProviders } from "./StepCommunicationProviders";
+export { StepUploadWorkers } from "./StepUploadWorkers";
+export { StepUploadLogo } from "./StepUploadLogo";
+export { StepTransform } from "./StepTransform";
+export { StepTraderPlatform } from "./StepTraderPlatform";
+export { StepTraderMarkets } from "./StepTraderMarkets";
+export { StepTradingFees } from "./StepTradingFees";
+export { StepClientTas } from "./StepClientTas";
+export { StepDefaultSettings } from "./StepDefaultSettings";

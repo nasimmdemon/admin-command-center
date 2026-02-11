@@ -2,13 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import Demo from "./pages/Demo";
-import CreateBrand from "./pages/CreateBrand";
-import Monitor from "./pages/Monitor";
-import Providers from "./pages/Providers";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter } from "react-router-dom";
+import { AppRoutes } from "@/config/routes";
 
 const queryClient = new QueryClient();
 
@@ -18,14 +13,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route path="/create-brand" element={<CreateBrand />} />
-          <Route path="/monitor" element={<Monitor />} />
-          <Route path="/providers" element={<Providers />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

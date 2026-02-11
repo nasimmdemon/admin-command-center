@@ -35,6 +35,54 @@ export const isValidISOCountryCode = (code: string): boolean => {
   return VALID_ISO_COUNTRY_CODES_SET.has(code.toUpperCase());
 };
 
+import { COUNTRY_DATA } from "./countryData";
+
+// Build aliases from COUNTRY_DATA: alpha2, alpha3, name → alpha2
+const buildAliases = (): Record<string, string> => {
+  const aliases: Record<string, string> = {
+    UK: "GB", ENGLAND: "GB", "GREAT BRITAIN": "GB", "UNITED KINGDOM": "GB",
+    USA: "US", "UNITED STATES": "US", "U.S.": "US", "U.S.A.": "US",
+    UAE: "AE", "UNITED ARAB EMIRATES": "AE",
+    "SOUTH KOREA": "KR", "N. KOREA": "KP", "NORTH KOREA": "KP",
+  };
+  for (const c of COUNTRY_DATA) {
+    aliases[c.alpha2] = c.alpha2;
+    aliases[c.alpha3] = c.alpha2;
+    aliases[c.name.toUpperCase()] = c.alpha2;
+    const shortName = c.name.split(",")[0].trim().toUpperCase();
+    if (shortName !== c.name.toUpperCase()) aliases[shortName] = c.alpha2;
+  }
+  return aliases;
+};
+
+export const COUNTRY_INPUT_ALIASES: Record<string, string> = buildAliases();
+
+/** Normalize user input (USA, UK, US, IND, etc.) to ISO 2-letter code. Returns null if invalid. */
+export const normalizeCountryInputToISO = (input: string): string | null => {
+  const trimmed = input.trim().toUpperCase();
+  if (!trimmed) return null;
+  if (VALID_ISO_COUNTRY_CODES_SET.has(trimmed)) return trimmed;
+  const alias = COUNTRY_INPUT_ALIASES[trimmed];
+  return alias ?? null;
+};
+
+/** Search countries by partial input. Returns entries matching query (alpha2, alpha3, or name). */
+export const searchCountrySuggestions = (query: string, limit = 10): Array<{ alpha2: string; alpha3: string; name: string }> => {
+  const q = query.trim().toUpperCase();
+  if (!q || q.length < 1) return [];
+  const results: Array<{ alpha2: string; alpha3: string; name: string }> = [];
+  for (const c of COUNTRY_DATA) {
+    if (results.length >= limit) break;
+    const matchAlpha2 = c.alpha2.startsWith(q) || q.startsWith(c.alpha2);
+    const matchAlpha3 = c.alpha3.startsWith(q) || q.startsWith(c.alpha3);
+    const matchName = c.name.toUpperCase().includes(q) || c.name.toUpperCase().startsWith(q);
+    if (matchAlpha2 || matchAlpha3 || matchName) {
+      results.push({ alpha2: c.alpha2, alpha3: c.alpha3, name: c.name });
+    }
+  }
+  return results;
+};
+
 // Common phone country codes (dial codes) with their corresponding ISO codes
 export const PHONE_COUNTRY_CODES: Record<string, string[]> = {
   "+1": ["US", "CA"], // United States, Canada

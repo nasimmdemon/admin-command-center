@@ -1,0 +1,14 @@
+export { StepBrandsDemo } from "./StepBrandsDemo";
+export { DepositConfigDemo } from "./DepositConfigDemo";
+export { WithdrawalConfigDemo } from "./WithdrawalConfigDemo";
+export { StepKycDemo } from "./StepKycDemo";
+export { StepTermsDemo } from "./StepTermsDemo";
+export { StepCommunicationDemo } from "./StepCommunicationDemo";
+export { StepUploadWorkersDemo } from "./StepUploadWorkersDemo";
+export { StepUploadLogoDemo } from "./StepUploadLogoDemo";
+export { StepTransformDemo } from "./StepTransformDemo";
+export { StepTraderPlatformDemo } from "./StepTraderPlatformDemo";
+export { StepTraderMarketsDemo } from "./StepTraderMarketsDemo";
+export { StepTradingFeesDemo } from "./StepTradingFeesDemo";
+export { StepClientTasDemo } from "./StepClientTasDemo";
+export { StepDefaultSettingsDemo } from "./StepDefaultSettingsDemo";

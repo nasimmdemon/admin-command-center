@@ -1,105 +1,43 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { PageTransition, StaggerContainer, StaggerItem } from "../components/PageTransition";
-import { CountUp } from "../components/CountUp";
-import {
-  ArrowLeft, Users, DollarSign, Building2, RefreshCw, Power, AlertTriangle,
-  CheckCircle2, XCircle, Search, Info, Cpu, HardDrive, Wifi, RotateCw, Zap,
-  ChevronDown, ChevronUp, Eye, X
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, RefreshCw, Power, Cpu, HardDrive, Wifi, RotateCw, Eye, Users, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { PageTransition, StaggerContainer, StaggerItem } from "@/components/PageTransition";
+import { KPICard } from "@/views/monitor/KPICard";
+import { ClientStatusTable } from "@/views/monitor/ClientStatusTable";
+import { MOCK_CLIENTS, ACTIVE_BRANDS, SYSTEM_HEALTH_ITEMS } from "@/models/monitor-data";
+import { ROUTES } from "@/models/routes";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-// Mock data
-const clients = [
-  { id: 1, name: "maiclptd", clientName: "GT45", status: "Good", paid: "12K" },
-  { id: 2, name: "johnwk", clientName: "BX12", status: "Good", paid: "8.5K" },
-  { id: 3, name: "sarahm", clientName: "LP78", status: "Bad", paid: "2.1K" },
-  { id: 4, name: "alexfr", clientName: "NQ33", status: "Good", paid: "15K" },
-  { id: 5, name: "robertl", clientName: "DW91", status: "Bad", paid: "500" },
-];
-
-const activeBrands = [
-  { name: "Brand Alpha", status: "Online", domain: "alpha.com" },
-  { name: "Brand Beta", status: "Offline", domain: "beta.com" },
-  { name: "Brand Gamma", status: "Warning", domain: "gamma.com" },
-  { name: "Brand Delta", status: "Online", domain: "delta.com" },
-];
-
-const recentAlerts = [
-  { type: "error", message: "Brand Beta went offline", time: "2 min ago" },
-  { type: "warning", message: "High memory usage on Brand Gamma", time: "15 min ago" },
-  { type: "info", message: "Brand Alpha auto-scaled successfully", time: "1 hour ago" },
-  { type: "info", message: "Daily backup completed", time: "3 hours ago" },
-];
-
-const mockLogs = [
-  { level: "INFO", message: "Service started on port 3000", time: "14:32:01" },
-  { level: "WARN", message: "Rate limit approaching for Brand Gamma", time: "14:31:45" },
-  { level: "ERROR", message: "Connection timeout to Brand Beta DB", time: "14:30:22" },
-  { level: "INFO", message: "Health check passed for Brand Alpha", time: "14:29:58" },
-  { level: "INFO", message: "Cache cleared successfully", time: "14:28:10" },
-];
-
-const KPICard = ({ icon: Icon, label, value, suffix = "", color }: { icon: any; label: string; value: number; suffix?: string; color: string }) => (
-  <motion.div
-    whileHover={{ y: -2 }}
-    transition={{ duration: 0.3 }}
-    className="bg-card rounded-xl border p-5 shadow-sm"
-  >
-    <div className="flex items-center gap-3 mb-3">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
-        <Icon className="w-5 h-5" />
-      </div>
-      <span className="text-sm text-muted-foreground">{label}</span>
-    </div>
-    <CountUp end={value} suffix={suffix} className="text-3xl font-bold text-foreground" />
-  </motion.div>
-);
+const ICON_MAP = { cpu: Cpu, hardDrive: HardDrive, wifi: Wifi } as const;
 
 const Monitor = () => {
   const navigate = useNavigate();
-  const [logFilter, setLogFilter] = useState("");
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [dismissedAlerts, setDismissedAlerts] = useState<number[]>([]);
-
-  const toggleSection = (s: string) => setExpandedSection(expandedSection === s ? null : s);
-
-  const filteredLogs = mockLogs.filter((l) =>
-    !logFilter || l.message.toLowerCase().includes(logFilter.toLowerCase()) || l.level.toLowerCase().includes(logFilter.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-dotted p-4 md:p-8">
       <PageTransition className="max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-6 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 
-        {/* Header */}
         <div className="mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl md:text-3xl font-bold text-foreground"
-          >
+          <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-2xl md:text-3xl font-bold text-foreground">
             Good Day, Worker Name
           </motion.h1>
-          <p className="text-muted-foreground mt-1">Here's your system overview</p>
+          <p className="text-muted-foreground mt-1">Here&apos;s your system overview</p>
         </div>
 
-        {/* KPI Cards */}
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <StaggerItem>
             <KPICard icon={Users} label="Number Of Clients" value={3} color="bg-primary/10 text-primary" />
@@ -112,111 +50,44 @@ const Monitor = () => {
           </StaggerItem>
         </StaggerContainer>
 
-        {/* Client Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-          className="bg-card rounded-xl border shadow-sm mb-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm mb-6">
           <div className="p-5 border-b">
             <h2 className="font-semibold text-foreground">Client Status</h2>
           </div>
-          {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-xs text-muted-foreground uppercase tracking-wider">
-                  <th className="text-left p-4">Name</th>
-                  <th className="text-left p-4">Client Name</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Paid</th>
-                  <th className="text-right p-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((c, i) => (
-                  <motion.tr
-                    key={c.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 + i * 0.1, duration: 0.3 }}
-                    className="border-b last:border-0 hover:bg-secondary/30 transition-colors duration-300"
-                  >
-                    <td className="p-4 font-medium text-foreground">{c.name}</td>
-                    <td className="p-4 text-muted-foreground">{c.clientName}</td>
-                    <td className="p-4">
-                      <span className={c.status === "Good" ? "badge-success" : "badge-danger"}>
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="p-4 text-foreground">{c.paid}</td>
-                    <td className="p-4 text-right space-x-2">
-                      <Button variant="outline" size="sm" className="text-xs">Close</Button>
-                      <Button variant="outline" size="sm" className="text-xs">
-                        <RefreshCw className="w-3 h-3" />
-                      </Button>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {/* Mobile cards */}
-          <div className="md:hidden p-4 space-y-3">
-            {clients.map((c) => (
-              <div key={c.id} className="rounded-lg border p-4 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-foreground">{c.name}</span>
-                  <span className={c.status === "Good" ? "badge-success" : "badge-danger"}>{c.status}</span>
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{c.clientName}</span>
-                  <span>{c.paid}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="text-xs flex-1">Close</Button>
-                  <Button variant="outline" size="sm" className="text-xs"><RefreshCw className="w-3 h-3" /></Button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ClientStatusTable clients={MOCK_CLIENTS} />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* System Health */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 space-y-4">
             <h2 className="font-semibold text-foreground">System Health</h2>
-            {[
-              { label: "CPU", value: 45, icon: Cpu, color: "bg-primary" },
-              { label: "Memory", value: 62, icon: HardDrive, color: "bg-warning" },
-              { label: "Network", value: 75, icon: Wifi, suffix: "120 Mbps", color: "bg-success" },
-            ].map((item) => (
-              <div key={item.label} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <item.icon className="w-4 h-4" />
-                    {item.label}
+            {SYSTEM_HEALTH_ITEMS.map((item) => {
+              const Icon = ICON_MAP[item.iconKey];
+              return (
+                <div key={item.label} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      {Icon && <Icon className="w-4 h-4" />}
+                      {item.label}
+                    </div>
+                    <span className="font-medium text-foreground">{item.suffix || `${item.value}%`}</span>
                   </div>
-                  <span className="font-medium text-foreground">{item.suffix || `${item.value}%`}</span>
+                  <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <motion.div
+                      className={`h-full rounded-full ${item.color}`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.value}%` }}
+                      transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full ${item.color}`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.value}%` }}
-                    transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </motion.div>
 
-          {/* Active Brands */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Active Brands</h2>
             <div className="space-y-3">
-              {activeBrands.map((b) => (
+              {ACTIVE_BRANDS.map((b) => (
                 <div key={b.name} className="flex items-center justify-between rounded-lg border p-3">
                   <div className="flex items-center gap-3">
                     <div className={`w-2.5 h-2.5 rounded-full ${
@@ -238,7 +109,6 @@ const Monitor = () => {
           </motion.div>
         </div>
 
-        {/* Quick Actions */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-6">
           <h2 className="font-semibold text-foreground mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -259,7 +129,6 @@ const Monitor = () => {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" className="w-full justify-start gap-2 text-destructive border-destructive/30 hover:bg-destructive/5">
@@ -279,7 +148,6 @@ const Monitor = () => {
             </AlertDialog>
           </div>
         </motion.div>
-
       </PageTransition>
     </div>
   );

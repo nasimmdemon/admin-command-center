@@ -1,42 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { PageTransition, StaggerContainer, StaggerItem } from "../components/PageTransition";
-import { Monitor, Plus, BarChart3, MousePointer2, FolderPlus, Search, Plug, FileText } from "lucide-react";
-
-const options = [
-  {
-    title: "Showcase Demo For Client",
-    description: "Start a live demo session with your client via video call",
-    icon: MousePointer2,
-    secondaryIcon: Monitor,
-    route: "/demo",
-    gradient: "from-primary/5 to-primary/10",
-  },
-  {
-    title: "Create New",
-    description: "Set up a new brand with full configuration wizard",
-    icon: FolderPlus,
-    secondaryIcon: Plus,
-    route: "/create-brand",
-    gradient: "from-success/5 to-success/10",
-  },
-  {
-    title: "Monitor & Shut Down",
-    description: "View real-time metrics, manage brands and services",
-    icon: BarChart3,
-    secondaryIcon: Search,
-    route: "/monitor",
-    gradient: "from-warning/5 to-warning/10",
-  },
-  {
-    title: "Providers",
-    description: "Docs for Payments, VoIP, and Email provider integrations",
-    icon: Plug,
-    secondaryIcon: FileText,
-    route: "/providers",
-    gradient: "from-primary/5 to-primary/10",
-  },
-];
+import { PageTransition, StaggerContainer, StaggerItem } from "@/components/PageTransition";
+import { INDEX_NAVIGATION_OPTIONS } from "@/models/navigation-options";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -65,7 +30,7 @@ const Index = () => {
           </div>
 
           <StaggerContainer className="grid gap-4 md:gap-6">
-            {options.map((opt) => (
+            {INDEX_NAVIGATION_OPTIONS.map((opt) => (
               <StaggerItem key={opt.route}>
                 <motion.button
                   whileHover={{ y: -4, boxShadow: "0 20px 40px -12px rgba(0,0,0,0.1)" }}

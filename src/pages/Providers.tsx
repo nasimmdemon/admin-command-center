@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { PageTransition } from "../components/PageTransition";
+import { PageTransition } from "@/components/PageTransition";
 import { ArrowLeft, CreditCard, Phone, Mail, FileText, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/models/routes";
 
 type ProviderTab = "payments" | "voip" | "email";
 
@@ -55,7 +56,7 @@ const Providers = () => {
   return (
     <div className="min-h-screen bg-dotted p-4 md:p-8">
       <PageTransition className="max-w-3xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/")} className="mb-6 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 

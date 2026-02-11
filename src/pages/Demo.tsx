@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PageTransition } from "../components/PageTransition";
+import { PageTransition } from "@/components/PageTransition";
 import { ArrowLeft, Video, VideoOff, Mic, MicOff, Monitor, PhoneOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/models/routes";
 
 const Demo = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const Demo = () => {
       <PageTransition className="max-w-4xl mx-auto">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(ROUTES.HOME)}
           className="mb-6 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
