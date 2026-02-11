@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { PageTransition, StaggerContainer, StaggerItem } from "../components/PageTransition";
-import { Monitor, Plus, BarChart3, MousePointer2, FolderPlus, Search } from "lucide-react";
+import { Monitor, Plus, BarChart3, MousePointer2, FolderPlus, Search, Plug, FileText } from "lucide-react";
 
 const options = [
   {
@@ -27,6 +27,14 @@ const options = [
     secondaryIcon: Search,
     route: "/monitor",
     gradient: "from-warning/5 to-warning/10",
+  },
+  {
+    title: "Providers",
+    description: "Docs for Payments, VoIP, and Email provider integrations",
+    icon: Plug,
+    secondaryIcon: FileText,
+    route: "/providers",
+    gradient: "from-primary/5 to-primary/10",
   },
 ];
 

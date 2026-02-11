@@ -1,8 +1,12 @@
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
+import { ExternalLink } from "lucide-react";
 import MethodConfigCard from "./MethodConfigCard";
 import {
   DepositMethod, BankDetails, WireTransferDetails, METHOD_LABELS,
+  ExternalProviderConfig,
 } from "@/types/brand-config";
 
 interface DepositConfigStepProps {
@@ -16,6 +20,9 @@ interface DepositConfigStepProps {
   onWireDetailsChange: (details: WireTransferDetails) => void;
 }
 
+const FIAT_OUR_PROVIDER = "iPay";
+const CRYPTO_OUR_PROVIDER = "Crypto Now";
+
 const DepositConfigStep = ({
   brandLabel, brandDomain, methods, onMethodsChange, bankDetails, onBankDetailsChange, wireDetails, onWireDetailsChange,
 }: DepositConfigStepProps) => {
@@ -23,13 +30,127 @@ const DepositConfigStep = ({
     onMethodsChange({ ...methods, [key]: { ...methods[key], ...updates } });
   };
 
+  const updateExternalConfig = (key: "fiat" | "crypto", updates: Partial<ExternalProviderConfig>) => {
+    const method = methods[key];
+    const curr = method.external_config ?? {};
+    updateMethod(key, { external_config: { ...curr, ...updates } });
+  };
+
+  const isProviderMethod = (key: string) => key === "fiat" || key === "crypto";
+  const regularMethods = Object.entries(methods).filter(([key]) => !isProviderMethod(key));
+  const providerMethods = Object.entries(methods).filter(([key]) => isProviderMethod(key));
+
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-semibold text-foreground">Payment Deposit Providers</h2>
       <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
 
+      {/* Fiat & Crypto: provider choice (ours vs other) + external config */}
+      {providerMethods.length > 0 && (
+        <div className="space-y-3">
+          {providerMethods.map(([key, method]) => {
+            const isFiat = key === "fiat";
+            const ourProvider = isFiat ? FIAT_OUR_PROVIDER : CRYPTO_OUR_PROVIDER;
+            const source = method.provider_source ?? "ours";
+            const ext = method.external_config ?? {};
+            return (
+              <div key={key} className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">{METHOD_LABELS[key] || key}</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Enabled</span>
+                    <input
+                      type="checkbox"
+                      checked={method.enabled}
+                      onChange={(e) => updateMethod(key, { enabled: e.target.checked })}
+                      className="w-4 h-4 rounded border-primary"
+                    />
+                  </div>
+                </div>
+                {method.enabled && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="space-y-3 pt-2"
+                  >
+                    <Label className="text-xs text-muted-foreground">Provider</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name={`provider-${key}`}
+                          checked={source === "ours"}
+                          onChange={() => updateMethod(key, { provider_source: "ours", external_config: undefined })}
+                          className="rounded-full border-primary"
+                        />
+                        <span className="text-sm">Our solution ({ourProvider})</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name={`provider-${key}`}
+                          checked={source === "other"}
+                          onChange={() => updateMethod(key, { provider_source: "other", external_config: { domain: "", api_key: "", docs_url: "" } })}
+                          className="rounded-full border-primary"
+                        />
+                        <span className="text-sm">Other (external)</span>
+                      </label>
+                    </div>
+                    {source === "other" && (
+                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                        <p className="text-xs text-muted-foreground">
+                          Connect the CRM to an external provider. Fields may be updated once integration details are known.
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Domain</Label>
+                            <Input
+                              placeholder="e.g. api.example.com"
+                              value={ext.domain ?? ""}
+                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { domain: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">API Key</Label>
+                            <Input
+                              type="password"
+                              placeholder="API key from provider"
+                              value={ext.api_key ?? ""}
+                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { api_key: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Docs URL</Label>
+                            <Input
+                              placeholder="https://docs.example.com"
+                              value={ext.docs_url ?? ""}
+                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { docs_url: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
+                        <Link
+                          to="/providers?tab=payments"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          View provider docs & integration guides
+                        </Link>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Regular methods with full config */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {Object.entries(methods).map(([key, method]) => (
+        {regularMethods.map(([key, method]) => (
           <MethodConfigCard
             key={key}
             label={METHOD_LABELS[key] || key}
@@ -45,10 +166,10 @@ const DepositConfigStep = ({
         ))}
       </div>
 
-      {/* Bank Details */}
+      {/* Bank Details - For client display (where to pay) */}
       {(methods.bank_transfer?.enabled || methods.wire_transfer?.enabled) && (
         <div className="space-y-3 rounded-lg border p-4">
-          <Label className="text-xs text-muted-foreground uppercase tracking-wide">Bank & Wire Details</Label>
+          <Label className="text-xs text-muted-foreground uppercase tracking-wide">Bank & Wire Details (For Client Display - Where to Pay)</Label>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">Bank Name</Label>

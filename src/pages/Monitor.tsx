@@ -238,163 +238,48 @@ const Monitor = () => {
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Alerts */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5">
-            <h2 className="font-semibold text-foreground mb-4">Recent Alerts</h2>
-            <div className="space-y-2">
-              {recentAlerts.map((a, i) => dismissedAlerts.includes(i) ? null : (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 + i * 0.1 }}
-                  className={`flex items-start gap-3 rounded-lg p-3 text-sm ${
-                    a.type === "error" ? "bg-destructive/5" : a.type === "warning" ? "bg-warning/5" : "bg-primary/5"
-                  }`}
-                >
-                  {a.type === "error" ? <XCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" /> :
-                   a.type === "warning" ? <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" /> :
-                   <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground">{a.message}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{a.time}</p>
-                  </div>
-                  <button onClick={() => setDismissedAlerts([...dismissedAlerts, i])} className="text-muted-foreground hover:text-foreground flex-shrink-0">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+        {/* Quick Actions */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-6">
+          <h2 className="font-semibold text-foreground mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start gap-2">
+                  <RefreshCw className="w-4 h-4" /> Restart All Services
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Restart All Services?</AlertDialogTitle>
+                  <AlertDialogDescription>This will restart all running services. There may be brief downtime.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction>Restart</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
-          {/* Quick Actions */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5">
-            <h2 className="font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <RefreshCw className="w-4 h-4" /> Restart All Services
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Restart All Services?</AlertDialogTitle>
-                    <AlertDialogDescription>This will restart all running services. There may be brief downtime.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Restart</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start gap-2 text-destructive border-destructive/30 hover:bg-destructive/5">
-                    <Power className="w-4 h-4" /> Emergency Shutdown
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Emergency Shutdown?</AlertDialogTitle>
-                    <AlertDialogDescription>This will immediately shut down ALL services and brands. This action cannot be easily undone.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Shut Down</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Zap className="w-4 h-4" /> Refresh Status
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Performance Metrics (simple bars) */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-6">
-          <h2 className="font-semibold text-foreground mb-4">Performance Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-3">API Response Time (ms)</p>
-              <div className="space-y-2">
-                {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => {
-                  const val = [120, 95, 145, 88, 110][i];
-                  return (
-                    <div key={day} className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground w-8">{day}</span>
-                      <div className="flex-1 h-5 bg-secondary rounded overflow-hidden">
-                        <motion.div
-                          className="h-full bg-primary/70 rounded"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(val / 200) * 100}%` }}
-                          transition={{ duration: 0.8, delay: 1 + i * 0.1 }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-foreground w-10 text-right">{val}ms</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-3">Error Rate by Brand</p>
-              <div className="space-y-2">
-                {activeBrands.map((b, i) => {
-                  const val = [2, 15, 8, 1][i];
-                  return (
-                    <div key={b.name} className="flex items-center gap-3">
-                      <span className="text-xs text-muted-foreground w-20 truncate">{b.name}</span>
-                      <div className="flex-1 h-5 bg-secondary rounded overflow-hidden">
-                        <motion.div
-                          className={`h-full rounded ${val > 10 ? "bg-destructive/70" : val > 5 ? "bg-warning/70" : "bg-success/70"}`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(val / 20) * 100}%` }}
-                          transition={{ duration: 0.8, delay: 1.2 + i * 0.1 }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-foreground w-8 text-right">{val}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start gap-2 text-destructive border-destructive/30 hover:bg-destructive/5">
+                  <Power className="w-4 h-4" /> Emergency Shutdown
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Emergency Shutdown?</AlertDialogTitle>
+                  <AlertDialogDescription>This will immediately shut down ALL services and brands. This action cannot be easily undone.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Shut Down</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </motion.div>
 
-        {/* Log Viewer */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">Log Viewer</h2>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-muted-foreground">Auto-refresh</Label>
-                <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} />
-              </div>
-            </div>
-          </div>
-          <div className="mb-3">
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Search logs..." value={logFilter} onChange={(e) => setLogFilter(e.target.value)} className="pl-9" />
-            </div>
-          </div>
-          <div className="rounded-lg border bg-foreground/[0.02] font-mono text-xs divide-y">
-            {filteredLogs.map((l, i) => (
-              <div key={i} className="flex items-start gap-3 p-3">
-                <span className="text-muted-foreground w-16 flex-shrink-0">{l.time}</span>
-                <span className={`w-12 flex-shrink-0 font-semibold ${
-                  l.level === "ERROR" ? "text-destructive" : l.level === "WARN" ? "text-warning" : "text-muted-foreground"
-                }`}>{l.level}</span>
-                <span className="text-foreground">{l.message}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </PageTransition>
     </div>
   );

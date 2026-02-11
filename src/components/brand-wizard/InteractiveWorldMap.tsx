@@ -8,6 +8,8 @@ interface InteractiveWorldMapProps {
   selectedCountries: string[]; // Array of ISO country codes (e.g., ["US", "CA", "GB"])
   onCountryToggle: (countryCode: string) => void;
   className?: string;
+  /** "reject" = red (Transform), "select" = primary (VoIP) */
+  variant?: "reject" | "select";
 }
 
 // Map of country names to ISO codes (common countries)
@@ -66,7 +68,7 @@ const codeToCountryName: Record<string, string> = Object.fromEntries(
   Object.entries(countryNameToCode).map(([name, code]) => [code, name])
 );
 
-const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "" }: InteractiveWorldMapProps) => {
+const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "", variant = "reject" }: InteractiveWorldMapProps) => {
   const getCountryCode = (geo: any): string | null => {
     if (!geo || !geo.properties) return null;
     
@@ -109,6 +111,13 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
     return isSelected;
   };
 
+  const isReject = variant === "reject";
+  const fillSelected = isReject ? "#ef4444" : "hsl(var(--primary))";
+  const strokeSelected = isReject ? "#dc2626" : "hsl(var(--primary))";
+  const fillHover = isReject ? "#dc2626" : "hsl(var(--primary) / 0.8)";
+  const strokeHover = isReject ? "#b91c1c" : "hsl(var(--primary))";
+  const fillPressed = isReject ? "#b91c1c" : "hsl(var(--primary) / 0.9)";
+
   return (
     <div className={`w-full ${className}`}>
       <ComposableMap
@@ -131,23 +140,23 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
                     onClick={() => handleCountryClick(geo)}
                     style={{
                       default: {
-                        fill: isSelected ? "#ef4444" : "#e5e7eb", // Red for rejected countries
-                        stroke: isSelected ? "#dc2626" : "#9ca3af", // Darker red border
+                        fill: isSelected ? fillSelected : "#e5e7eb",
+                        stroke: isSelected ? strokeSelected : "#9ca3af",
                         strokeWidth: isSelected ? 1.5 : 0.5,
                         outline: "none",
                         cursor: "pointer",
                       },
                       hover: {
-                        fill: isSelected ? "#dc2626" : "#d1d5db", // Darker red on hover
-                        stroke: isSelected ? "#b91c1c" : "#6b7280",
+                        fill: isSelected ? fillHover : "#d1d5db",
+                        stroke: isSelected ? strokeHover : "#6b7280",
                         strokeWidth: 1.5,
                         outline: "none",
                         cursor: "pointer",
                         transition: "all 0.2s ease",
                       },
                       pressed: {
-                        fill: isSelected ? "#b91c1c" : "#9ca3af", // Even darker red when pressed
-                        stroke: "#991b1b",
+                        fill: isSelected ? fillPressed : "#9ca3af",
+                        stroke: isSelected ? strokeSelected : "#991b1b",
                         strokeWidth: 2,
                         outline: "none",
                       },

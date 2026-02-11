@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "../components/PageTransition";
-import { ArrowLeft, ArrowRight, Plus, Trash2, Upload, Globe, Info, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Trash2, Upload, Globe, Info, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,7 @@ import {
   DEFAULT_DEPOSIT_METHODS, DEFAULT_WITHDRAWAL_METHODS, DEFAULT_BANK_DETAILS, DEFAULT_WIRE_DETAILS, DEFAULT_GLOBAL_SETTINGS,
 } from "@/types/brand-config";
 
-const TOTAL_STEPS = 13;
+const TOTAL_STEPS = 14;
 
 // Reusable checkbox card
 const CheckCard = ({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) => (
@@ -55,12 +55,13 @@ const CreateBrand = () => {
   // Step 3 - Withdrawal config
   const [withdrawalMethods, setWithdrawalMethods] = useState<Record<string, WithdrawalMethod>>({ ...DEFAULT_WITHDRAWAL_METHODS });
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({ ...DEFAULT_GLOBAL_SETTINGS });
+  const [withdrawalBankDetails, setWithdrawalBankDetails] = useState<BankDetails>({ ...DEFAULT_BANK_DETAILS });
+  const [withdrawalWireDetails, setWithdrawalWireDetails] = useState<WireTransferDetails>({ ...DEFAULT_WIRE_DETAILS });
 
-  // Step 4
+  // Step 4 - KYC: require to trade (yes/no), manual approval default when yes, documents optional per owner
   const [kycEnabled, setKycEnabled] = useState(true);
-  const [requireDocs, setRequireDocs] = useState(true);
   const [kycDocs, setKycDocs] = useState<Record<string, boolean>>({
-    "Passport": true, "ID": true, "Utility Bill": true, "Require Selfie": true,
+    "Passport": false, "ID": false, "Utility Bill": false, "Require Selfie": false,
   });
 
   // Step 5
@@ -68,34 +69,39 @@ const CreateBrand = () => {
   const [terms, setTerms] = useState("");
 
   // Step 6 - Communication Providers
-  const [emailProvider, setEmailProvider] = useState<"maileroo" | "alexders">("maileroo");
-  const [voipProvider, setVoipProvider] = useState<"voicex" | null>("voicex");
+  const [emailProvider, setEmailProvider] = useState<"maileroo" | "alexders" | "other">("maileroo");
+  const [voipProvider, setVoipProvider] = useState<"voicex" | "other" | null>("voicex");
   const [voipPhoneNumbers, setVoipPhoneNumbers] = useState("50");
   const [voipCountries, setVoipCountries] = useState("25");
   const [voipCoverageMap, setVoipCoverageMap] = useState<Record<string, string[]>>({
-    "US": ["CA", "MX", "GB", "FR", "DE"],
-    "GB": ["US", "FR", "DE", "ES", "IT"],
-    "FR": ["GB", "DE", "ES", "IT", "BE"],
-  }); // Format: { "from_country": ["to_country1", "to_country2", ...] }
+    "US": ["US", "CA", "MX", "GB", "FR", "DE"],
+    "GB": ["GB", "US", "FR", "DE", "ES", "IT"],
+    "FR": ["FR", "GB", "DE", "ES", "IT", "BE"],
+  }); // Format: { "from_country": ["to_country1", "to_country2", ...] } - includes same country for quick calls
+  const [voipOriginCountryInput, setVoipOriginCountryInput] = useState("");
+  const [voipAddOutboundFrom, setVoipAddOutboundFrom] = useState("");
+  const [voipOutboundCountryInput, setVoipOutboundCountryInput] = useState("");
   const [providersMapData, setProvidersMapData] = useState(() => {
-    // Initialize with default coverage map formatted as JSON
     return JSON.stringify({
-      "US": ["CA", "MX", "GB", "FR", "DE"],
-      "GB": ["US", "FR", "DE", "ES", "IT"],
-      "FR": ["GB", "DE", "ES", "IT", "BE"],
+      "US": ["US", "CA", "MX", "GB", "FR", "DE"],
+      "GB": ["GB", "US", "FR", "DE", "ES", "IT"],
+      "FR": ["FR", "GB", "DE", "ES", "IT", "BE"],
     }, null, 2);
   });
   const [selectedEmailTemplates, setSelectedEmailTemplates] = useState<Record<string, boolean>>({
-    "ClientChangeCreds": true,
-    "ClientSendEmailToUser": true,
-    "ListAllEmailsSendByUser": true,
-    "ListAllEmailsSentToClient": true,
-    "UserChangeCreds": true,
-    "WorkerToClientSendEmailClientCard": true,
-    "ClientAuth": true,
+    "ClientAuth": true, // Client signup from auth gate (Classic)
+    "LeadInitialDetails": true, // Lead -> Client (auto gen password and lead info used for sending initial password)
+    "ClientChangeCreds": true, // Change client credentials
+    "UserChangeCreds": true, // Change user credentials
   });
 
-  // Step 9 - TRANSFORM (Auto Rejection)
+  // Step 9 - TRANSFORM (actual config + Auto Rejection)
+  const [emailProvidersAllowed, setEmailProvidersAllowed] = useState<Record<string, boolean>>({
+    maileroo: true, alexders: false,
+  });
+  const [phoneExtensionsAllowed, setPhoneExtensionsAllowed] = useState(true);
+  const [autoGenPasswordForLeads, setAutoGenPasswordForLeads] = useState(true);
+  const [autoRejectNoInteractivity, setAutoRejectNoInteractivity] = useState(true);
   const [blockedCountries, setBlockedCountries] = useState<string[]>([]); // Array of country codes like ["US", "CA"]
   const [newCountryCode, setNewCountryCode] = useState(""); // Input for adding country codes
   const [countryCodeError, setCountryCodeError] = useState(""); // Error message for invalid country code
@@ -138,12 +144,20 @@ const CreateBrand = () => {
     "CRYPTO - CFD'S": true, "FOREX": true, "COMMODITIES": true,
   });
 
-  // Step 12
+  // Step 12 - Trading Fees
+  const [openPositionFeeEnabled, setOpenPositionFeeEnabled] = useState(false);
+  const [openPositionFeeType, setOpenPositionFeeType] = useState<"fixed" | "percentage">("fixed");
+  const [openPositionFeeValue, setOpenPositionFeeValue] = useState("0");
+  const [closePositionFeeEnabled, setClosePositionFeeEnabled] = useState(false);
+  const [closePositionFeeType, setClosePositionFeeType] = useState<"fixed" | "percentage">("fixed");
+  const [closePositionFeeValue, setClosePositionFeeValue] = useState("0");
+
+  // Step 13
   const [allowMultiTas, setAllowMultiTas] = useState(true);
   const [maxPerClient, setMaxPerClient] = useState("3");
   const [maxLeverage, setMaxLeverage] = useState("100");
 
-  // Step 13
+  // Step 14
   const [timezone, setTimezone] = useState("UTC");
   const [language, setLanguage] = useState("English");
   const [currency, setCurrency] = useState("USD");
@@ -219,6 +233,10 @@ const CreateBrand = () => {
             onMethodsChange={setWithdrawalMethods}
             globalSettings={globalSettings}
             onGlobalSettingsChange={setGlobalSettings}
+            withdrawalBankDetails={withdrawalBankDetails}
+            onWithdrawalBankDetailsChange={setWithdrawalBankDetails}
+            withdrawalWireDetails={withdrawalWireDetails}
+            onWithdrawalWireDetailsChange={setWithdrawalWireDetails}
           />
         );
 
@@ -228,27 +246,27 @@ const CreateBrand = () => {
             <h2 className="text-lg font-semibold text-foreground">KYC Settings</h2>
             <p className="text-sm text-muted-foreground">{brandLabel}: {brands[0]?.domain || "domain.com"}</p>
             <div className="flex items-center justify-between rounded-lg border p-4">
-              <Label>Include KYC with Manual Approving?</Label>
+              <div>
+                <Label>Require KYC to trade?</Label>
+                <p className="text-xs text-muted-foreground mt-1">Manual approval is default when enabled</p>
+              </div>
               <Switch checked={kycEnabled} onCheckedChange={setKycEnabled} />
             </div>
             {kycEnabled && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.3 }} className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <Label>Require Documents</Label>
-                  <Switch checked={requireDocs} onCheckedChange={setRequireDocs} />
-                </div>
-                {requireDocs && (
-                  <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg border p-4">
+                  <Label className="text-sm font-medium">Documents (optional – select which the owner requires)</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
                     {Object.entries(kycDocs).map(([key, val]) => (
                       <CheckCard key={key} label={key} checked={val} onChange={(v) => setKycDocs({ ...kycDocs, [key]: v })} />
                     ))}
                   </div>
-                )}
+                </div>
               </motion.div>
             )}
             {!kycEnabled && (
               <div className="rounded-lg border p-4 bg-secondary/50">
-                <p className="text-sm text-muted-foreground">{brandLabel} - KYC: No</p>
+                <p className="text-sm text-muted-foreground">{brandLabel} – KYC: No</p>
               </div>
             )}
           </div>
@@ -298,7 +316,7 @@ const CreateBrand = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-foreground">Maileroo</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Free option</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Lower cost</p>
                     </div>
                   </div>
                 </motion.button>
@@ -322,37 +340,115 @@ const CreateBrand = () => {
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-foreground">Alexders Moldova Solution</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Premium option</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Higher cost per month</p>
+                    </div>
+                  </div>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setEmailProvider("other")}
+                  className={`rounded-lg border p-4 text-left transition-all duration-300 ${
+                    emailProvider === "other"
+                      ? "bg-primary/10 border-primary shadow-sm"
+                      : "bg-card hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      emailProvider === "other" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {emailProvider === "other" && <Check className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">Other (external)</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Connect your own provider</p>
                     </div>
                   </div>
                 </motion.button>
               </div>
+              {emailProvider === "other" && (
+                <div className="rounded-lg border border-dashed p-4 bg-muted/30">
+                  <p className="text-sm text-muted-foreground mb-2">Email provider is not ours — use our docs to connect external provider.</p>
+                  <Link to="/providers?tab=email" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+                    <ExternalLink className="w-4 h-4" />
+                    View provider docs (Email)
+                  </Link>
+                </div>
+              )}
+              {(emailProvider === "maileroo" || emailProvider === "alexders") && (
               <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
                 <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">With Alexnder: more cost per month, no spam risk. Free option may land in spam.</p>
+                <p className="text-xs text-muted-foreground">With Alexders: higher cost per month, no spam risk. Lower-cost option may land in spam.</p>
               </div>
+              )}
             </div>
 
             {/* Email Templates Section */}
             <div className="space-y-3">
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">Email Templates</Label>
               <p className="text-sm text-muted-foreground">Select which email templates to enable for this brand</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {Object.entries({
-                  "ClientChangeCreds": "Client Change Credentials",
-                  "ClientSendEmailToUser": "Client Send Email to User",
-                  "ListAllEmailsSendByUser": "List All Emails Sent By User",
-                  "ListAllEmailsSentToClient": "List All Emails Sent To Client",
-                  "UserChangeCreds": "User Change Credentials",
-                  "WorkerToClientSendEmailClientCard": "Worker to Client Email",
-                  "ClientAuth": "Client Authentication",
-                }).map(([key, label]) => (
-                  <CheckCard
+                  "ClientAuth": {
+                    label: "Client Authentication",
+                    description: "Client signup from auth gate (Classic)",
+                    path: "BLAPI\\EmailsUsecases\\ClientAuth"
+                  },
+                  "LeadInitialDetails": {
+                    label: "Lead Initial Details",
+                    description: "Lead → Client (auto gen password and lead info used for sending initial password)",
+                    path: "BLAPI\\EmailsUsecases\\LeadInitialDeatils"
+                  },
+                  "ClientChangeCreds": {
+                    label: "Client Change Credentials",
+                    description: "Change client credentials",
+                    path: "BLAPI\\EmailsUsecases\\ClientChangeCreds"
+                  },
+                  "UserChangeCreds": {
+                    label: "User Change Credentials",
+                    description: "Change user credentials",
+                    path: "BLAPI\\EmailsUsecases\\UserChangeCreds"
+                  },
+                }).map(([key, template]) => (
+                  <motion.div
                     key={key}
-                    label={label}
-                    checked={selectedEmailTemplates[key] || false}
-                    onChange={(checked) => setSelectedEmailTemplates({ ...selectedEmailTemplates, [key]: checked })}
-                  />
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`rounded-lg border p-4 bg-card transition-all ${
+                      selectedEmailTemplates[key] 
+                        ? "border-primary/50 bg-primary/5" 
+                        : "hover:border-muted-foreground/50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div 
+                        className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                          selectedEmailTemplates[key] 
+                            ? "bg-primary border-primary" 
+                            : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {selectedEmailTemplates[key] && <Check className="w-3 h-3 text-primary-foreground" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <button
+                          onClick={() => setSelectedEmailTemplates({ 
+                            ...selectedEmailTemplates, 
+                            [key]: !selectedEmailTemplates[key] 
+                          })}
+                          className="text-left w-full"
+                        >
+                          <p className="font-medium text-foreground">{template.label}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-1 font-mono break-all">{template.path}</p>
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -360,22 +456,23 @@ const CreateBrand = () => {
             {/* VoIP Provider Selection */}
             <div className="space-y-4">
               <Label className="text-muted-foreground text-xs uppercase tracking-wide">VoIP Provider</Label>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.2 }}
-                onClick={() => setVoipProvider(voipProvider === "voicex" ? null : "voicex")}
-                className={`w-full rounded-lg border p-4 text-left transition-all duration-300 ${
-                  voipProvider === "voicex"
-                    ? "bg-primary/10 border-primary shadow-sm"
-                    : "bg-card hover:border-muted-foreground/50"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
-                    voipProvider === "voicex" ? "bg-primary border-primary" : "border-muted-foreground/30"
-                  }`}>
-                    {voipProvider === "voicex" && <Check className="w-3 h-3 text-primary-foreground" />}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setVoipProvider(voipProvider === "voicex" ? null : "voicex")}
+                  className={`rounded-lg border p-4 text-left transition-all duration-300 ${
+                    voipProvider === "voicex"
+                      ? "bg-primary/10 border-primary shadow-sm"
+                      : "bg-card hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      voipProvider === "voicex" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {voipProvider === "voicex" && <Check className="w-3 h-3 text-primary-foreground" />}
                   </div>
                   <div className="flex-1">
                     <p className="font-medium text-foreground">VoiceX</p>
@@ -383,7 +480,39 @@ const CreateBrand = () => {
                   </div>
                 </div>
               </motion.button>
-
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setVoipProvider(voipProvider === "other" ? null : "other")}
+                  className={`rounded-lg border p-4 text-left transition-all duration-300 ${
+                    voipProvider === "other"
+                      ? "bg-primary/10 border-primary shadow-sm"
+                      : "bg-card hover:border-muted-foreground/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+                      voipProvider === "other" ? "bg-primary border-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {voipProvider === "other" && <Check className="w-3 h-3 text-primary-foreground" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground">Other (external)</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Connect your own provider</p>
+                  </div>
+                </div>
+              </motion.button>
+              </div>
+              {voipProvider === "other" && (
+                <div className="rounded-lg border border-dashed p-4 bg-muted/30">
+                  <p className="text-sm text-muted-foreground mb-2">VoIP provider is not ours — use our docs to connect external provider.</p>
+                  <Link to="/providers?tab=voip" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+                    <ExternalLink className="w-4 h-4" />
+                    View provider docs (VoIP)
+                  </Link>
+                </div>
+              )}
               {voipProvider === "voicex" && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -420,15 +549,155 @@ const CreateBrand = () => {
                     </div>
                   </div>
 
+                  {/* VoIP Coverage Map - Click countries to select origin countries */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">VoIP Coverage (select origin countries)</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Click countries on the map to toggle. Selected countries are highlighted. Use manual input below to add outbound routes.
+                    </p>
+                    <div className="rounded-lg border p-4 bg-secondary/30 min-h-[280px] max-h-[400px] overflow-auto">
+                      <InteractiveWorldMap
+                        variant="select"
+                        selectedCountries={Object.keys(voipCoverageMap).filter(c => isValidISOCountryCode(c))}
+                        onCountryToggle={(countryCode) => {
+                          const code = countryCode.toUpperCase().trim();
+                          if (!isValidISOCountryCode(code)) return;
+                          const next = { ...voipCoverageMap };
+                          if (next[code]) {
+                            delete next[code];
+                          } else {
+                            next[code] = [code];
+                          }
+                          setVoipCoverageMap(next);
+                          setProvidersMapData(JSON.stringify(next, null, 2));
+                        }}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Origin & Outbound Countries - From country → To same country (quick call) */}
+                  <div className="space-y-4 rounded-lg border p-4 bg-card/50">
+                    <div>
+                      <Label className="text-sm font-medium text-foreground">Origin Countries (where calls can originate)</Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        From country → to same country: Select USA as outbound = you can quick call from USA to USA
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {Object.keys(voipCoverageMap).map((country) => (
+                        <motion.span
+                          key={country}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
+                        >
+                          {country}
+                          <button
+                            onClick={() => {
+                              const next = { ...voipCoverageMap };
+                              delete next[country];
+                              setVoipCoverageMap(next);
+                              setProvidersMapData(JSON.stringify(next, null, 2));
+                            }}
+                            className="hover:text-primary/70 ml-1"
+                          >
+                            ×
+                          </button>
+                        </motion.span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Origin country (e.g., US, GB)"
+                        value={voipOriginCountryInput}
+                        onChange={(e) => setVoipOriginCountryInput(e.target.value.toUpperCase().trim().slice(0, 2))}
+                        className="flex-1"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && voipOriginCountryInput && isValidISOCountryCode(voipOriginCountryInput)) {
+                            const code = voipOriginCountryInput.toUpperCase();
+                            if (!voipCoverageMap[code]) {
+                              const next = { ...voipCoverageMap, [code]: [code] };
+                              setVoipCoverageMap(next);
+                              setProvidersMapData(JSON.stringify(next, null, 2));
+                              setVoipOriginCountryInput("");
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (voipOriginCountryInput && isValidISOCountryCode(voipOriginCountryInput)) {
+                            const code = voipOriginCountryInput.toUpperCase();
+                            if (!voipCoverageMap[code]) {
+                              const next = { ...voipCoverageMap, [code]: [code] };
+                              setVoipCoverageMap(next);
+                              setProvidersMapData(JSON.stringify(next, null, 2));
+                              setVoipOriginCountryInput("");
+                            }
+                          }
+                        }}
+                      >
+                        Add Origin
+                      </Button>
+                    </div>
+
+                    {/* Add outbound country to origin */}
+                    {Object.keys(voipCoverageMap).length > 0 && (
+                      <div className="space-y-2 pt-2 border-t">
+                        <Label className="text-xs text-muted-foreground">Add outbound country to origin</Label>
+                        <div className="flex flex-wrap gap-2">
+                          <Select value={voipAddOutboundFrom} onValueChange={setVoipAddOutboundFrom}>
+                            <SelectTrigger className="w-[100px]">
+                              <SelectValue placeholder="From" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.keys(voipCoverageMap).map((c) => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            placeholder="To country"
+                            value={voipOutboundCountryInput}
+                            onChange={(e) => setVoipOutboundCountryInput(e.target.value.toUpperCase().trim().slice(0, 2))}
+                            className="w-24"
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const from = voipAddOutboundFrom || Object.keys(voipCoverageMap)[0];
+                              if (from && voipOutboundCountryInput && isValidISOCountryCode(voipOutboundCountryInput)) {
+                                const toCode = voipOutboundCountryInput.toUpperCase();
+                                const current = voipCoverageMap[from] || [from];
+                                if (!current.includes(toCode)) {
+                                  const next = { ...voipCoverageMap, [from]: [...current, toCode] };
+                                  setVoipCoverageMap(next);
+                                  setProvidersMapData(JSON.stringify(next, null, 2));
+                                  setVoipOutboundCountryInput("");
+                                }
+                              }
+                            }}
+                          >
+                            Add Outbound
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Coverage Map Visualization */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label className="text-sm font-medium text-foreground">Calling Coverage Map</Label>
-                        <p className="text-xs text-muted-foreground">Visual representation: From Country → To Countries</p>
+                        <p className="text-xs text-muted-foreground">From Country → To Countries (includes same country for quick calls)</p>
                       </div>
                       <span className="text-xs text-muted-foreground">
-                        {Object.keys(voipCoverageMap).length} from countries
+                        {Object.keys(voipCoverageMap).length} origin countries
                       </span>
                     </div>
                     <div className="rounded-lg border p-4 bg-gradient-to-br from-secondary/20 to-secondary/10 min-h-[280px]">
@@ -503,7 +772,7 @@ const CreateBrand = () => {
                     </div>
                     <div className="relative">
                       <Textarea
-                        placeholder={`{\n  "US": ["CA", "MX", "GB", "FR", "DE"],\n  "GB": ["US", "FR", "DE", "ES", "IT"],\n  "FR": ["GB", "DE", "ES", "IT", "BE"],\n  "DE": ["FR", "GB", "ES", "IT", "NL"],\n  "CA": ["US", "MX"]\n}`}
+                        placeholder={`{\n  "US": ["US", "CA", "MX", "GB"],\n  "GB": ["GB", "US", "FR", "DE"],\n  "CA": ["CA", "US", "MX"]\n}`}
                         value={providersMapData || JSON.stringify(voipCoverageMap, null, 2)}
                         onChange={(e) => {
                           setProvidersMapData(e.target.value);
@@ -538,14 +807,21 @@ const CreateBrand = () => {
                               );
                               
                               if (isValid) {
-                                setVoipCoverageMap(parsed);
-                                // Update countries count (unique countries from both keys and values)
+                                // Enforce: from country -> to same country (each origin includes itself for quick calls)
+                                const normalized: Record<string, string[]> = {};
+                                for (const [from, toList] of Object.entries(parsed)) {
+                                  const arr = toList as string[];
+                                  const fromUpper = from.toUpperCase();
+                                  const unique = [...new Set([fromUpper, ...arr.map((c) => c.toUpperCase())])];
+                                  normalized[fromUpper] = unique;
+                                }
+                                setVoipCoverageMap(normalized);
+                                setProvidersMapData(JSON.stringify(normalized, null, 2));
                                 const uniqueCountries = new Set([
-                                  ...Object.keys(parsed),
-                                  ...Object.values(parsed).flat() as string[]
+                                  ...Object.keys(normalized),
+                                  ...Object.values(normalized).flat()
                                 ]);
                                 setVoipCountries(uniqueCountries.size.toString());
-                                // Update phone numbers estimate (countries * average phones per country)
                                 const estimatedPhones = Math.max(uniqueCountries.size * 2, 10);
                                 setVoipPhoneNumbers(estimatedPhones.toString());
                               } else {
@@ -578,7 +854,8 @@ const CreateBrand = () => {
                     <div className="rounded-lg border p-2 bg-primary/5">
                       <p className="text-xs text-muted-foreground">
                         <strong>Format:</strong> Country codes (ISO 2-letter) as keys, arrays of destination country codes as values.
-                        Example: {"{"}"US": ["CA", "MX"]{"}"} means calls FROM US TO Canada and Mexico are supported.
+                        <strong> From country → to same country:</strong> Each origin automatically includes itself (e.g. US→US for quick calls).
+                        Example: {"{"}"US": ["US", "CA", "MX"]{"}"} = calls from US to US, Canada, Mexico.
                       </p>
                     </div>
                   </div>
@@ -587,7 +864,9 @@ const CreateBrand = () => {
 
               <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
                 <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">You'll get from us the covering area of this service. Configure the providers map to define calling coverage.</p>
+                <p className="text-xs text-muted-foreground">
+                  From country → to same country: when you select USA as outbound, you can quick call from USA to USA. Add origin countries above or edit the Providers Map JSON.
+                </p>
               </div>
             </div>
           </div>
@@ -630,30 +909,57 @@ const CreateBrand = () => {
       case 9:
         return (
           <div className="space-y-5">
-            <h2 className="text-lg font-semibold text-foreground">TRANSFORM (Auto Rejection)</h2>
+            <h2 className="text-lg font-semibold text-foreground">TRANSFORM</h2>
             <p className="text-sm text-muted-foreground">{brandLabel}</p>
 
-            {/* Reject clients from those countries */}
+            {/* Transform actual config */}
+            <div className="space-y-4 rounded-lg border p-4 bg-card">
+              <Label className="text-sm font-medium">Email providers allowed</Label>
+              <div className="flex flex-wrap gap-3">
+                {["maileroo", "alexders"].map((provider) => (
+                  <label key={provider} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={emailProvidersAllowed[provider] ?? false}
+                      onChange={(e) => setEmailProvidersAllowed({ ...emailProvidersAllowed, [provider]: e.target.checked })}
+                      className="rounded border-primary"
+                    />
+                    <span className="text-sm capitalize">{provider}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <Label>Phone extensions allowed</Label>
+                <Switch checked={phoneExtensionsAllowed} onCheckedChange={setPhoneExtensionsAllowed} />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <Label>Auto gen password for leads with welcome email</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Generate password automatically when converting lead to client</p>
+                </div>
+                <Switch checked={autoGenPasswordForLeads} onCheckedChange={setAutoGenPasswordForLeads} />
+              </div>
+
+              {autoGenPasswordForLeads && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="flex items-center justify-between rounded-lg border p-3 bg-muted/30"
+                >
+                  <div>
+                    <Label>Auto reject for no interactivity</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">Reject clients who don&apos;t interact after receiving welcome email</p>
+                  </div>
+                  <Switch checked={autoRejectNoInteractivity} onCheckedChange={setAutoRejectNoInteractivity} />
+                </motion.div>
+              )}
+            </div>
+
+            {/* Reject clients from those countries (manual input only – map is in VoIP) */}
             <div className="space-y-2">
               <Label>Reject clients from those countries:</Label>
-              <div className="rounded-lg border p-4 bg-secondary/30 min-h-[300px] max-h-[500px] overflow-auto">
-                <InteractiveWorldMap
-                  key={blockedCountries.join(",")} // Force re-render when countries change
-                  selectedCountries={blockedCountries.filter(code => isValidISOCountryCode(code.toUpperCase().trim()))}
-                  onCountryToggle={(countryCode) => {
-                    const normalized = countryCode.toUpperCase().trim();
-                    if (!isValidISOCountryCode(normalized)) return; // Don't allow invalid codes
-                    
-                    const normalizedBlocked = blockedCountries.map(c => c.toUpperCase().trim());
-                    if (normalizedBlocked.includes(normalized)) {
-                      setBlockedCountries(blockedCountries.filter((c) => c.toUpperCase().trim() !== normalized));
-                    } else {
-                      setBlockedCountries([...blockedCountries, normalized]);
-                    }
-                  }}
-                  className="w-full"
-                />
-              </div>
               {blockedCountries.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -742,7 +1048,7 @@ const CreateBrand = () => {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Click countries on the map to toggle selection, or add valid ISO country codes manually (2 letters, e.g., US, BD, GB). Rejected countries are highlighted in <span className="text-destructive font-medium">red</span> on the map. Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">country_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_countries</code>.
+                Add valid ISO country codes manually (2 letters, e.g., US, BD, GB). Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">country_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_countries</code>.
               </p>
             </div>
 
@@ -1007,6 +1313,133 @@ const CreateBrand = () => {
       case 12:
         return (
           <div className="space-y-5">
+            <h2 className="text-lg font-semibold text-foreground">Trading Fees</h2>
+            
+            {/* Open Position Fees */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-medium">Open Position Fees</Label>
+                <Switch checked={openPositionFeeEnabled} onCheckedChange={setOpenPositionFeeEnabled} />
+              </div>
+              {openPositionFeeEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3 pt-2"
+                >
+                  <div className="flex gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setOpenPositionFeeType("fixed")}
+                      className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
+                        openPositionFeeType === "fixed"
+                          ? "bg-primary/10 border-primary text-foreground"
+                          : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      Fixed Amount
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setOpenPositionFeeType("percentage")}
+                      className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
+                        openPositionFeeType === "percentage"
+                          ? "bg-primary/10 border-primary text-foreground"
+                          : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      Percentage
+                    </motion.button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Fee Value</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={openPositionFeeValue}
+                        onChange={(e) => setOpenPositionFeeValue(e.target.value)}
+                        placeholder={openPositionFeeType === "fixed" ? "0.00" : "0.00"}
+                        className="flex-1"
+                      />
+                      <span className="flex items-center text-muted-foreground">
+                        {openPositionFeeType === "percentage" ? "%" : currency}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+
+            {/* Close Position Fees */}
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-medium">Close Position Fees</Label>
+                <Switch checked={closePositionFeeEnabled} onCheckedChange={setClosePositionFeeEnabled} />
+              </div>
+              {closePositionFeeEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3 pt-2"
+                >
+                  <div className="flex gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setClosePositionFeeType("fixed")}
+                      className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
+                        closePositionFeeType === "fixed"
+                          ? "bg-primary/10 border-primary text-foreground"
+                          : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      Fixed Amount
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setClosePositionFeeType("percentage")}
+                      className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
+                        closePositionFeeType === "percentage"
+                          ? "bg-primary/10 border-primary text-foreground"
+                          : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+                      }`}
+                    >
+                      Percentage
+                    </motion.button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Fee Value</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={closePositionFeeValue}
+                        onChange={(e) => setClosePositionFeeValue(e.target.value)}
+                        placeholder={closePositionFeeType === "fixed" ? "0.00" : "0.00"}
+                        className="flex-1"
+                      />
+                      <span className="flex items-center text-muted-foreground">
+                        {closePositionFeeType === "percentage" ? "%" : currency}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </div>
+        );
+
+      case 13:
+        return (
+          <div className="space-y-5">
             <h2 className="text-lg font-semibold text-foreground">CLIENT TAS</h2>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <Label>ALLOW MULTI TAS</Label>
@@ -1023,7 +1456,7 @@ const CreateBrand = () => {
           </div>
         );
 
-      case 13:
+      case 14:
         return (
           <div className="space-y-5">
             <h2 className="text-lg font-semibold text-foreground">Default Settings</h2>

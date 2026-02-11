@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Demo from "./pages/Demo";
 import CreateBrand from "./pages/CreateBrand";
 import Monitor from "./pages/Monitor";
+import Providers from "./pages/Providers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/demo" element={<Demo />} />
           <Route path="/create-brand" element={<CreateBrand />} />
           <Route path="/monitor" element={<Monitor />} />
+          <Route path="/providers" element={<Providers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

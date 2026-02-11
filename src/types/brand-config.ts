@@ -12,11 +12,20 @@ export interface ApprovalConfig {
   required_approver_roles?: string[];
 }
 
+export interface ExternalProviderConfig {
+  domain?: string;
+  api_key?: string;
+  docs_url?: string;
+}
+
 export interface DepositMethod {
   enabled: boolean;
   fee: FeeConfig;
   approval: ApprovalConfig;
   min_amount?: number;
+  /** "ours" = our solution (iPay, cryptopay) | "other" = external */
+  provider_source?: "ours" | "other";
+  external_config?: ExternalProviderConfig;
 }
 
 export interface WithdrawalMethod {
