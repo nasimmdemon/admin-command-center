@@ -41,9 +41,17 @@ import { COUNTRY_DATA } from "./countryData";
 const buildAliases = (): Record<string, string> => {
   const aliases: Record<string, string> = {
     UK: "GB", ENGLAND: "GB", "GREAT BRITAIN": "GB", "UNITED KINGDOM": "GB",
-    USA: "US", "UNITED STATES": "US", "U.S.": "US", "U.S.A.": "US",
+    USA: "US", "UNITED STATES": "US", "U.S.": "US", "U.S.A.": "US", "UNITED STATES OF AMERICA": "US",
     UAE: "AE", "UNITED ARAB EMIRATES": "AE",
     "SOUTH KOREA": "KR", "N. KOREA": "KP", "NORTH KOREA": "KP",
+    "DEM. REP. CONGO": "CD", "W. SAHARA": "EH", "DOMINICAN REP.": "DO",
+    "CENTRAL AFRICAN REP.": "CF", "EQ. GUINEA": "GQ", "FR. S. ANTARCTIC LANDS": "TF",
+    "FALKLAND IS.": "FK", "SOLOMON IS.": "SB", "BOSNIA AND HERZ.": "BA",
+    MACEDONIA: "MK", "REPUBLIC OF THE CONGO": "CG", "TIMOR-LESTE": "TL",
+    ESWATINI: "SZ", "S. SUDAN": "SS", "N. CYPRUS": "CY", "IVORY COAST": "CI",
+    "CÔTE D'IVOIRE": "CI", "COTE D'IVOIRE": "CI",
+    GREENLAND: "GL", CONGO: "CG", CZECHIA: "CZ",
+    "TRINIDAD AND TOBAGO": "TT", "PAPUA NEW GUINEA": "PG", "NEW CALEDONIA": "NC",
   };
   for (const c of COUNTRY_DATA) {
     aliases[c.alpha2] = c.alpha2;
@@ -66,16 +74,18 @@ export const normalizeCountryInputToISO = (input: string): string | null => {
   return alias ?? null;
 };
 
-/** Search countries by partial input. Returns entries matching query (alpha2, alpha3, or name). */
+/** Search countries by partial input. Returns only exact or proper prefix matches (no loose substring matches). */
 export const searchCountrySuggestions = (query: string, limit = 10): Array<{ alpha2: string; alpha3: string; name: string }> => {
   const q = query.trim().toUpperCase();
   if (!q || q.length < 1) return [];
   const results: Array<{ alpha2: string; alpha3: string; name: string }> = [];
+  const nameUpper = (n: string) => n.toUpperCase();
   for (const c of COUNTRY_DATA) {
     if (results.length >= limit) break;
-    const matchAlpha2 = c.alpha2.startsWith(q) || q.startsWith(c.alpha2);
-    const matchAlpha3 = c.alpha3.startsWith(q) || q.startsWith(c.alpha3);
-    const matchName = c.name.toUpperCase().includes(q) || c.name.toUpperCase().startsWith(q);
+    const matchAlpha2 = c.alpha2 === q;
+    const matchAlpha3 = c.alpha3 === q || c.alpha3.startsWith(q);
+    const n = nameUpper(c.name);
+    const matchName = n === q || n.startsWith(q);
     if (matchAlpha2 || matchAlpha3 || matchName) {
       results.push({ alpha2: c.alpha2, alpha3: c.alpha3, name: c.name });
     }

@@ -6,6 +6,14 @@ import { VoipProviderSection } from "./communication/VoipProviderSection";
 interface StepCommunicationProvidersProps {
   emailProvider: "maileroo" | "alexders" | "other";
   onEmailProviderChange: (v: "maileroo" | "alexders" | "other") => void;
+  mailerooApiKey?: string;
+  mailerooFromEmail?: string;
+  onMailerooApiKeyChange?: (v: string) => void;
+  onMailerooFromEmailChange?: (v: string) => void;
+  alexdersApiKey?: string;
+  alexdersFromEmail?: string;
+  onAlexdersApiKeyChange?: (v: string) => void;
+  onAlexdersFromEmailChange?: (v: string) => void;
   selectedEmailTemplates: Record<string, boolean>;
   onEmailTemplatesChange: (t: Record<string, boolean>) => void;
   voipProvider: "voicex" | "other" | null;
@@ -29,7 +37,18 @@ interface StepCommunicationProvidersProps {
 export const StepCommunicationProviders = (props: StepCommunicationProvidersProps) => (
   <div className="space-y-6">
     <h2 className="text-lg font-semibold text-foreground">Communication Providers</h2>
-    <EmailProviderSection value={props.emailProvider} onChange={props.onEmailProviderChange} />
+    <EmailProviderSection
+      value={props.emailProvider}
+      onChange={props.onEmailProviderChange}
+      mailerooApiKey={props.mailerooApiKey}
+      mailerooFromEmail={props.mailerooFromEmail}
+      onMailerooApiKeyChange={props.onMailerooApiKeyChange}
+      onMailerooFromEmailChange={props.onMailerooFromEmailChange}
+      alexdersApiKey={props.alexdersApiKey}
+      alexdersFromEmail={props.alexdersFromEmail}
+      onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
+      onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
+    />
     <EmailTemplatesSection selected={props.selectedEmailTemplates} onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })} />
     <VoipProviderSection
       provider={props.voipProvider}

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountryInput } from "@/components/CountryInput";
@@ -13,6 +12,10 @@ interface StepTransformProps {
   onEmailProvidersAllowedChange: (v: Record<string, boolean>) => void;
   phoneExtensionsAllowed: boolean;
   onPhoneExtensionsAllowedChange: (v: boolean) => void;
+  allowedExtensionPhones?: string[];
+  newAllowedExtensionPhone?: string;
+  onAllowedExtensionPhonesChange?: (v: string[]) => void;
+  onNewAllowedExtensionPhoneChange?: (v: string) => void;
   autoGenPasswordForLeads: boolean;
   onAutoGenPasswordForLeadsChange: (v: boolean) => void;
   autoRejectNoInteractivity: boolean;
@@ -33,10 +36,6 @@ interface StepTransformProps {
   onBlockedEmailProvidersChange: (v: string[]) => void;
   newEmailProvider: string;
   onNewEmailProviderChange: (v: string) => void;
-  autoGenPassword: boolean;
-  onAutoGenPasswordChange: (v: boolean) => void;
-  recoverLeads: boolean;
-  onRecoverLeadsChange: (v: boolean) => void;
 }
 
 const addBlockedCountry = (
@@ -104,6 +103,51 @@ export const StepTransform = (props: StepTransformProps) => (
         <Label>Phone extensions allowed</Label>
         <Switch checked={props.phoneExtensionsAllowed} onCheckedChange={props.onPhoneExtensionsAllowedChange} />
       </div>
+      {props.phoneExtensionsAllowed && props.allowedExtensionPhones != null && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-2">
+          <Label>Allowed extension phones</Label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {props.allowedExtensionPhones.map((ext) => (
+              <motion.span
+                key={ext}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
+              >
+                {ext}
+                <button onClick={() => props.onAllowedExtensionPhonesChange?.(props.allowedExtensionPhones!.filter((e) => e !== ext))} className="hover:text-primary/70 ml-1">×</button>
+              </motion.span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="+1 x, +44 x…"
+              value={props.newAllowedExtensionPhone ?? ""}
+              onChange={(e) => props.onNewAllowedExtensionPhoneChange?.(e.target.value.trim())}
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (props.newAllowedExtensionPhone ?? "").trim() && !(props.allowedExtensionPhones ?? []).includes((props.newAllowedExtensionPhone ?? "").trim())) {
+                  props.onAllowedExtensionPhonesChange?.([...(props.allowedExtensionPhones ?? []), (props.newAllowedExtensionPhone ?? "").trim()]);
+                  props.onNewAllowedExtensionPhoneChange?.("");
+                }
+              }}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const v = (props.newAllowedExtensionPhone ?? "").trim();
+                if (v && !(props.allowedExtensionPhones ?? []).includes(v)) {
+                  props.onAllowedExtensionPhonesChange?.([...(props.allowedExtensionPhones ?? []), v]);
+                  props.onNewAllowedExtensionPhoneChange?.("");
+                }
+              }}
+            >
+              Add
+            </Button>
+          </div>
+        </motion.div>
+      )}
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div>
           <Label>Auto gen password for leads with welcome email</Label>
@@ -111,15 +155,17 @@ export const StepTransform = (props: StepTransformProps) => (
         </div>
         <Switch checked={props.autoGenPasswordForLeads} onCheckedChange={props.onAutoGenPasswordForLeadsChange} />
       </div>
-      {props.autoGenPasswordForLeads && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex items-center justify-between rounded-lg border p-3 bg-muted/30">
-          <div>
-            <Label>Auto reject for no interactivity</Label>
-            <p className="text-xs text-muted-foreground mt-0.5">Reject clients who don&apos;t interact after receiving welcome email</p>
-          </div>
-          <Switch checked={props.autoRejectNoInteractivity} onCheckedChange={props.onAutoRejectNoInteractivityChange} />
-        </motion.div>
-      )}
+      <div className={`flex items-center justify-between rounded-lg border p-3 ${props.autoGenPasswordForLeads ? "bg-muted/30" : ""}`}>
+        <div>
+          <Label>Auto reject for no interactivity</Label>
+          <p className="text-xs text-muted-foreground mt-0.5">Reject clients who don&apos;t interact after receiving welcome email</p>
+        </div>
+        <Switch
+          checked={props.autoRejectNoInteractivity}
+          onCheckedChange={props.onAutoRejectNoInteractivityChange}
+          disabled={props.autoGenPasswordForLeads}
+        />
+      </div>
     </div>
 
     <div className="space-y-2">
@@ -280,30 +326,5 @@ export const StepTransform = (props: StepTransformProps) => (
       <p className="text-xs text-muted-foreground">Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">email_provider_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_providers</code>.</p>
     </div>
 
-    <div className="flex items-center justify-between rounded-lg border p-4">
-      <div className="flex items-center gap-2">
-        <Label>Auto gen password for leads</Label>
-        <div className="group relative">
-          <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
-          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-popover border rounded-lg shadow-lg text-xs text-muted-foreground z-50">
-            If auto-gen is marked False, then interactivity is False and there is a mark of security concerns. Uses <code className="text-xs">generate_password_if_missing</code>.
-          </div>
-        </div>
-      </div>
-      <Switch checked={props.autoGenPassword} onCheckedChange={props.onAutoGenPasswordChange} />
-    </div>
-
-    <div className="flex items-center justify-between rounded-lg border p-4">
-      <div className="flex items-center gap-2">
-        <Label>Recover Leads & Export Reports</Label>
-        <div className="group relative">
-          <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
-          <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-popover border rounded-lg shadow-lg text-xs text-muted-foreground z-50">
-            Client → Lead if not logged in for 14 days. Uses <code className="text-xs">interactivity_check</code>.
-          </div>
-        </div>
-      </div>
-      <Switch checked={props.recoverLeads} onCheckedChange={props.onRecoverLeadsChange} />
-    </div>
   </div>
 );

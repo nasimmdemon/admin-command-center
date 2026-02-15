@@ -18,14 +18,32 @@ export interface ExternalProviderConfig {
   docs_url?: string;
 }
 
+/** iPay config when fiat provider is "ours" */
+export interface IpayProviderConfig {
+  base_url?: string;
+  api_key?: string;
+}
+
+/** Crypto Now config when crypto provider is "ours" */
+export interface CryptoNowProviderConfig {
+  base_url?: string;
+  checkout_url?: string;
+  public_key?: string;
+  private_key?: string;
+}
+
 export interface DepositMethod {
   enabled: boolean;
   fee: FeeConfig;
   approval: ApprovalConfig;
   min_amount?: number;
-  /** "ours" = our solution (iPay, cryptopay) | "other" = external */
+  /** "ours" = our solution (iPay, Crypto Now) | "other" = external */
   provider_source?: "ours" | "other";
   external_config?: ExternalProviderConfig;
+  /** iPay config (fiat only, when provider_source is "ours") */
+  ipay_config?: IpayProviderConfig;
+  /** Crypto Now config (crypto only, when provider_source is "ours") */
+  crypto_now_config?: CryptoNowProviderConfig;
 }
 
 export interface WithdrawalMethod {

@@ -48,14 +48,21 @@ export const VoipProviderSection = ({
   providersMapData,
   onProvidersMapDataChange,
 }: VoipProviderSectionProps) => {
+  const originCountries = Object.keys(coverageMap);
+
+  const addOriginCountry = (code: string) => {
+    if (!coverageMap[code]) {
+      const next = { ...coverageMap, [code]: [code] };
+      onCoverageMapChange(next);
+      onProvidersMapDataChange(JSON.stringify(next, null, 2));
+    }
+  };
+
   const handleCountryToggle = (countryCode: string) => {
     const code = countryCode.toUpperCase().trim();
     if (!isValidISOCountryCode(code)) return;
-    const next = { ...coverageMap };
-    if (next[code]) delete next[code];
-    else next[code] = [code];
-    onCoverageMapChange(next);
-    onProvidersMapDataChange(JSON.stringify(next, null, 2));
+    if (coverageMap[code]) removeOrigin(code);
+    else addOriginCountry(code);
   };
 
   const addOrigin = () => {
@@ -69,17 +76,34 @@ export const VoipProviderSection = ({
   };
 
   const addOutbound = () => {
-    const from = addOutboundFrom || Object.keys(coverageMap)[0];
-    const toCode = outboundCountryInput ? normalizeCountryInputToISO(outboundCountryInput) : null;
-    if (from && toCode) {
+    const code = outboundCountryInput ? normalizeCountryInputToISO(outboundCountryInput) : null;
+    const from = addOutboundFrom;
+    if (code && from && coverageMap[from]) {
       const current = coverageMap[from] || [from];
-      if (!current.includes(toCode)) {
-        const next = { ...coverageMap, [from]: [...current, toCode] };
+      if (!current.includes(code)) {
+        const next = { ...coverageMap, [from]: [...current, code] };
         onCoverageMapChange(next);
         onProvidersMapDataChange(JSON.stringify(next, null, 2));
         onOutboundCountryInputChange("");
       }
     }
+  };
+
+  const removeOrigin = (code: string) => {
+    const next = { ...coverageMap };
+    delete next[code];
+    onCoverageMapChange(next);
+    onProvidersMapDataChange(JSON.stringify(next, null, 2));
+    if (addOutboundFrom === code) onAddOutboundFromChange("");
+  };
+
+  const removeOutboundFromOrigin = (fromCode: string, toCode: string) => {
+    const next = { ...coverageMap };
+    const arr = (next[fromCode] || []).filter((c) => c !== toCode);
+    if (arr.length === 0) delete next[fromCode];
+    else next[fromCode] = arr;
+    onCoverageMapChange(next);
+    onProvidersMapDataChange(JSON.stringify(next, null, 2));
   };
 
   const applyProvidersMap = () => {
@@ -161,83 +185,99 @@ export const VoipProviderSection = ({
           <div className="space-y-2">
             <Label className="text-sm font-medium">VoIP Coverage (select origin countries)</Label>
             <p className="text-xs text-muted-foreground">Click countries on the map to toggle. Selected countries are highlighted.</p>
-            <div className="rounded-lg border p-4 bg-secondary/30 min-h-[280px] max-h-[400px] overflow-auto">
+            <div className="rounded-lg border p-4 bg-secondary/30 min-h-[280px] max-h-[400px] overflow-hidden">
               <InteractiveWorldMap
                 variant="select"
                 selectedCountries={Object.keys(coverageMap).filter((c) => isValidISOCountryCode(c))}
                 onCountryToggle={handleCountryToggle}
+                coverageMap={coverageMap}
                 className="w-full"
               />
             </div>
           </div>
           <div className="space-y-4 rounded-lg border p-4 bg-card/50">
-            <div>
-              <Label className="text-sm font-medium text-foreground">Origin Countries (where calls can originate)</Label>
-              <p className="text-xs text-muted-foreground mt-1">From country → to same country: Type USA or US as outbound = you can quick call from USA to USA</p>
-            </div>
-            <div className="flex flex-wrap gap-2 mb-2">
-              {Object.keys(coverageMap).map((country) => (
-                <motion.span
-                  key={country}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
-                >
-                  {country}
-                  <button
-                    onClick={() => {
-                      const next = { ...coverageMap };
-                      delete next[country];
-                      onCoverageMapChange(next);
-                      onProvidersMapDataChange(JSON.stringify(next, null, 2));
-                    }}
-                    className="hover:text-primary/70 ml-1"
-                  >
-                    ×
-                  </button>
-                </motion.span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <CountryInput
-                value={originCountryInput}
-                onChange={onOriginCountryInputChange}
-                placeholder="Origin country (US, USA, IND, India…)"
-                className="flex-1"
-                onKeyDown={(e) => e.key === "Enter" && addOrigin()}
-                onSelect={(code) => {
-                  if (code && !coverageMap[code]) {
-                    const next = { ...coverageMap, [code]: [code] };
-                    onCoverageMapChange(next);
-                    onProvidersMapDataChange(JSON.stringify(next, null, 2));
-                    onOriginCountryInputChange("");
-                  }
-                }}
-              />
-              <Button variant="outline" size="sm" onClick={addOrigin}>Add Origin</Button>
-            </div>
-            {Object.keys(coverageMap).length > 0 && (
-              <div className="space-y-2 pt-2 border-t">
-                <Label className="text-xs text-muted-foreground">Add outbound country to origin</Label>
-                <div className="flex flex-wrap gap-2">
-                  <Select value={addOutboundFrom} onValueChange={onAddOutboundFromChange}>
-                    <SelectTrigger className="w-[100px]"><SelectValue placeholder="From" /></SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(coverageMap).map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <CountryInput
-                    value={outboundCountryInput}
-                    onChange={onOutboundCountryInputChange}
-                    placeholder="To country"
-                    className="w-32"
-                  />
-                  <Button variant="outline" size="sm" onClick={addOutbound}>Add Outbound</Button>
-                </div>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-sm font-medium text-foreground">Origin Countries</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Where calls can originate</p>
               </div>
-            )}
+              <div className="flex flex-wrap gap-2 mb-2">
+                {originCountries.map((country) => (
+                  <motion.span
+                    key={country}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
+                  >
+                    {country}
+                    <button onClick={() => removeOrigin(country)} className="hover:text-destructive/70 ml-1">×</button>
+                  </motion.span>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <CountryInput
+                  value={originCountryInput}
+                  onChange={onOriginCountryInputChange}
+                  placeholder="Search country (US, Bangladesh…)"
+                  className="flex-1"
+                  onKeyDown={(e) => e.key === "Enter" && addOrigin()}
+                  onSelect={(code) => code && addOriginCountry(code)}
+                />
+                <Button variant="outline" size="sm" onClick={addOrigin}>Add</Button>
+              </div>
+            </div>
+            <div className="space-y-3 pt-3 border-t">
+              <div>
+                <Label className="text-sm font-medium text-foreground">Add outbound to origin</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Select an origin country, then add destination countries it can call to</p>
+              </div>
+              <div className="flex flex-wrap gap-2 items-center">
+                <Select value={addOutboundFrom || undefined} onValueChange={onAddOutboundFromChange}>
+                  <SelectTrigger className="w-[140px] h-9">
+                    <SelectValue placeholder="Select origin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {originCountries.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <CountryInput
+                  value={outboundCountryInput}
+                  onChange={onOutboundCountryInputChange}
+                  placeholder="Add destination (US, CA…)"
+                  className="flex-1 min-w-[160px]"
+                  onKeyDown={(e) => e.key === "Enter" && addOutbound()}
+                  onSelect={(code) => {
+                    if (code && addOutboundFrom) {
+                      const current = coverageMap[addOutboundFrom] || [addOutboundFrom];
+                      if (!current.includes(code)) {
+                        const next = { ...coverageMap, [addOutboundFrom]: [...current, code] };
+                        onCoverageMapChange(next);
+                        onProvidersMapDataChange(JSON.stringify(next, null, 2));
+                        onOutboundCountryInputChange("");
+                      }
+                    }
+                  }}
+                />
+                <Button variant="outline" size="sm" onClick={addOutbound} disabled={!addOutboundFrom}>Add</Button>
+              </div>
+              {addOutboundFrom && coverageMap[addOutboundFrom] && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {(coverageMap[addOutboundFrom] || []).filter((c) => c !== addOutboundFrom).map((country) => (
+                    <motion.span
+                      key={country}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
+                    >
+                      {country}
+                      <button onClick={() => removeOutboundFromOrigin(addOutboundFrom, country)} className="hover:text-primary/70 ml-0.5">×</button>
+                    </motion.span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -317,7 +357,7 @@ export const VoipProviderSection = ({
           <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
             <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
             <p className="text-xs text-muted-foreground">
-              From country → to same country: Type USA or US to add United States; UK or GB for United Kingdom. Aliases are accepted.
+              Origin countries: where calls originate. Add outbound: select an origin, then add destinations (e.g. US → CA, MX). Type USA or US for United States; UK or GB for United Kingdom.
             </p>
           </div>
         </motion.div>

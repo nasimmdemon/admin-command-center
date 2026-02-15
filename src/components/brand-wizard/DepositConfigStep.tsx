@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import MethodConfigCard from "./MethodConfigCard";
 import {
   DepositMethod, BankDetails, WireTransferDetails, METHOD_LABELS,
-  ExternalProviderConfig,
+  ExternalProviderConfig, IpayProviderConfig, CryptoNowProviderConfig,
 } from "@/types/brand-config";
 
 interface DepositConfigStepProps {
@@ -36,6 +36,16 @@ const DepositConfigStep = ({
     updateMethod(key, { external_config: { ...curr, ...updates } });
   };
 
+  const updateIpayConfig = (updates: Partial<IpayProviderConfig>) => {
+    const curr = methods.fiat?.ipay_config ?? {};
+    updateMethod("fiat", { ipay_config: { ...curr, ...updates } });
+  };
+
+  const updateCryptoNowConfig = (updates: Partial<CryptoNowProviderConfig>) => {
+    const curr = methods.crypto?.crypto_now_config ?? {};
+    updateMethod("crypto", { crypto_now_config: { ...curr, ...updates } });
+  };
+
   const isProviderMethod = (key: string) => key === "fiat" || key === "crypto";
   const regularMethods = Object.entries(methods).filter(([key]) => !isProviderMethod(key));
   const providerMethods = Object.entries(methods).filter(([key]) => isProviderMethod(key));
@@ -45,14 +55,15 @@ const DepositConfigStep = ({
       <h2 className="text-lg font-semibold text-foreground">Payment Deposit Providers</h2>
       <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
 
-      {/* Fiat & Crypto: provider choice (ours vs other) + external config */}
+      {/* Fiat & Crypto: provider choice (ours vs other) + config */}
       {providerMethods.length > 0 && (
         <div className="space-y-3">
           {providerMethods.map(([key, method]) => {
             const isFiat = key === "fiat";
             const ourProvider = isFiat ? FIAT_OUR_PROVIDER : CRYPTO_OUR_PROVIDER;
             const source = method.provider_source ?? "ours";
-            const ext = method.external_config ?? {};
+            const ipay = method.ipay_config ?? {};
+            const cryptoNow = method.crypto_now_config ?? {};
             return (
               <div key={key} className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-center justify-between">
@@ -90,53 +101,99 @@ const DepositConfigStep = ({
                           type="radio"
                           name={`provider-${key}`}
                           checked={source === "other"}
-                          onChange={() => updateMethod(key, { provider_source: "other", external_config: { domain: "", api_key: "", docs_url: "" } })}
+                          onChange={() => updateMethod(key, { provider_source: "other", external_config: {} })}
                           className="rounded-full border-primary"
                         />
                         <span className="text-sm">Other (external)</span>
                       </label>
                     </div>
-                    {source === "other" && (
+
+                    {/* iPay config (fiat, ours) */}
+                    {source === "ours" && isFiat && (
                       <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
-                        <p className="text-xs text-muted-foreground">
-                          Connect the CRM to an external provider. Fields may be updated once integration details are known.
-                        </p>
+                        <p className="text-xs text-muted-foreground">iPay configuration</p>
                         <div className="grid grid-cols-1 gap-2">
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Domain</Label>
+                            <Label className="text-xs text-muted-foreground">Base URL</Label>
                             <Input
-                              placeholder="e.g. api.example.com"
-                              value={ext.domain ?? ""}
-                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { domain: e.target.value })}
+                              placeholder="https://api.ipay.example.com"
+                              value={ipay.base_url ?? ""}
+                              onChange={(e) => updateIpayConfig({ base_url: e.target.value })}
                               className="h-8 text-xs"
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">API Key</Label>
+                            <Label className="text-xs text-muted-foreground">IPAY API Key</Label>
                             <Input
                               type="password"
-                              placeholder="API key from provider"
-                              value={ext.api_key ?? ""}
-                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { api_key: e.target.value })}
-                              className="h-8 text-xs"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Docs URL</Label>
-                            <Input
-                              placeholder="https://docs.example.com"
-                              value={ext.docs_url ?? ""}
-                              onChange={(e) => updateExternalConfig(key as "fiat" | "crypto", { docs_url: e.target.value })}
+                              placeholder="API key from iPay"
+                              value={ipay.api_key ?? ""}
+                              onChange={(e) => updateIpayConfig({ api_key: e.target.value })}
                               className="h-8 text-xs"
                             />
                           </div>
                         </div>
+                      </div>
+                    )}
+
+                    {/* Crypto Now config (crypto, ours) */}
+                    {source === "ours" && !isFiat && (
+                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                        <p className="text-xs text-muted-foreground">Crypto Now configuration</p>
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Base URL</Label>
+                            <Input
+                              placeholder="https://api.cryptonow.example.com"
+                              value={cryptoNow.base_url ?? ""}
+                              onChange={(e) => updateCryptoNowConfig({ base_url: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Checkout URL</Label>
+                            <Input
+                              placeholder="https://checkout.cryptonow.example.com"
+                              value={cryptoNow.checkout_url ?? ""}
+                              onChange={(e) => updateCryptoNowConfig({ checkout_url: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Crypto Now Public Key</Label>
+                            <Input
+                              placeholder="Public key"
+                              value={cryptoNow.public_key ?? ""}
+                              onChange={(e) => updateCryptoNowConfig({ public_key: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Crypto Now Private Key</Label>
+                            <Input
+                              type="password"
+                              placeholder="Private key"
+                              value={cryptoNow.private_key ?? ""}
+                              onChange={(e) => updateCryptoNowConfig({ private_key: e.target.value })}
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* External: read the docs */}
+                    {source === "other" && (
+                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                        <p className="text-sm text-muted-foreground">
+                          For external providers, please read the documentation to configure your integration.
+                        </p>
                         <Link
                           to="/providers?tab=payments"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
                           <ExternalLink className="w-3 h-3" />
-                          View provider docs & integration guides
+                          Read provider docs & integration guides
                         </Link>
                       </div>
                     )}

@@ -4,6 +4,8 @@ import { StepTransform } from "@/views/create-brand";
 export const StepTransformDemo = () => {
   const [emailProvidersAllowed, setEmailProvidersAllowed] = useState({ maileroo: true, alexders: false });
   const [phoneExtensionsAllowed, setPhoneExtensionsAllowed] = useState(true);
+  const [allowedExtensionPhones, setAllowedExtensionPhones] = useState<string[]>([]);
+  const [newAllowedExtensionPhone, setNewAllowedExtensionPhone] = useState("");
   const [autoGenPasswordForLeads, setAutoGenPasswordForLeads] = useState(true);
   const [autoRejectNoInteractivity, setAutoRejectNoInteractivity] = useState(true);
   const [blockedCountries, setBlockedCountries] = useState<string[]>([]);
@@ -14,8 +16,6 @@ export const StepTransformDemo = () => {
   const [phoneCodeError, setPhoneCodeError] = useState("");
   const [blockedEmailProviders, setBlockedEmailProviders] = useState(["tempmail.com", "guerrillamail.com"]);
   const [newEmailProvider, setNewEmailProvider] = useState("");
-  const [autoGenPassword, setAutoGenPassword] = useState(false);
-  const [recoverLeads, setRecoverLeads] = useState(true);
   return (
     <StepTransform
       brandLabel="Demo Brand"
@@ -23,8 +23,15 @@ export const StepTransformDemo = () => {
       onEmailProvidersAllowedChange={setEmailProvidersAllowed}
       phoneExtensionsAllowed={phoneExtensionsAllowed}
       onPhoneExtensionsAllowedChange={setPhoneExtensionsAllowed}
+      allowedExtensionPhones={allowedExtensionPhones}
+      newAllowedExtensionPhone={newAllowedExtensionPhone}
+      onAllowedExtensionPhonesChange={setAllowedExtensionPhones}
+      onNewAllowedExtensionPhoneChange={setNewAllowedExtensionPhone}
       autoGenPasswordForLeads={autoGenPasswordForLeads}
-      onAutoGenPasswordForLeadsChange={setAutoGenPasswordForLeads}
+      onAutoGenPasswordForLeadsChange={(v) => {
+        setAutoGenPasswordForLeads(v);
+        if (v) setAutoRejectNoInteractivity(true);
+      }}
       autoRejectNoInteractivity={autoRejectNoInteractivity}
       onAutoRejectNoInteractivityChange={setAutoRejectNoInteractivity}
       blockedCountries={blockedCountries}
@@ -43,10 +50,6 @@ export const StepTransformDemo = () => {
       onBlockedEmailProvidersChange={setBlockedEmailProviders}
       newEmailProvider={newEmailProvider}
       onNewEmailProviderChange={setNewEmailProvider}
-      autoGenPassword={autoGenPassword}
-      onAutoGenPasswordChange={setAutoGenPassword}
-      recoverLeads={recoverLeads}
-      onRecoverLeadsChange={setRecoverLeads}
     />
   );
 };

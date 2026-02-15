@@ -34,6 +34,10 @@ export interface CreateBrandState {
   privacyPolicy: string;
   terms: string;
   emailProvider: "maileroo" | "alexders" | "other";
+  mailerooApiKey: string;
+  mailerooFromEmail: string;
+  alexdersApiKey: string;
+  alexdersFromEmail: string;
   voipProvider: "voicex" | "other" | null;
   voipPhoneNumbers: string;
   voipCountries: string;
@@ -45,6 +49,8 @@ export interface CreateBrandState {
   selectedEmailTemplates: Record<string, boolean>;
   emailProvidersAllowed: Record<string, boolean>;
   phoneExtensionsAllowed: boolean;
+  allowedExtensionPhones: string[];
+  newAllowedExtensionPhone: string;
   autoGenPasswordForLeads: boolean;
   autoRejectNoInteractivity: boolean;
   blockedCountries: string[];
@@ -55,8 +61,6 @@ export interface CreateBrandState {
   phoneCodeError: string;
   blockedEmailProviders: string[];
   newEmailProvider: string;
-  autoGenPassword: boolean;
-  recoverLeads: boolean;
   traderPlatform: string;
   traderMarkets: Record<string, boolean>;
   openPositionFeeEnabled: boolean;
@@ -88,6 +92,10 @@ const getInitialState = (): CreateBrandState => ({
   privacyPolicy: "",
   terms: "",
   emailProvider: "maileroo",
+  mailerooApiKey: "",
+  mailerooFromEmail: "",
+  alexdersApiKey: "",
+  alexdersFromEmail: "",
   voipProvider: "voicex",
   voipPhoneNumbers: "50",
   voipCountries: "25",
@@ -99,6 +107,8 @@ const getInitialState = (): CreateBrandState => ({
   selectedEmailTemplates: { ClientAuth: true, LeadInitialDetails: true, ClientChangeCreds: true, UserChangeCreds: true },
   emailProvidersAllowed: { maileroo: true, alexders: false },
   phoneExtensionsAllowed: true,
+  allowedExtensionPhones: [],
+  newAllowedExtensionPhone: "",
   autoGenPasswordForLeads: true,
   autoRejectNoInteractivity: true,
   blockedCountries: [],
@@ -109,8 +119,6 @@ const getInitialState = (): CreateBrandState => ({
   phoneCodeError: "",
   blockedEmailProviders: ["tempmail.com", "guerrillamail.com", "mailinator.com"],
   newEmailProvider: "",
-  autoGenPassword: false,
-  recoverLeads: true,
   traderPlatform: "MT5",
   traderMarkets: { "CRYPTO - CFD'S": true, FOREX: true, COMMODITIES: true },
   openPositionFeeEnabled: false,

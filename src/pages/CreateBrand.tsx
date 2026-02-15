@@ -92,6 +92,14 @@ const CreateBrand = () => {
           <StepCommunicationProviders
             emailProvider={state.emailProvider}
             onEmailProviderChange={(v) => update("emailProvider", v)}
+            mailerooApiKey={state.mailerooApiKey}
+            mailerooFromEmail={state.mailerooFromEmail}
+            onMailerooApiKeyChange={(v) => update("mailerooApiKey", v)}
+            onMailerooFromEmailChange={(v) => update("mailerooFromEmail", v)}
+            alexdersApiKey={state.alexdersApiKey}
+            alexdersFromEmail={state.alexdersFromEmail}
+            onAlexdersApiKeyChange={(v) => update("alexdersApiKey", v)}
+            onAlexdersFromEmailChange={(v) => update("alexdersFromEmail", v)}
             selectedEmailTemplates={state.selectedEmailTemplates}
             onEmailTemplatesChange={(t) => update("selectedEmailTemplates", t)}
             voipProvider={state.voipProvider}
@@ -124,8 +132,15 @@ const CreateBrand = () => {
             onEmailProvidersAllowedChange={(v) => update("emailProvidersAllowed", v)}
             phoneExtensionsAllowed={state.phoneExtensionsAllowed}
             onPhoneExtensionsAllowedChange={(v) => update("phoneExtensionsAllowed", v)}
+            allowedExtensionPhones={state.allowedExtensionPhones}
+            newAllowedExtensionPhone={state.newAllowedExtensionPhone}
+            onAllowedExtensionPhonesChange={(v) => update("allowedExtensionPhones", v)}
+            onNewAllowedExtensionPhoneChange={(v) => update("newAllowedExtensionPhone", v)}
             autoGenPasswordForLeads={state.autoGenPasswordForLeads}
-            onAutoGenPasswordForLeadsChange={(v) => update("autoGenPasswordForLeads", v)}
+            onAutoGenPasswordForLeadsChange={(v) => {
+              update("autoGenPasswordForLeads", v);
+              if (v) update("autoRejectNoInteractivity", true);
+            }}
             autoRejectNoInteractivity={state.autoRejectNoInteractivity}
             onAutoRejectNoInteractivityChange={(v) => update("autoRejectNoInteractivity", v)}
             blockedCountries={state.blockedCountries}
@@ -144,10 +159,6 @@ const CreateBrand = () => {
             onBlockedEmailProvidersChange={(v) => update("blockedEmailProviders", v)}
             newEmailProvider={state.newEmailProvider}
             onNewEmailProviderChange={(v) => update("newEmailProvider", v)}
-            autoGenPassword={state.autoGenPassword}
-            onAutoGenPasswordChange={(v) => update("autoGenPassword", v)}
-            recoverLeads={state.recoverLeads}
-            onRecoverLeadsChange={(v) => update("recoverLeads", v)}
           />
         );
       case 10:
@@ -155,7 +166,7 @@ const CreateBrand = () => {
       case 11:
         return <StepTraderMarkets markets={state.traderMarkets} onChange={(m) => update("traderMarkets", m)} />;
       case 12:
-        return (
+                    return (
           <StepTradingFees
             openPosition={{
               enabled: state.openPositionFeeEnabled,

@@ -82,7 +82,7 @@ export const CountryInput = ({
     <div ref={containerRef} className="relative">
       <Input
         value={value}
-        onChange={(e) => onChange(e.target.value.toUpperCase().trim().slice(0, 40))}
+        onChange={(e) => onChange(e.target.value.slice(0, 50))}
         onFocus={() => value.trim() && suggestions.length > 0 && setShowSuggestions(true)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
