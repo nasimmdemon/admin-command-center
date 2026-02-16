@@ -2,20 +2,20 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
-import { ArrowLeft, CreditCard, Phone, Mail, FileText, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, CreditCard, Phone, Mail, FileText, ChevronDown, ChevronUp, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/models/routes";
 
-type ProviderTab = "payments" | "voip" | "email";
+type ProviderTab = "payments" | "voip" | "email" | "trader";
 
 const Providers = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab") as ProviderTab | null;
-  const [activeTab, setActiveTab] = useState<ProviderTab>(tabParam && ["payments", "voip", "email"].includes(tabParam) ? tabParam : "payments");
+  const [activeTab, setActiveTab] = useState<ProviderTab>(tabParam && ["payments", "voip", "email", "trader"].includes(tabParam) ? tabParam : "payments");
 
   useEffect(() => {
-    if (tabParam && ["payments", "voip", "email"].includes(tabParam)) {
+    if (tabParam && ["payments", "voip", "email", "trader"].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -25,6 +25,7 @@ const Providers = () => {
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "voip", label: "VoIP", icon: Phone },
     { id: "email", label: "Email", icon: Mail },
+    { id: "trader", label: "Trader Platform", icon: BarChart3 },
   ];
 
   const paymentDocs = [
@@ -45,11 +46,18 @@ const Providers = () => {
     { title: "Template variables", content: "Supported variables: {{client_name}}, {{brand_name}}, {{reset_link}}, {{login_url}}. Templates are stored per brand in BLAPI/EmailsUsecases." },
   ];
 
+  const traderDocs = [
+    { title: "External trading platform integration", content: "For trading platforms other than our built-in MT5, you will need to integrate via our API. Document your platform's API endpoint, authentication (API key or OAuth), and supported instruments. Our CRM expects normalized order and position formats." },
+    { title: "API requirements", content: "Required endpoints: account balance, open positions, order placement, order history. All requests must use HTTPS. Webhook URL for order/position updates is required for real-time sync." },
+    { title: "WebTrader embedding", content: "If your platform provides a WebTrader or iframe embed, provide the embed URL and any required parameters. Our CRM supports custom iframe dimensions and postMessage for cross-origin communication." },
+  ];
+
   const getDocs = () => {
     switch (activeTab) {
       case "payments": return paymentDocs;
       case "voip": return voipDocs;
       case "email": return emailDocs;
+      case "trader": return traderDocs;
     }
   };
 
@@ -112,6 +120,9 @@ const Providers = () => {
                 )}
                 {activeTab === "email" && (
                   <p>Email: Documentation for connecting email providers (SMTP, transactional APIs) and template configuration.</p>
+                )}
+                {activeTab === "trader" && (
+                  <p>Trader Platform: For external trading platforms, use these docs to integrate your WebTrader or API with our CRM.</p>
                 )}
               </div>
             </div>

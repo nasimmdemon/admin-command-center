@@ -19,6 +19,7 @@ export const StepTransformDemo = () => {
   return (
     <StepTransform
       brandLabel="Demo Brand"
+      voipCoverageMap={{ RU: ["RU"], US: ["US", "CA", "MX"] }}
       emailProvidersAllowed={emailProvidersAllowed}
       onEmailProvidersAllowedChange={setEmailProvidersAllowed}
       phoneExtensionsAllowed={phoneExtensionsAllowed}

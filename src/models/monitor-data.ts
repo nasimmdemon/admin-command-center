@@ -1,9 +1,25 @@
-export const MOCK_CLIENTS = [
-  { id: 1, name: "maiclptd", clientName: "GT45", status: "Good", paid: "12K" },
-  { id: 2, name: "johnwk", clientName: "BX12", status: "Good", paid: "8.5K" },
-  { id: 3, name: "sarahm", clientName: "LP78", status: "Bad", paid: "2.1K" },
-  { id: 4, name: "alexfr", clientName: "NQ33", status: "Good", paid: "15K" },
-  { id: 5, name: "robertl", clientName: "DW91", status: "Bad", paid: "500" },
+export interface ClientBrand {
+  id: number;
+  name: string;
+  domain: string;
+  status: "Online" | "Offline" | "Warning";
+}
+
+export interface MonitorClient {
+  id: number;
+  name: string;
+  clientName: string;
+  status: string;
+  paid: string;
+  brands: ClientBrand[];
+}
+
+export const MOCK_CLIENTS: MonitorClient[] = [
+  { id: 1, name: "maiclptd", clientName: "GT45", status: "Good", paid: "12K", brands: [{ id: 1, name: "Brand Alpha", domain: "alpha.com", status: "Online" }, { id: 2, name: "Brand Beta", domain: "beta.com", status: "Offline" }] },
+  { id: 2, name: "johnwk", clientName: "BX12", status: "Good", paid: "8.5K", brands: [{ id: 3, name: "Brand Gamma", domain: "gamma.com", status: "Online" }] },
+  { id: 3, name: "sarahm", clientName: "LP78", status: "Bad", paid: "2.1K", brands: [] },
+  { id: 4, name: "alexfr", clientName: "NQ33", status: "Good", paid: "15K", brands: [{ id: 4, name: "Brand Delta", domain: "delta.com", status: "Online" }] },
+  { id: 5, name: "robertl", clientName: "DW91", status: "Bad", paid: "500", brands: [] },
 ];
 
 export const ACTIVE_BRANDS = [

@@ -8,14 +8,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    hmr: {
-      overlay: false,
-    },
+    hmr: { overlay: false },
+    fs: { allow: [path.resolve(__dirname, "..")] },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@shared_repo": path.resolve(__dirname, "../shared_repo/src"),
     },
   },
 }));

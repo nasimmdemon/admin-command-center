@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, RefreshCw, Power, Cpu, HardDrive, Wifi, RotateCw, Eye, Users, DollarSign, Building2 } from "lucide-react";
+import { ArrowLeft, RefreshCw, Power, Users, DollarSign, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTransition, StaggerContainer, StaggerItem } from "@/components/PageTransition";
 import { KPICard } from "@/views/monitor/KPICard";
 import { ClientStatusTable } from "@/views/monitor/ClientStatusTable";
-import { MOCK_CLIENTS, ACTIVE_BRANDS, SYSTEM_HEALTH_ITEMS } from "@/models/monitor-data";
+import { MOCK_CLIENTS } from "@/models/monitor-data";
 import { ROUTES } from "@/models/routes";
 import {
   AlertDialog,
@@ -18,8 +18,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-const ICON_MAP = { cpu: Cpu, hardDrive: HardDrive, wifi: Wifi } as const;
 
 const Monitor = () => {
   const navigate = useNavigate();
@@ -56,58 +54,6 @@ const Monitor = () => {
           </div>
           <ClientStatusTable clients={MOCK_CLIENTS} />
         </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 space-y-4">
-            <h2 className="font-semibold text-foreground">System Health</h2>
-            {SYSTEM_HEALTH_ITEMS.map((item) => {
-              const Icon = ICON_MAP[item.iconKey];
-              return (
-                <div key={item.label} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      {Icon && <Icon className="w-4 h-4" />}
-                      {item.label}
-                    </div>
-                    <span className="font-medium text-foreground">{item.suffix || `${item.value}%`}</span>
-                  </div>
-                  <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                    <motion.div
-                      className={`h-full rounded-full ${item.color}`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${item.value}%` }}
-                      transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5">
-            <h2 className="font-semibold text-foreground mb-4">Active Brands</h2>
-            <div className="space-y-3">
-              {ACTIVE_BRANDS.map((b) => (
-                <div key={b.name} className="flex items-center justify-between rounded-lg border p-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2.5 h-2.5 rounded-full ${
-                      b.status === "Online" ? "bg-success" : b.status === "Offline" ? "bg-destructive" : "bg-warning"
-                    }`} />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{b.name}</p>
-                      <p className="text-xs text-muted-foreground">{b.domain}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><RotateCw className="w-3.5 h-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Power className="w-3.5 h-3.5" /></Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8"><Eye className="w-3.5 h-3.5" /></Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-6">
           <h2 className="font-semibold text-foreground mb-4">Quick Actions</h2>

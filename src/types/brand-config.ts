@@ -92,9 +92,7 @@ export const DEFAULT_DEPOSIT_METHODS: Record<string, DepositMethod> = {
   wire_transfer: { enabled: true, fee: { type: "fixed", value: 10.0, min_fee: null, max_fee: null }, approval: { mode: "manual" } },
   bank_transfer: { enabled: false, fee: { type: "fixed", value: 25.0, min_fee: null, max_fee: null }, approval: { mode: "manual" }, min_amount: 100 },
   loan: { enabled: false, fee: { type: "percentage", value: 2.0, min_fee: null, max_fee: null }, approval: { mode: "auto", required_approver_roles: ["Department Manager", "Super Admin"] } },
-  ipay: { enabled: false, fee: { type: "percentage", value: 1.5, min_fee: null, max_fee: null }, approval: { mode: "auto" } },
   future_pay: { enabled: false, fee: { type: "percentage", value: 1.0, min_fee: null, max_fee: null }, approval: { mode: "auto" } },
-  cryptopay: { enabled: false, fee: { type: "percentage", value: 2.0, min_fee: null, max_fee: null }, approval: { mode: "auto" } },
   token_payments: { enabled: false, fee: { type: "percentage", value: 1.5, min_fee: null, max_fee: null }, approval: { mode: "auto" } },
 };
 
@@ -128,9 +126,7 @@ export const METHOD_LABELS: Record<string, string> = {
   wire_transfer: "Wire Transfer",
   bank_transfer: "Bank Deposit",
   loan: "Loan",
-  ipay: "iPay",
   future_pay: "FUTURE PAY",
-  cryptopay: "cryptopay",
   token_payments: "TOKEN PAYMENTS",
   bank_account: "Bank Account",
 };

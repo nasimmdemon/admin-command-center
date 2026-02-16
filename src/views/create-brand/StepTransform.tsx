@@ -1,13 +1,16 @@
 import { motion } from "framer-motion";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountryInput } from "@/components/CountryInput";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { isValidISOCountryCode, isValidPhoneCountryCode, isValidPhoneCodeFormat, normalizeCountryInputToISO } from "@/utils/countryCodes";
+import { isValidISOCountryCode, isValidPhoneCountryCode, isValidPhoneCodeFormat, normalizeCountryInputToISO, getPhoneCodesFromOutboundCountries } from "@/utils/countryCodes";
 
 interface StepTransformProps {
   brandLabel: string;
+  /** VoIP coverage map (origin -> destinations). Used to sync allowed extensions from outbound countries. */
+  voipCoverageMap?: Record<string, string[]>;
   emailProvidersAllowed: Record<string, boolean>;
   onEmailProvidersAllowedChange: (v: Record<string, boolean>) => void;
   phoneExtensionsAllowed: boolean;
@@ -85,7 +88,8 @@ export const StepTransform = (props: StepTransformProps) => (
     <p className="text-sm text-muted-foreground">{props.brandLabel}</p>
 
     <div className="space-y-4 rounded-lg border p-4 bg-card">
-      <Label className="text-sm font-medium">Email providers allowed</Label>
+      <Label className="text-sm font-medium">Emails — providers allowed</Label>
+      <p className="text-xs text-muted-foreground">Select which email providers this brand can use for sending emails.</p>
       <div className="flex flex-wrap gap-3">
         {["maileroo", "alexders"].map((provider) => (
           <label key={provider} className="flex items-center gap-2 cursor-pointer">
@@ -99,13 +103,36 @@ export const StepTransform = (props: StepTransformProps) => (
           </label>
         ))}
       </div>
-      <div className="flex items-center justify-between rounded-lg border p-3">
-        <Label>Phone extensions allowed</Label>
+    </div>
+
+    <div className="space-y-4 rounded-lg border p-4 bg-card">
+      <Label className="text-sm font-medium">Phone extensions allowed</Label>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">Allow clients to use phone extensions based on outbound countries.</p>
         <Switch checked={props.phoneExtensionsAllowed} onCheckedChange={props.onPhoneExtensionsAllowedChange} />
       </div>
       {props.phoneExtensionsAllowed && props.allowedExtensionPhones != null && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="space-y-2">
-          <Label>Allowed extension phones</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label>Allowed extension phones</Label>
+            {props.voipCoverageMap && Object.keys(props.voipCoverageMap).length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => {
+                  const codes = getPhoneCodesFromOutboundCountries(props.voipCoverageMap!);
+                  if (codes.length > 0) {
+                    const merged = [...new Set([...props.allowedExtensionPhones!, ...codes])].sort();
+                    props.onAllowedExtensionPhonesChange?.(merged);
+                  }
+                }}
+              >
+                <RefreshCw className="w-3 h-3 mr-1" /> Sync from outbound
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Based on outbound countries from VoIP coverage. Origin countries are also outbound (in-country calls). E.g. brand in Russia calling only Russia → +7.</p>
           <div className="flex flex-wrap gap-2 mb-2">
             {props.allowedExtensionPhones.map((ext) => (
               <motion.span
@@ -121,7 +148,7 @@ export const StepTransform = (props: StepTransformProps) => (
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="+1 x, +44 x…"
+              placeholder="+7, +1, +44…"
               value={props.newAllowedExtensionPhone ?? ""}
               onChange={(e) => props.onNewAllowedExtensionPhoneChange?.(e.target.value.trim())}
               className="flex-1"
@@ -148,6 +175,9 @@ export const StepTransform = (props: StepTransformProps) => (
           </div>
         </motion.div>
       )}
+    </div>
+
+    <div className="space-y-4 rounded-lg border p-4 bg-card">
       <div className="flex items-center justify-between rounded-lg border p-3">
         <div>
           <Label>Auto gen password for leads with welcome email</Label>

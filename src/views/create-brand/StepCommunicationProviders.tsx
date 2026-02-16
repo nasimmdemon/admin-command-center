@@ -1,4 +1,3 @@
-import { Label } from "@/components/ui/label";
 import { EmailProviderSection } from "./communication/EmailProviderSection";
 import { EmailTemplatesSection } from "./communication/EmailTemplatesSection";
 import { VoipProviderSection } from "./communication/VoipProviderSection";
@@ -37,19 +36,21 @@ interface StepCommunicationProvidersProps {
 export const StepCommunicationProviders = (props: StepCommunicationProvidersProps) => (
   <div className="space-y-6">
     <h2 className="text-lg font-semibold text-foreground">Communication Providers</h2>
-    <EmailProviderSection
-      value={props.emailProvider}
-      onChange={props.onEmailProviderChange}
-      mailerooApiKey={props.mailerooApiKey}
-      mailerooFromEmail={props.mailerooFromEmail}
-      onMailerooApiKeyChange={props.onMailerooApiKeyChange}
-      onMailerooFromEmailChange={props.onMailerooFromEmailChange}
-      alexdersApiKey={props.alexdersApiKey}
-      alexdersFromEmail={props.alexdersFromEmail}
-      onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
-      onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
-    />
-    <EmailTemplatesSection selected={props.selectedEmailTemplates} onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })} />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <EmailProviderSection
+        value={props.emailProvider}
+        onChange={props.onEmailProviderChange}
+        mailerooApiKey={props.mailerooApiKey}
+        mailerooFromEmail={props.mailerooFromEmail}
+        onMailerooApiKeyChange={props.onMailerooApiKeyChange}
+        onMailerooFromEmailChange={props.onMailerooFromEmailChange}
+        alexdersApiKey={props.alexdersApiKey}
+        alexdersFromEmail={props.alexdersFromEmail}
+        onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
+        onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
+      />
+      <EmailTemplatesSection selected={props.selectedEmailTemplates} onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })} />
+    </div>
     <VoipProviderSection
       provider={props.voipProvider}
       onProviderChange={props.onVoipProviderChange}

@@ -83,7 +83,7 @@ export const EmailProviderSection = ({
     {value === "other" && (
       <div className="rounded-lg border border-dashed p-4 bg-muted/30">
         <p className="text-sm text-muted-foreground mb-2">Email provider is not ours — use our docs to connect external provider.</p>
-        <Link to="/providers?tab=email" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+        <Link to="/providers?tab=email" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
           <ExternalLink className="w-4 h-4" />
           View provider docs (Email)
         </Link>

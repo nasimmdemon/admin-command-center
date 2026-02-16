@@ -339,3 +339,33 @@ export const isValidPhoneCodeFormat = (code: string): boolean => {
 export const getISOCodesForPhoneCode = (phoneCode: string): string[] => {
   return PHONE_COUNTRY_CODES[phoneCode] || [];
 };
+
+// Build reverse map: ISO -> phone code (first match)
+const ISO_TO_PHONE_CODE: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const [code, isos] of Object.entries(PHONE_COUNTRY_CODES)) {
+    for (const iso of isos) {
+      if (!map[iso]) map[iso] = code;
+    }
+  }
+  return map;
+})();
+
+/** Get phone codes for outbound countries from VoIP coverage map. Origin = outbound (in-country). */
+export const getPhoneCodesFromOutboundCountries = (coverageMap: Record<string, string[]>): string[] => {
+  const outbound = new Set<string>();
+  for (const [origin, dests] of Object.entries(coverageMap)) {
+    const o = origin.toUpperCase().trim();
+    if (isValidISOCountryCode(o)) outbound.add(o);
+    for (const d of dests || []) {
+      const dNorm = d.toUpperCase().trim();
+      if (isValidISOCountryCode(dNorm)) outbound.add(dNorm);
+    }
+  }
+  const codes = new Set<string>();
+  for (const iso of outbound) {
+    const code = ISO_TO_PHONE_CODE[iso];
+    if (code) codes.add(code);
+  }
+  return [...codes].sort();
+};

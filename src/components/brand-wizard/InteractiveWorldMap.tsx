@@ -111,15 +111,23 @@ const StraightConnectionLines = ({
   );
 };
 
-/** Wraps ZoomableGroup with translateExtent to keep map within bounds */
+/** Wraps ZoomableGroup with translateExtent to keep map visible (can't hide completely) */
 const ConstrainedZoomableGroup = ({ children }: { children: React.ReactNode }) => {
   const { width, height } = useMapContext();
+  // Restrict panning so map stays visible - viewport bounded to central region
+  const margin = 0.25;
   const translateExtent: [[number, number], [number, number]] = [
-    [-width * 0.4, -height * 0.4],
-    [width * 1.4, height * 1.4],
+    [width * -margin, height * -margin],
+    [width * (1 + margin), height * (1 + margin)],
   ];
   return (
-    <ZoomableGroup translateExtent={translateExtent} minZoom={0.5} maxZoom={6}>
+    <ZoomableGroup
+      center={[0, 0]}
+      zoom={1}
+      translateExtent={translateExtent}
+      minZoom={0.5}
+      maxZoom={6}
+    >
       {children}
     </ZoomableGroup>
   );
@@ -229,15 +237,15 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
       <ComposableMap
         projectionConfig={{
           scale: 147,
-          center: [0, 20],
+          center: [0, 0],
         }}
         className="w-full h-full"
-        style={{ width: "100%", height: "auto" }}
+        style={{ width: "100%", height: "100%", minHeight: "280px" }}
       >
         <defs>
           <filter id="voip-line-glow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="blur" />
-            <feFlood floodColor="#60a5fa" floodOpacity="0.5" />
+            <feFlood floodColor="#a855f7" floodOpacity="0.5" />
             <feComposite in2="blur" operator="in" result="glow" />
             <feMerge>
               <feMergeNode in="glow" />
@@ -319,7 +327,7 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
                   })}
                   <StraightConnectionLines
                     connections={connections}
-                    stroke="#60a5fa"
+                    stroke="#a855f7"
                     strokeWidth={1}
                     filterId="voip-line-glow"
                     className="voip-connection-line"
@@ -330,7 +338,7 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
                       <Marker key={`dot-${i}`} coordinates={[lng, lat]}>
                         <circle
                           r={2.5}
-                          fill="#60a5fa"
+                          fill="#a855f7"
                           className="voip-connection-dot"
                           style={{ filter: "url(#voip-line-glow)" }}
                         />

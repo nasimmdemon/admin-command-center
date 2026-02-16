@@ -3,10 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { ExternalLink } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import MethodConfigCard from "./MethodConfigCard";
 import {
   DepositMethod, BankDetails, WireTransferDetails, METHOD_LABELS,
   ExternalProviderConfig, IpayProviderConfig, CryptoNowProviderConfig,
+  FeeConfig, ApprovalConfig,
 } from "@/types/brand-config";
 
 interface DepositConfigStepProps {
@@ -47,7 +49,8 @@ const DepositConfigStep = ({
   };
 
   const isProviderMethod = (key: string) => key === "fiat" || key === "crypto";
-  const regularMethods = Object.entries(methods).filter(([key]) => !isProviderMethod(key));
+  const isDuplicateProvider = (key: string) => key === "ipay" || key === "cryptopay"; // iPay/cryptopay configured in Fiat/Crypto sections
+  const regularMethods = Object.entries(methods).filter(([key]) => !isProviderMethod(key) && !isDuplicateProvider(key));
   const providerMethods = Object.entries(methods).filter(([key]) => isProviderMethod(key));
 
   return (
@@ -133,6 +136,63 @@ const DepositConfigStep = ({
                             />
                           </div>
                         </div>
+                        <div className="pt-3 border-t border-border/50 space-y-3">
+                          <p className="text-xs text-muted-foreground">Fee & Approval</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Fee Type</Label>
+                              <Select value={method.fee.type} onValueChange={(v) => updateMethod(key, { fee: { ...method.fee, type: v as FeeConfig["type"] } })}>
+                                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="percentage">Percentage</SelectItem>
+                                  <SelectItem value="fixed">Fixed</SelectItem>
+                                  <SelectItem value="combined">Combined</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{method.fee.type === "fixed" ? "Fee ($)" : "Fee (%)"}</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                value={method.fee.value}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, value: parseFloat(e.target.value) || 0 } })}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Min Fee</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                placeholder="None"
+                                value={method.fee.min_fee ?? ""}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, min_fee: e.target.value ? parseFloat(e.target.value) : null } })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Max Fee</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                placeholder="None"
+                                value={method.fee.max_fee ?? ""}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, max_fee: e.target.value ? parseFloat(e.target.value) : null } })}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Approval Mode</Label>
+                            <Select value={method.approval.mode} onValueChange={(v) => updateMethod(key, { approval: { ...method.approval, mode: v as ApprovalConfig["mode"] } })}>
+                              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="auto">Auto</SelectItem>
+                                <SelectItem value="manual">Manual</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -179,6 +239,63 @@ const DepositConfigStep = ({
                             />
                           </div>
                         </div>
+                        <div className="pt-3 border-t border-border/50 space-y-3">
+                          <p className="text-xs text-muted-foreground">Fee & Approval</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Fee Type</Label>
+                              <Select value={method.fee.type} onValueChange={(v) => updateMethod(key, { fee: { ...method.fee, type: v as FeeConfig["type"] } })}>
+                                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="percentage">Percentage</SelectItem>
+                                  <SelectItem value="fixed">Fixed</SelectItem>
+                                  <SelectItem value="combined">Combined</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{method.fee.type === "fixed" ? "Fee ($)" : "Fee (%)"}</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                value={method.fee.value}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, value: parseFloat(e.target.value) || 0 } })}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Min Fee</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                placeholder="None"
+                                value={method.fee.min_fee ?? ""}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, min_fee: e.target.value ? parseFloat(e.target.value) : null } })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Max Fee</Label>
+                              <Input
+                                type="number"
+                                className="h-8 text-xs"
+                                placeholder="None"
+                                value={method.fee.max_fee ?? ""}
+                                onChange={(e) => updateMethod(key, { fee: { ...method.fee, max_fee: e.target.value ? parseFloat(e.target.value) : null } })}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Approval Mode</Label>
+                            <Select value={method.approval.mode} onValueChange={(v) => updateMethod(key, { approval: { ...method.approval, mode: v as ApprovalConfig["mode"] } })}>
+                              <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="auto">Auto</SelectItem>
+                                <SelectItem value="manual">Manual</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -190,6 +307,8 @@ const DepositConfigStep = ({
                         </p>
                         <Link
                           to="/providers?tab=payments"
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                         >
                           <ExternalLink className="w-3 h-3" />
