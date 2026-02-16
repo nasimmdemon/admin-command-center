@@ -8,7 +8,7 @@ import {
 import {
   MARKET_SYMBOLS_MAP,
   MARKET_CATEGORY_LABELS,
-} from "@shared_repo/SymbolEnums/market_symbols_map";
+} from "@/lib/symbol-enums/market_symbols_map";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StepTraderMarketsProps {

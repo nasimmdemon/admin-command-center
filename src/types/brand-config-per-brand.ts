@@ -10,7 +10,7 @@ import {
   DEFAULT_WIRE_DETAILS,
   DEFAULT_GLOBAL_SETTINGS,
 } from "./brand-config";
-import { buildDefaultTraderMarkets } from "@shared_repo/SymbolEnums/market_symbols_map";
+import { buildDefaultTraderMarkets } from "@/lib/symbol-enums/market_symbols_map";
 
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
