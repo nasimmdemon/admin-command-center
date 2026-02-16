@@ -74,7 +74,7 @@ const Providers = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl md:text-3xl font-bold text-foreground"
           >
-            Providers
+            Docs
           </motion.h1>
           <p className="text-muted-foreground mt-1">Documentation for connecting external providers to our CRM</p>
         </div>

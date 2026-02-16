@@ -25,7 +25,7 @@ import {
 
 const CreateBrand = () => {
   const navigate = useNavigate();
-  const { state, update, addBrand, removeBrand, updateBrand, updateBrandConfig, next, prev, nextSlide, prevSlide, brandLabel, currentConfig, totalSteps } = useCreateBrand();
+  const { state, isEditMode, addBrand, removeBrand, updateBrand, updateBrandConfig, next, prev, nextSlide, prevSlide, brandLabel, currentConfig, totalSteps } = useCreateBrand();
   const bi = state.currentBrandSlide;
 
   const renderStep = () => {
@@ -267,7 +267,7 @@ const CreateBrand = () => {
         <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
           <div className="p-6 border-b">
             <div className="flex items-center justify-between mb-3">
-              <h1 className="text-xl font-bold text-foreground">Create New Brand</h1>
+              <h1 className="text-xl font-bold text-foreground">{isEditMode ? "Edit Brand" : "Create New Brand"}</h1>
               <span className="text-sm text-muted-foreground">Step {state.step} of {totalSteps}</span>
             </div>
             <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">

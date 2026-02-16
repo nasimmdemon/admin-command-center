@@ -36,7 +36,7 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     gradient: "from-warning/5 to-warning/10",
   },
   {
-    title: "Providers",
+    title: "Docs",
     description: "Docs for Payments, VoIP, and Email provider integrations",
     icon: Plug,
     secondaryIcon: FileText,

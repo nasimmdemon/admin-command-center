@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, RefreshCw, Power, Users, DollarSign, Building2 } from "lucide-react";
@@ -7,6 +8,7 @@ import { KPICard } from "@/views/monitor/KPICard";
 import { ClientStatusTable } from "@/views/monitor/ClientStatusTable";
 import { MOCK_CLIENTS } from "@/models/monitor-data";
 import { ROUTES } from "@/models/routes";
+import type { MonitorClient, ClientBrand } from "@/models/monitor-data";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +23,35 @@ import {
 
 const Monitor = () => {
   const navigate = useNavigate();
+  const [clients, setClients] = useState<MonitorClient[]>(() => MOCK_CLIENTS);
+
+  const handleToggleBrandDisabled = (client: MonitorClient, brand: ClientBrand) => {
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === client.id
+          ? {
+              ...c,
+              brands: c.brands.map((b) =>
+                b.id === brand.id ? { ...b, disabled: !(b.disabled ?? false) } : b
+              ),
+            }
+          : c
+      )
+    );
+  };
+
+  const handleDeleteBrand = (client: MonitorClient, brand: ClientBrand) => {
+    setClients((prev) =>
+      prev.map((c) =>
+        c.id === client.id
+          ? { ...c, brands: c.brands.filter((b) => b.id !== brand.id) }
+          : c
+      )
+    );
+  };
+
+  const totalDeposits = 121;
+  const totalBrands = clients.reduce((sum, c) => sum + c.brands.length, 0);
 
   return (
     <div className="min-h-screen bg-dotted p-4 md:p-8">
@@ -38,21 +69,26 @@ const Monitor = () => {
 
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <StaggerItem>
-            <KPICard icon={Users} label="Number Of Clients" value={3} color="bg-primary/10 text-primary" />
+            <KPICard icon={Users} label="Total Clients" value={clients.length} color="bg-primary/10 text-primary" />
           </StaggerItem>
           <StaggerItem>
-            <KPICard icon={DollarSign} label="Brands Total Deposits" value={121} suffix="K" color="bg-success/10 text-success" />
+            <KPICard icon={DollarSign} label="Total Deposits" value={totalDeposits} suffix="K" color="bg-success/10 text-success" />
           </StaggerItem>
           <StaggerItem>
-            <KPICard icon={Building2} label="Brand Number" value={13} color="bg-warning/10 text-warning" />
+            <KPICard icon={Building2} label="Total Brands" value={totalBrands} color="bg-warning/10 text-warning" />
           </StaggerItem>
         </StaggerContainer>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm mb-6">
-          <div className="p-5 border-b">
-            <h2 className="font-semibold text-foreground">Client Status</h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm overflow-hidden mb-6">
+          <div className="px-6 py-4 border-b bg-muted/20">
+            <h2 className="font-semibold text-foreground text-lg">Client Status</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Expand a row to manage brands</p>
           </div>
-          <ClientStatusTable clients={MOCK_CLIENTS} />
+          <ClientStatusTable
+            clients={clients}
+            onToggleBrandDisabled={handleToggleBrandDisabled}
+            onDeleteBrand={handleDeleteBrand}
+          />
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.4 }} className="bg-card rounded-xl border shadow-sm p-5 mb-6">

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { TOTAL_BRAND_WIZARD_STEPS } from "@/models/brand-wizard-steps";
 import { BrandConfig, getDefaultBrandConfig } from "@/types/brand-config-per-brand";
 
@@ -14,15 +15,40 @@ export interface CreateBrandState {
   currentBrandSlide: number;
 }
 
-const getInitialState = (): CreateBrandState => ({
+export interface CreateBrandLocationState {
+  clientId?: number;
+  clientName?: string;
+  editBrand?: { id: number; name: string; domain: string };
+}
+
+const getDefaultInitialState = (): CreateBrandState => ({
   step: 1,
   brands: [{ name: "", domain: "" }],
   brandConfigs: [getDefaultBrandConfig()],
   currentBrandSlide: 0,
 });
 
+function getInitialStateFromLocation(locationState: CreateBrandLocationState | null): CreateBrandState {
+  if (locationState?.editBrand) {
+    return {
+      step: 1,
+      brands: [{ name: locationState.editBrand.name, domain: locationState.editBrand.domain }],
+      brandConfigs: [getDefaultBrandConfig()],
+      currentBrandSlide: 0,
+    };
+  }
+  return getDefaultInitialState();
+}
+
 export function useCreateBrand() {
-  const [state, setState] = useState<CreateBrandState>(getInitialState);
+  const location = useLocation();
+  const locationState = location.state as CreateBrandLocationState | null;
+  const initialState = useMemo(
+    () => getInitialStateFromLocation(locationState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  const [state, setState] = useState<CreateBrandState>(initialState);
 
   const update = <K extends keyof CreateBrandState>(key: K, value: CreateBrandState[K]) => {
     setState((s) => ({ ...s, [key]: value }));
@@ -86,9 +112,11 @@ export function useCreateBrand() {
 
   const brandLabel = state.brands[state.currentBrandSlide]?.name || state.brands[state.currentBrandSlide]?.domain || `Brand ${state.currentBrandSlide + 1}`;
   const currentConfig = state.brandConfigs[state.currentBrandSlide] ?? getDefaultBrandConfig();
+  const isEditMode = !!locationState?.editBrand;
 
   return {
     state,
+    isEditMode,
     update,
     addBrand,
     removeBrand,
