@@ -16,8 +16,8 @@ export const StepTraderPlatform = ({ value, onChange }: StepTraderPlatformProps)
         whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.3 }}
         onClick={() => onChange("MT5")}
-        className={`w-full rounded-lg border p-5 text-left transition-colors duration-300 ${
-          value === "MT5" ? "bg-primary/10 border-primary" : "bg-card"
+        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+          value === "MT5" ? "bg-tint-blue border-primary/60" : "bg-card border-border/50"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -34,8 +34,8 @@ export const StepTraderPlatform = ({ value, onChange }: StepTraderPlatformProps)
         whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.3 }}
         onClick={() => onChange("NONE")}
-        className={`w-full rounded-lg border p-5 text-left transition-colors duration-300 ${
-          value === "NONE" ? "bg-warning/10 border-warning" : "bg-card"
+        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+          value === "NONE" ? "bg-tint-amber border-warning/60" : "bg-card border-border/50"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -52,8 +52,8 @@ export const StepTraderPlatform = ({ value, onChange }: StepTraderPlatformProps)
         whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.3 }}
         onClick={() => onChange("OTHER")}
-        className={`w-full rounded-lg border p-5 text-left transition-colors duration-300 ${
-          value === "OTHER" ? "bg-primary/10 border-primary" : "bg-card"
+        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+          value === "OTHER" ? "bg-tint-blue border-primary/60" : "bg-card border-border/50"
         }`}
       >
         <div className="flex items-center gap-3">
@@ -71,7 +71,7 @@ export const StepTraderPlatform = ({ value, onChange }: StepTraderPlatformProps)
       <motion.div
         initial={{ opacity: 0, height: 0 }}
         animate={{ opacity: 1, height: "auto" }}
-        className="rounded-lg border border-dashed p-4 bg-muted/30"
+        className="rounded-xl border border-dashed border-border/60 p-4 bg-tint-blue/50"
       >
         <p className="text-sm text-muted-foreground mb-2">External trading platform — use our docs to connect your provider.</p>
         <Link

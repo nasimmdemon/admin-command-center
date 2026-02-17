@@ -8,6 +8,7 @@ export interface NavigationOption {
   secondaryIcon: typeof Plus;
   route: string;
   gradient: string;
+  tint: string;
 }
 
 export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
@@ -17,7 +18,8 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     icon: MousePointer2,
     secondaryIcon: Monitor,
     route: ROUTES.DEMO,
-    gradient: "from-primary/5 to-primary/10",
+    gradient: "from-primary/8 to-primary/12",
+    tint: "bg-tint-blue",
   },
   {
     title: "Create New",
@@ -25,7 +27,8 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     icon: FolderPlus,
     secondaryIcon: Plus,
     route: ROUTES.CREATE_BRAND,
-    gradient: "from-success/5 to-success/10",
+    gradient: "from-success/8 to-success/12",
+    tint: "bg-tint-mint",
   },
   {
     title: "Monitor & Shut Down",
@@ -33,7 +36,8 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     icon: BarChart3,
     secondaryIcon: Search,
     route: ROUTES.MONITOR,
-    gradient: "from-warning/5 to-warning/10",
+    gradient: "from-warning/8 to-warning/12",
+    tint: "bg-tint-amber",
   },
   {
     title: "Docs",
@@ -41,7 +45,8 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     icon: Plug,
     secondaryIcon: FileText,
     route: ROUTES.PROVIDERS,
-    gradient: "from-primary/5 to-primary/10",
+    gradient: "from-primary/8 to-primary/12",
+    tint: "bg-tint-lavender",
   },
   {
     title: "Widget Playground",
@@ -49,6 +54,7 @@ export const INDEX_NAVIGATION_OPTIONS: NavigationOption[] = [
     icon: Sparkles,
     secondaryIcon: Monitor,
     route: ROUTES.STANDALONE,
-    gradient: "from-primary/5 to-primary/10",
+    gradient: "from-primary/8 to-primary/12",
+    tint: "bg-tint-blue",
   },
 ];

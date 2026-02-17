@@ -31,7 +31,7 @@ export const StepClientTas = ({
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-semibold text-foreground">CLIENT TAS</h2>
-      <div className="flex items-center justify-between rounded-lg border p-4">
+      <div className="flex items-center justify-between rounded-xl border border-border/50 p-4 bg-card shadow-widget">
         <Label>ALLOW MULTI TAS</Label>
         <Switch checked={allowMultiTas} onCheckedChange={onAllowMultiTasChange} />
       </div>
@@ -40,7 +40,7 @@ export const StepClientTas = ({
         <Input type="number" min={1} value={maxPerClient} onChange={(e) => onMaxPerClientChange(e.target.value)} />
       </div>
 
-      <div className="rounded-lg border p-4 space-y-4">
+      <div className="rounded-xl border border-border/50 p-4 space-y-4 bg-card shadow-widget">
         <h3 className="text-sm font-medium text-foreground">Leverage</h3>
         <div className="flex items-center justify-between">
           <div>

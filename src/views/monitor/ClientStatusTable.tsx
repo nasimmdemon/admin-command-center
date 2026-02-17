@@ -40,7 +40,7 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b text-xs text-muted-foreground uppercase tracking-wider bg-muted/30">
+            <tr className="border-b border-border/60 text-xs text-muted-foreground uppercase tracking-wider bg-muted/30">
               <th className="text-left p-4 w-10 font-medium"></th>
               <th className="text-left p-4 font-medium">Client Name</th>
               <th className="text-left p-4 font-medium">Name</th>
@@ -57,13 +57,13 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + i * 0.1, duration: 0.3 }}
-                  className="border-b last:border-0 hover:bg-muted/40 transition-colors duration-200 cursor-pointer"
+                  className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors duration-300 cursor-pointer"
                   onClick={() => toggleExpand(c.id)}
                 >
                   <td className="p-4 w-10">
                     <button
                       type="button"
-                      className="flex items-center justify-center w-6 h-6 rounded hover:bg-muted"
+                      className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-muted/80 transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleExpand(c.id);
@@ -120,9 +120,9 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
         {clients.map((c) => {
           const isExpanded = expandedId === c.id;
           return (
-            <div key={c.id} className="rounded-xl border overflow-hidden bg-card">
+            <div key={c.id} className="rounded-[1.25rem] border border-border/50 overflow-hidden bg-card shadow-card">
               <div
-                className="p-4 space-y-2 cursor-pointer hover:bg-muted/40 transition-colors"
+                className="p-4 space-y-2 cursor-pointer hover:bg-muted/30 transition-colors duration-300"
                 onClick={() => toggleExpand(c.id)}
               >
                 <div className="flex items-center justify-between gap-2">

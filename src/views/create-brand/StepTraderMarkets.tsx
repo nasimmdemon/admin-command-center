@@ -36,8 +36,8 @@ const Checkbox = ({
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-sm transition-colors hover:border-muted-foreground/50 ${className} ${
-        isActive ? "border-primary bg-primary/10" : "border-border bg-card"
+      className={`flex items-center gap-2 rounded-xl border p-2.5 text-left text-sm transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${className} ${
+        isActive ? "border-primary/60 bg-tint-blue" : "border-border/50 bg-card"
       }`}
     >
       <div
@@ -110,12 +110,12 @@ export const StepTraderMarkets = ({ markets, onChange }: StepTraderMarketsProps)
               open={isOpen}
               onOpenChange={() => toggleExpand(category)}
             >
-              <div className="rounded-lg border border-border overflow-hidden">
-                <div className="flex items-center gap-2 bg-muted/30 p-2">
+              <div className="rounded-xl border border-border/50 overflow-hidden shadow-widget">
+                <div className="flex items-center gap-2 bg-tint-blue/50 p-2.5">
                   <CollapsibleTrigger asChild>
                     <button
                       type="button"
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded hover:bg-muted"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
                     >
                       {isOpen ? (
                         <ChevronDown className="h-4 w-4" />

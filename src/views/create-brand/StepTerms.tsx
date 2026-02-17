@@ -16,11 +16,11 @@ export const StepTerms = ({ brandLabel, brandDomain, privacyPolicy, terms, onPri
     <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
     <div className="space-y-2">
       <Label>Privacy Policy</Label>
-      <Textarea placeholder="Enter your privacy policy text..." rows={5} value={privacyPolicy} onChange={(e) => onPrivacyPolicyChange(e.target.value)} />
+      <Textarea placeholder="Enter your privacy policy text..." rows={5} value={privacyPolicy} onChange={(e) => onPrivacyPolicyChange(e.target.value)} className="rounded-xl border-border/50" />
     </div>
     <div className="space-y-2">
       <Label>Terms Of Service Agreed By Client</Label>
-      <Textarea placeholder="Enter your terms of service text..." rows={5} value={terms} onChange={(e) => onTermsChange(e.target.value)} />
+      <Textarea placeholder="Enter your terms of service text..." rows={5} value={terms} onChange={(e) => onTermsChange(e.target.value)} className="rounded-xl border-border/50" />
     </div>
   </div>
 );

@@ -21,16 +21,16 @@ const MethodConfigCard = ({
   label, enabled, onToggle, fee, onFeeChange, approval, onApprovalChange, minAmount, onMinAmountChange,
 }: MethodConfigCardProps) => {
   return (
-    <div className={`rounded-lg border transition-colors duration-300 ${enabled ? "border-primary bg-primary/5" : "bg-card"}`}>
+    <div className={`rounded-xl border transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${enabled ? "border-primary/60 bg-tint-blue" : "bg-card border-border/50"}`}>
       {/* Toggle header */}
       <motion.button
         whileHover={{ scale: 1.005 }}
         whileTap={{ scale: 0.995 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         onClick={() => onToggle(!enabled)}
-        className="w-full p-3 flex items-center gap-3 text-left"
+        className="w-full p-3 flex items-center gap-3 text-left rounded-xl"
       >
-        <div className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
+        <div className={`w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${
           enabled ? "bg-primary border-primary" : "border-muted-foreground/30"
         }`}>
           {enabled && <Check className="w-3 h-3 text-primary-foreground" />}

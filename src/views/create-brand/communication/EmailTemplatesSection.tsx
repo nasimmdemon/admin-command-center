@@ -19,8 +19,8 @@ export const EmailTemplatesSection = ({ selected, onToggle }: EmailTemplatesSect
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className={`rounded-lg border p-4 bg-card transition-all ${
-            selected[key] ? "border-primary/50 bg-primary/5" : "hover:border-muted-foreground/50"
+          className={`rounded-xl border p-4 bg-card transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+            selected[key] ? "border-primary/60 bg-tint-blue" : "border-border/50 hover:border-muted-foreground/40"
           }`}
         >
           <div className="flex items-start gap-3">

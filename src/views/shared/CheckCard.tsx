@@ -13,8 +13,8 @@ export const CheckCard = ({ label, checked, onChange }: CheckCardProps) => (
     whileTap={{ scale: 0.98 }}
     transition={{ duration: 0.3 }}
     onClick={() => onChange(!checked)}
-    className={`rounded-lg border p-3 text-sm font-medium text-left transition-colors duration-300 ${
-      checked ? "bg-primary/10 border-primary text-foreground" : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+    className={`rounded-xl border p-3 text-sm font-medium text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+      checked ? "bg-tint-blue border-primary/60 text-foreground" : "bg-card border-border/50 text-muted-foreground hover:border-muted-foreground/40"
     }`}
   >
     <div className="flex items-center gap-2">

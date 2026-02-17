@@ -68,7 +68,7 @@ const DepositConfigStep = ({
             const ipay = method.ipay_config ?? {};
             const cryptoNow = method.crypto_now_config ?? {};
             return (
-              <div key={key} className="rounded-lg border p-4 space-y-3">
+              <div key={key} className="rounded-xl border border-border/50 p-4 space-y-3 bg-card shadow-widget">
                 <div className="flex items-center justify-between">
                   <Label className="text-base font-medium">{METHOD_LABELS[key] || key}</Label>
                   <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ const DepositConfigStep = ({
 
                     {/* iPay config (fiat, ours) */}
                     {source === "ours" && isFiat && (
-                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                      <div className="rounded-xl border border-dashed border-border/60 p-4 space-y-3 bg-tint-blue/50">
                         <p className="text-xs text-muted-foreground">iPay configuration</p>
                         <div className="grid grid-cols-1 gap-2">
                           <div className="space-y-1">
@@ -198,7 +198,7 @@ const DepositConfigStep = ({
 
                     {/* Crypto Now config (crypto, ours) */}
                     {source === "ours" && !isFiat && (
-                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                      <div className="rounded-xl border border-dashed border-border/60 p-4 space-y-3 bg-tint-blue/50">
                         <p className="text-xs text-muted-foreground">Crypto Now configuration</p>
                         <div className="grid grid-cols-1 gap-2">
                           <div className="space-y-1">
@@ -301,7 +301,7 @@ const DepositConfigStep = ({
 
                     {/* External: read the docs */}
                     {source === "other" && (
-                      <div className="rounded-lg border border-dashed p-4 space-y-3 bg-muted/30">
+                      <div className="rounded-xl border border-dashed border-border/60 p-4 space-y-3 bg-tint-blue/50">
                         <p className="text-sm text-muted-foreground">
                           For external providers, please read the documentation to configure your integration.
                         </p>
@@ -344,7 +344,7 @@ const DepositConfigStep = ({
 
       {/* Bank Details - For client display (where to pay) */}
       {(methods.bank_transfer?.enabled || methods.wire_transfer?.enabled) && (
-        <div className="space-y-3 rounded-lg border p-4">
+        <div className="space-y-3 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
           <Label className="text-xs text-muted-foreground uppercase tracking-wide">Bank & Wire Details (For Client Display - Where to Pay)</Label>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">

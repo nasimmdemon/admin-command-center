@@ -54,13 +54,13 @@ export const ClientBrandsContent = ({
         </Button>
       </div>
 
-      <Collapsible open={brandsExpanded} onOpenChange={setBrandsExpanded}>
-        <div className="rounded-lg border border-border overflow-hidden">
-          <div className="flex items-center gap-2 bg-muted/30 px-3 py-2">
+        <Collapsible open={brandsExpanded} onOpenChange={setBrandsExpanded}>
+        <div className="rounded-xl border border-border/60 overflow-hidden">
+          <div className="flex items-center gap-2 bg-muted/30 px-3 py-2.5">
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded hover:bg-muted transition-colors"
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
               >
                 {brandsExpanded ? (
                   <ChevronDown className="h-4 w-4" />
@@ -84,10 +84,10 @@ export const ClientBrandsContent = ({
                     return (
                       <div
                         key={brand.id}
-                        className={`flex flex-col gap-3 rounded-xl border p-4 transition-all ${
+                        className={`flex flex-col gap-3 rounded-[1.25rem] border p-4 transition-all duration-300 ease-smooth ${
                           isDisabled
                             ? "border-muted bg-muted/30 opacity-75"
-                            : "border-border bg-card hover:border-muted-foreground/40 hover:shadow-sm"
+                            : "border-border/50 bg-card shadow-widget hover:shadow-card-hover hover:border-muted-foreground/30"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">

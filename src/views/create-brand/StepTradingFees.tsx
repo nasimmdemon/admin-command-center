@@ -29,7 +29,7 @@ const FeeSection = ({
   onChange: (v: Partial<FeeConfig>) => void;
   currency: string;
 }) => (
-  <div className="space-y-4 rounded-lg border p-4">
+  <div className="space-y-4 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
     <div className="flex items-center justify-between">
       <Label className="text-base font-medium">{label}</Label>
       <Switch checked={fee.enabled} onCheckedChange={(v) => onChange({ enabled: v })} />
@@ -41,8 +41,8 @@ const FeeSection = ({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange({ type: "fixed" })}
-            className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
-              fee.type === "fixed" ? "bg-primary/10 border-primary text-foreground" : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+            className={`flex-1 rounded-xl border p-3 text-sm font-medium transition-all duration-300 ease-smooth ${
+              fee.type === "fixed" ? "bg-tint-blue border-primary/60 text-foreground shadow-widget" : "bg-card border-border/50 text-muted-foreground hover:border-muted-foreground/40"
             }`}
           >
             Fixed Amount
@@ -51,8 +51,8 @@ const FeeSection = ({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange({ type: "percentage" })}
-            className={`flex-1 rounded-lg border p-3 text-sm font-medium transition-colors duration-300 ${
-              fee.type === "percentage" ? "bg-primary/10 border-primary text-foreground" : "bg-card text-muted-foreground hover:border-muted-foreground/50"
+            className={`flex-1 rounded-xl border p-3 text-sm font-medium transition-all duration-300 ease-smooth ${
+              fee.type === "percentage" ? "bg-tint-blue border-primary/60 text-foreground shadow-widget" : "bg-card border-border/50 text-muted-foreground hover:border-muted-foreground/40"
             }`}
           >
             Percentage

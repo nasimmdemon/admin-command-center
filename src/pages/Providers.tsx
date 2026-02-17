@@ -64,33 +64,34 @@ const Providers = () => {
   return (
     <div className="min-h-screen bg-dotted p-4 md:p-8">
       <PageTransition className="max-w-3xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground -ml-1">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 
-        <div className="mb-8">
+        <div className="mb-10">
           <motion.h1
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="text-2xl md:text-3xl font-bold text-foreground"
           >
             Docs
           </motion.h1>
-          <p className="text-muted-foreground mt-1">Documentation for connecting external providers to our CRM</p>
+          <p className="text-muted-foreground mt-1 text-[15px]">Documentation for connecting external providers to our CRM</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {tabs.map((tab) => (
             <motion.button
               key={tab.id}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-300 ${
                 activeTab === tab.id
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card hover:border-muted-foreground/50"
+                  ? "bg-primary text-primary-foreground border-primary shadow-soft"
+                  : "bg-card border-border/60 hover:border-muted-foreground/40 hover:shadow-soft"
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -103,13 +104,13 @@ const Providers = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="space-y-4"
           >
-            <div className="rounded-lg border p-3 bg-primary/5 flex gap-2 items-start">
+            <div className="rounded-[1.25rem] border border-border/50 p-4 bg-tint-blue flex gap-3 items-start shadow-widget">
               <FileText className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <div className="text-sm text-muted-foreground">
                 {activeTab === "payments" && (
@@ -130,14 +131,14 @@ const Providers = () => {
             {getDocs().map((doc, i) => (
               <motion.div
                 key={doc.title}
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="rounded-xl border bg-card overflow-hidden"
+                transition={{ delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-[1.25rem] border border-border/50 bg-card overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 ease-smooth"
               >
                 <button
                   onClick={() => setExpandedSection(expandedSection === doc.title ? null : doc.title)}
-                  className="w-full p-4 flex items-center justify-between text-left hover:bg-secondary/30 transition-colors"
+                  className="w-full p-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors duration-300"
                 >
                   <h3 className="font-semibold text-foreground">{doc.title}</h3>
                   {expandedSection === doc.title ? (

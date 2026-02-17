@@ -24,15 +24,15 @@ export const BrandStepWrapper = ({
   return (
     <div className="space-y-4">
       {hasMultiple && (
-        <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/30">
+        <div className="flex items-center justify-between rounded-xl border border-border/50 p-3 bg-tint-blue/50 shadow-widget">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onPrevSlide} disabled={currentSlide === 0} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={onPrevSlide} disabled={currentSlide === 0} className="h-8 w-8 rounded-lg">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span className="text-sm font-medium">
               {brandLabel} ({currentSlide + 1} of {brands.length})
             </span>
-            <Button variant="ghost" size="icon" onClick={onNextSlide} disabled={currentSlide >= brands.length - 1} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={onNextSlide} disabled={currentSlide >= brands.length - 1} className="h-8 w-8 rounded-lg">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
@@ -40,7 +40,7 @@ export const BrandStepWrapper = ({
             {brands.map((_, i) => (
               <div
                 key={i}
-                className={`w-2 h-2 rounded-full transition-colors ${i === currentSlide ? "bg-primary" : "bg-muted-foreground/30"}`}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentSlide ? "bg-primary shadow-widget" : "bg-muted-foreground/30"}`}
               />
             ))}
           </div>
@@ -49,10 +49,10 @@ export const BrandStepWrapper = ({
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.2 }}
+          exit={{ opacity: 0, x: -12 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         >
           {children}
         </motion.div>

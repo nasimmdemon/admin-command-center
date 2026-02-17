@@ -260,22 +260,22 @@ const CreateBrand = () => {
   return (
     <div className="min-h-screen bg-dotted w-full px-4 py-6 md:px-6 md:py-8 lg:px-8">
       <PageTransition className="w-full max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground -ml-1">
           <ArrowLeft className="w-4 h-4 mr-2" /> Back
         </Button>
 
-        <div className="bg-card rounded-2xl shadow-lg border overflow-hidden">
-          <div className="p-6 border-b">
+        <div className="bg-card rounded-[1.5rem] shadow-card border border-border/50 overflow-hidden">
+          <div className="p-6 border-b border-border/50 bg-tint-blue/30">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-xl font-bold text-foreground">{isEditMode ? "Edit Brand" : "Create New Brand"}</h1>
-              <span className="text-sm text-muted-foreground">Step {state.step} of {totalSteps}</span>
+              <span className="text-sm text-muted-foreground font-medium">Step {state.step} of {totalSteps}</span>
             </div>
-            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-primary rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${(state.step / totalSteps) * 100}%` }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               />
             </div>
           </div>
@@ -284,17 +284,17 @@ const CreateBrand = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={state.step}
-                initial={{ opacity: 0, x: 30 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               >
                 {renderStep()}
               </motion.div>
             </AnimatePresence>
           </div>
 
-          <div className="p-6 border-t flex justify-between">
+          <div className="p-6 border-t border-border/50 flex justify-between bg-muted/20">
             <Button variant="outline" onClick={prev} disabled={state.step === 1}>
               <ArrowLeft className="w-4 h-4 mr-2" /> Previous
             </Button>

@@ -87,7 +87,7 @@ export const StepTransform = (props: StepTransformProps) => (
     <h2 className="text-lg font-semibold text-foreground">TRANSFORM</h2>
     <p className="text-sm text-muted-foreground">{props.brandLabel}</p>
 
-    <div className="space-y-4 rounded-lg border p-4 bg-card">
+    <div className="space-y-4 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
       <Label className="text-sm font-medium">Emails — providers allowed</Label>
       <p className="text-xs text-muted-foreground">Select which email providers this brand can use for sending emails.</p>
       <div className="flex flex-wrap gap-3">
@@ -105,7 +105,7 @@ export const StepTransform = (props: StepTransformProps) => (
       </div>
     </div>
 
-    <div className="space-y-4 rounded-lg border p-4 bg-card">
+    <div className="space-y-4 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
       <Label className="text-sm font-medium">Phone extensions allowed</Label>
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Allow clients to use phone extensions based on outbound countries.</p>
@@ -177,15 +177,15 @@ export const StepTransform = (props: StepTransformProps) => (
       )}
     </div>
 
-    <div className="space-y-4 rounded-lg border p-4 bg-card">
-      <div className="flex items-center justify-between rounded-lg border p-3">
+    <div className="space-y-4 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
+      <div className="flex items-center justify-between rounded-xl border border-border/50 p-3 bg-muted/20">
         <div>
           <Label>Auto gen password for leads with welcome email</Label>
           <p className="text-xs text-muted-foreground mt-0.5">Generate password automatically when converting lead to client</p>
         </div>
         <Switch checked={props.autoGenPasswordForLeads} onCheckedChange={props.onAutoGenPasswordForLeadsChange} />
       </div>
-      <div className={`flex items-center justify-between rounded-lg border p-3 ${props.autoGenPasswordForLeads ? "bg-muted/30" : ""}`}>
+      <div className={`flex items-center justify-between rounded-xl border border-border/50 p-3 ${props.autoGenPasswordForLeads ? "bg-tint-blue/50" : "bg-muted/20"}`}>
         <div>
           <Label>Auto reject for no interactivity</Label>
           <p className="text-xs text-muted-foreground mt-0.5">Reject clients who don&apos;t interact after receiving welcome email</p>
@@ -201,7 +201,7 @@ export const StepTransform = (props: StepTransformProps) => (
     <div className="space-y-2">
       <Label>Reject clients from those countries:</Label>
       {props.blockedCountries.length > 0 && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex flex-wrap gap-2 p-2 bg-secondary/50 rounded-lg">
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex flex-wrap gap-2 p-2 bg-muted/40 rounded-xl">
           {props.blockedCountries.filter((c) => isValidISOCountryCode(c.toUpperCase().trim())).map((country) => {
             const n = country.toUpperCase().trim();
             return (

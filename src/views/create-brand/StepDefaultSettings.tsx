@@ -17,7 +17,7 @@ export const StepDefaultSettings = ({ timezone, onTimezoneChange, language, onLa
       <div className="space-y-2">
         <Label>TIME ZONE WORKERS</Label>
         <Select value={timezone} onValueChange={onTimezoneChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger className="rounded-xl border-border/50"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="UTC">UTC</SelectItem>
             <SelectItem value="EST">EST</SelectItem>
@@ -30,7 +30,7 @@ export const StepDefaultSettings = ({ timezone, onTimezoneChange, language, onLa
       <div className="space-y-2">
         <Label>LANG WORKERS</Label>
         <Select value={language} onValueChange={onLanguageChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger className="rounded-xl border-border/50"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="English">English</SelectItem>
             <SelectItem value="Spanish">Spanish</SelectItem>
@@ -42,7 +42,7 @@ export const StepDefaultSettings = ({ timezone, onTimezoneChange, language, onLa
       <div className="space-y-2">
         <Label>MAIN CURRENCY</Label>
         <Select value={currency} onValueChange={onCurrencyChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger className="rounded-xl border-border/50"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="USD">USD</SelectItem>
             <SelectItem value="EUR">EUR</SelectItem>

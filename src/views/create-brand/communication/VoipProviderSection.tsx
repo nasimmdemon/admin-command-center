@@ -131,7 +131,7 @@ export const VoipProviderSection = ({
         />
       </div>
       {provider === "other" && (
-        <div className="rounded-lg border border-dashed p-4 bg-muted/30">
+        <div className="rounded-xl border border-dashed border-border/60 p-4 bg-tint-blue/50">
           <p className="text-sm text-muted-foreground mb-2">VoIP provider is not ours — use our docs to connect external provider.</p>
           <Link to="/providers?tab=voip" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
             <ExternalLink className="w-4 h-4" />
@@ -142,11 +142,11 @@ export const VoipProviderSection = ({
       {provider === "voicex" && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.3 }} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-lg border p-3 bg-card">
+            <div className="rounded-xl border border-border/50 p-3 bg-card shadow-widget">
               <p className="text-xs text-muted-foreground mb-1">Phone Numbers</p>
               <Input type="number" value={phoneNumbers} onChange={(e) => onPhoneNumbersChange(e.target.value)} className="h-8 text-lg font-semibold" min="0" />
             </div>
-            <div className="rounded-lg border p-3 bg-card">
+            <div className="rounded-xl border border-border/50 p-3 bg-card shadow-widget">
               <p className="text-xs text-muted-foreground mb-1">Countries</p>
               <Input type="number" value={countries} onChange={(e) => onCountriesChange(e.target.value)} className="h-8 text-lg font-semibold" min="0" />
             </div>
@@ -157,7 +157,7 @@ export const VoipProviderSection = ({
               <Label className="text-sm font-medium">VoIP Coverage Map</Label>
             </div>
             <p className="text-xs text-muted-foreground">Click countries on the map to add/remove origins. Red = from, blue = to. Lines show connections.</p>
-            <div className="rounded-lg border p-4 bg-secondary/30 min-h-[320px] max-h-[420px] overflow-hidden flex items-center justify-center">
+            <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden flex items-center justify-center shadow-widget">
               <div className="w-full h-full min-h-[280px] flex items-center justify-center">
               <InteractiveWorldMap
                 variant="select"
@@ -170,7 +170,7 @@ export const VoipProviderSection = ({
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-lg border p-4 bg-card/50 space-y-3">
+            <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget space-y-3">
               <div>
                 <Label className="text-sm font-medium text-foreground">From (origin)</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">Where calls can originate</p>
@@ -200,7 +200,7 @@ export const VoipProviderSection = ({
                 <Button variant="outline" size="sm" onClick={addOrigin}>Add</Button>
               </div>
             </div>
-            <div className="rounded-lg border p-4 bg-card/50 space-y-3">
+            <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget space-y-3">
               <div>
                 <Label className="text-sm font-medium text-foreground">To (destination)</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">Countries each origin can call to</p>
@@ -254,7 +254,7 @@ export const VoipProviderSection = ({
               )}
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-lg border p-3 bg-primary/5">
+          <div className="flex items-center justify-between rounded-xl border border-border/50 p-3 bg-tint-blue shadow-widget">
             <div className="flex gap-2 items-start">
               <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-xs text-muted-foreground">

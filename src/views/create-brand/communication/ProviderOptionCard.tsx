@@ -14,8 +14,8 @@ export const ProviderOptionCard = ({ label, sublabel, selected, onClick }: Provi
     whileTap={{ scale: 0.98 }}
     transition={{ duration: 0.2 }}
     onClick={onClick}
-    className={`rounded-lg border p-4 text-left transition-all duration-300 ${
-      selected ? "bg-primary/10 border-primary shadow-sm" : "bg-card hover:border-muted-foreground/50"
+    className={`rounded-xl border p-4 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+      selected ? "bg-tint-blue border-primary/60" : "bg-card border-border/50 hover:border-muted-foreground/40"
     }`}
   >
     <div className="flex items-center gap-3">

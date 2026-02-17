@@ -66,7 +66,7 @@ const WithdrawalConfigStep = ({
 
       {/* Bank Account Details - For client input (where to send money) */}
       {(methods.bank_account?.enabled || methods.wire_transfer?.enabled) && (
-        <div className="space-y-3 rounded-lg border p-4">
+        <div className="space-y-3 rounded-xl border border-border/50 p-4 bg-card shadow-widget">
           <Label className="text-xs text-muted-foreground uppercase tracking-wide">Bank & Wire Details (For Client Input - Where to Send Money)</Label>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">

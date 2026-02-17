@@ -16,7 +16,7 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
   <div className="space-y-5">
     <h2 className="text-lg font-semibold text-foreground">KYC Settings</h2>
     <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
-    <div className="flex items-center justify-between rounded-lg border p-4">
+    <div className="flex items-center justify-between rounded-xl border border-border/50 p-4 bg-card shadow-widget">
       <div>
         <Label>Require KYC to trade?</Label>
         <p className="text-xs text-muted-foreground mt-1">Manual approval is default when enabled</p>
@@ -24,8 +24,8 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
       <Switch checked={kycEnabled} onCheckedChange={onKycEnabledChange} />
     </div>
     {kycEnabled && (
-      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.3 }} className="space-y-4">
-        <div className="rounded-lg border p-4">
+      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="space-y-4">
+        <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
           <Label className="text-sm font-medium">Documents (optional – select which the owner requires)</Label>
           <div className="grid grid-cols-2 gap-3 mt-3">
             {Object.entries(kycDocs).map(([key, val]) => (
@@ -36,7 +36,7 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
       </motion.div>
     )}
     {!kycEnabled && (
-      <div className="rounded-lg border p-4 bg-secondary/50">
+      <div className="rounded-xl border border-border/50 p-4 bg-muted/40">
         <p className="text-sm text-muted-foreground">{brandLabel} – KYC: No</p>
       </div>
     )}

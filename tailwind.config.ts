@@ -55,6 +55,13 @@ export default {
             DEFAULT: "hsl(var(--card))",
             foreground: "hsl(var(--card-foreground))",
           },
+          tint: {
+            blue: "hsl(var(--tint-blue))",
+            mint: "hsl(var(--tint-mint))",
+            amber: "hsl(var(--tint-amber))",
+            lavender: "hsl(var(--tint-lavender))",
+            rose: "hsl(var(--tint-rose))",
+          },
           sidebar: {
             DEFAULT: "hsl(var(--sidebar-background))",
             foreground: "hsl(var(--sidebar-foreground))",
@@ -70,6 +77,19 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "var(--radius-xl)",
+        "2xl": "1.5rem",
+        "3xl": "1.75rem",
+        card: "var(--radius-card)",
+      },
+      boxShadow: {
+        soft: "0 2px 12px -2px rgba(0, 0, 0, 0.06), 0 6px 20px -4px rgba(0, 0, 0, 0.08)",
+        card: "0 4px 16px -4px rgba(0, 0, 0, 0.08), 0 12px 32px -8px rgba(0, 0, 0, 0.1)",
+        "card-hover": "0 12px 32px -8px rgba(0, 0, 0, 0.12), 0 20px 56px -12px rgba(0, 0, 0, 0.1)",
+        widget: "0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 8px 24px -4px rgba(0, 0, 0, 0.06)",
+      },
+      transitionTimingFunction: {
+        smooth: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       keyframes: {
         "accordion-down": {
@@ -88,10 +108,25 @@ export default {
             height: "0",
           },
         },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(12px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.98)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-in-scale": "fade-in-scale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
     },
   },

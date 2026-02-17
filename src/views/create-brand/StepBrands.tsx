@@ -23,7 +23,7 @@ export const StepBrands = ({ brands, onAddBrand, onRemoveBrand, onUpdateBrand }:
           key={i}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: i * 0.1 }}
+          transition={{ duration: 0.35, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
           className="flex gap-3 items-end"
         >
           <div className="flex-1 space-y-1.5">
@@ -41,7 +41,7 @@ export const StepBrands = ({ brands, onAddBrand, onRemoveBrand, onUpdateBrand }:
           )}
         </motion.div>
       ))}
-      <Button variant="outline" size="sm" onClick={onAddBrand} className="mt-2">
+      <Button variant="outline" size="sm" onClick={onAddBrand} className="mt-2 rounded-xl">
         <Plus className="w-4 h-4 mr-1" /> Add Brand
       </Button>
     </div>
