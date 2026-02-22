@@ -4,7 +4,13 @@ import { StepCommunicationProviders } from "@/views/create-brand";
 export const StepCommunicationDemo = () => {
   const [emailProvider, setEmailProvider] = useState<"maileroo" | "alexders" | "other">("maileroo");
   const [selectedEmailTemplates, setSelectedEmailTemplates] = useState<Record<string, boolean>>({
-    ClientAuth: true, LeadInitialDetails: true, ClientChangeCreds: true, UserChangeCreds: true,
+    ClientAuth: false, LeadInitialDetails: false, ClientChangeCreds: false, UserChangeCreds: false,
+  });
+  const [emailTemplateContent, setEmailTemplateContent] = useState<Record<string, { subject: string; body: string }>>({
+    ClientAuth: { subject: "", body: "" },
+    LeadInitialDetails: { subject: "", body: "" },
+    ClientChangeCreds: { subject: "", body: "" },
+    UserChangeCreds: { subject: "", body: "" },
   });
   const [voipProvider, setVoipProvider] = useState<"voicex" | "other" | null>("voicex");
   const [voipPhoneNumbers, setVoipPhoneNumbers] = useState("50");
@@ -21,6 +27,8 @@ export const StepCommunicationDemo = () => {
       onEmailProviderChange={setEmailProvider}
       selectedEmailTemplates={selectedEmailTemplates}
       onEmailTemplatesChange={setSelectedEmailTemplates}
+      emailTemplateContent={emailTemplateContent}
+      onEmailTemplateContentChange={(key, val) => setEmailTemplateContent((prev) => ({ ...prev, [key]: val }))}
       voipProvider={voipProvider}
       onVoipProviderChange={setVoipProvider}
       voipPhoneNumbers={voipPhoneNumbers}

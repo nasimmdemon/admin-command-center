@@ -7,6 +7,8 @@ export { StepCommunicationDemo } from "./StepCommunicationDemo";
 export { StepUploadWorkersDemo } from "./StepUploadWorkersDemo";
 export { StepUploadLogoDemo } from "./StepUploadLogoDemo";
 export { StepTransformDemo } from "./StepTransformDemo";
+export { StepTransformVoipDemo } from "./StepTransformVoipDemo";
+export { StepTransformEmailsDemo } from "./StepTransformEmailsDemo";
 export { StepTraderPlatformDemo } from "./StepTraderPlatformDemo";
 export { StepTraderMarketsDemo } from "./StepTraderMarketsDemo";
 export { StepTradingFeesDemo } from "./StepTradingFeesDemo";

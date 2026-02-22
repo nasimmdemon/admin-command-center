@@ -73,6 +73,8 @@ export interface GlobalSettings {
   max_deposit_amount: number;
   min_withdrawal_amount: number;
   max_withdrawal_amount: number;
+  /** When bank transfer withdrawal is enabled: use client's credit/deposit data instead of asking for bank details */
+  useCreditDataOnWithdrawal?: boolean;
 }
 
 export interface DepositConfig {
@@ -118,6 +120,7 @@ export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
   max_deposit_amount: 100000,
   min_withdrawal_amount: 10,
   max_withdrawal_amount: 50000,
+  useCreditDataOnWithdrawal: false,
 };
 
 export const METHOD_LABELS: Record<string, string> = {

@@ -22,6 +22,7 @@ export interface BrandConfig {
   withdrawalBankDetails: BankDetails;
   withdrawalWireDetails: WireTransferDetails;
   kycEnabled: boolean;
+  kycRequireSelfie: boolean;
   kycDocs: Record<string, boolean>;
   privacyPolicy: string;
   terms: string;
@@ -39,6 +40,10 @@ export interface BrandConfig {
   voipOutboundCountryInput: string;
   providersMapData: string;
   selectedEmailTemplates: Record<string, boolean>;
+  /** Subject and body per template */
+  emailTemplateContent: Record<string, { subject: string; body: string }>;
+  /** Brand logo URL (base64 or uploaded URL) – used in emails */
+  logoUrl: string;
   emailProvidersAllowed: Record<string, boolean>;
   phoneExtensionsAllowed: boolean;
   allowedExtensionPhones: string[];
@@ -81,7 +86,8 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   withdrawalBankDetails: { ...DEFAULT_BANK_DETAILS },
   withdrawalWireDetails: { ...DEFAULT_WIRE_DETAILS },
   kycEnabled: true,
-  kycDocs: { Passport: false, "ID": false, "Utility Bill": false, "Require Selfie": false },
+  kycRequireSelfie: false,
+  kycDocs: { Passport: false, "ID": false, "Utility Bill": false },
   privacyPolicy: "",
   terms: "",
   emailProvider: "maileroo",
@@ -97,7 +103,14 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   voipAddOutboundFrom: "",
   voipOutboundCountryInput: "",
   providersMapData: JSON.stringify(defaultVoipCoverage, null, 2),
-  selectedEmailTemplates: { ClientAuth: true, LeadInitialDetails: true, ClientChangeCreds: true, UserChangeCreds: true },
+  selectedEmailTemplates: { ClientAuth: false, LeadInitialDetails: false, ClientChangeCreds: false, UserChangeCreds: false },
+  emailTemplateContent: {
+    ClientAuth: { subject: "", body: "" },
+    LeadInitialDetails: { subject: "", body: "" },
+    ClientChangeCreds: { subject: "", body: "" },
+    UserChangeCreds: { subject: "", body: "" },
+  },
+  logoUrl: "",
   emailProvidersAllowed: { maileroo: true, alexders: false },
   phoneExtensionsAllowed: true,
   allowedExtensionPhones: [],

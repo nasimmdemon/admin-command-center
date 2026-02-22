@@ -15,6 +15,9 @@ interface StepCommunicationProvidersProps {
   onAlexdersFromEmailChange?: (v: string) => void;
   selectedEmailTemplates: Record<string, boolean>;
   onEmailTemplatesChange: (t: Record<string, boolean>) => void;
+  emailTemplateContent: Record<string, { subject: string; body: string }>;
+  onEmailTemplateContentChange: (key: string, value: { subject: string; body: string }) => void;
+  logoUrl?: string;
   voipProvider: "voicex" | "other" | null;
   onVoipProviderChange: (v: "voicex" | "other" | null) => void;
   voipPhoneNumbers: string;
@@ -49,7 +52,13 @@ export const StepCommunicationProviders = (props: StepCommunicationProvidersProp
         onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
         onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
       />
-      <EmailTemplatesSection selected={props.selectedEmailTemplates} onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })} />
+      <EmailTemplatesSection
+        selected={props.selectedEmailTemplates}
+        onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })}
+        content={props.emailTemplateContent}
+        onContentChange={(key, val) => props.onEmailTemplateContentChange(key, val)}
+        logoUrl={props.logoUrl}
+      />
     </div>
     <VoipProviderSection
       provider={props.voipProvider}

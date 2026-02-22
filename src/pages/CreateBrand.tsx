@@ -15,7 +15,8 @@ import {
   StepCommunicationProviders,
   StepUploadWorkers,
   StepUploadLogo,
-  StepTransform,
+  StepTransformVoip,
+  StepTransformEmails,
   StepTraderPlatform,
   StepTraderMarkets,
   StepTradingFees,
@@ -64,10 +65,6 @@ const CreateBrand = () => {
               onMethodsChange={(m) => updateBrandConfig(bi, "withdrawalMethods", m)}
               globalSettings={currentConfig.globalSettings}
               onGlobalSettingsChange={(s) => updateBrandConfig(bi, "globalSettings", s)}
-              withdrawalBankDetails={currentConfig.withdrawalBankDetails}
-              onWithdrawalBankDetailsChange={(d) => updateBrandConfig(bi, "withdrawalBankDetails", d)}
-              withdrawalWireDetails={currentConfig.withdrawalWireDetails}
-              onWithdrawalWireDetailsChange={(d) => updateBrandConfig(bi, "withdrawalWireDetails", d)}
             />
           </BrandStepWrapper>
         );
@@ -79,6 +76,8 @@ const CreateBrand = () => {
               brandDomain={state.brands[bi]?.domain || "domain.com"}
               kycEnabled={currentConfig.kycEnabled}
               onKycEnabledChange={(v) => updateBrandConfig(bi, "kycEnabled", v)}
+              kycRequireSelfie={currentConfig.kycRequireSelfie}
+              onKycRequireSelfieChange={(v) => updateBrandConfig(bi, "kycRequireSelfie", v)}
               kycDocs={currentConfig.kycDocs}
               onKycDocsChange={(d) => updateBrandConfig(bi, "kycDocs", d)}
             />
@@ -113,6 +112,9 @@ const CreateBrand = () => {
               onAlexdersFromEmailChange={(v) => updateBrandConfig(bi, "alexdersFromEmail", v)}
               selectedEmailTemplates={currentConfig.selectedEmailTemplates}
               onEmailTemplatesChange={(t) => updateBrandConfig(bi, "selectedEmailTemplates", t)}
+              emailTemplateContent={currentConfig.emailTemplateContent}
+              onEmailTemplateContentChange={(key, val) => updateBrandConfig(bi, "emailTemplateContent", { ...currentConfig.emailTemplateContent, [key]: val })}
+              logoUrl={currentConfig.logoUrl}
               voipProvider={currentConfig.voipProvider}
               onVoipProviderChange={(v) => updateBrandConfig(bi, "voipProvider", v)}
               voipPhoneNumbers={currentConfig.voipPhoneNumbers}
@@ -141,30 +143,26 @@ const CreateBrand = () => {
       case 8:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepUploadLogo brands={state.brands} brandIndex={bi} />
+            <StepUploadLogo
+              brands={state.brands}
+              brandIndex={bi}
+              logoUrl={currentConfig.logoUrl}
+              onLogoChange={(url) => updateBrandConfig(bi, "logoUrl", url)}
+            />
           </BrandStepWrapper>
         );
       case 9:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepTransform
+            <StepTransformVoip
               brandLabel={brandLabel}
               voipCoverageMap={currentConfig.voipCoverageMap}
-              emailProvidersAllowed={currentConfig.emailProvidersAllowed}
-              onEmailProvidersAllowedChange={(v) => updateBrandConfig(bi, "emailProvidersAllowed", v)}
               phoneExtensionsAllowed={currentConfig.phoneExtensionsAllowed}
               onPhoneExtensionsAllowedChange={(v) => updateBrandConfig(bi, "phoneExtensionsAllowed", v)}
               allowedExtensionPhones={currentConfig.allowedExtensionPhones}
               newAllowedExtensionPhone={currentConfig.newAllowedExtensionPhone}
               onAllowedExtensionPhonesChange={(v) => updateBrandConfig(bi, "allowedExtensionPhones", v)}
               onNewAllowedExtensionPhoneChange={(v) => updateBrandConfig(bi, "newAllowedExtensionPhone", v)}
-              autoGenPasswordForLeads={currentConfig.autoGenPasswordForLeads}
-              onAutoGenPasswordForLeadsChange={(v) => {
-                updateBrandConfig(bi, "autoGenPasswordForLeads", v);
-                if (v) updateBrandConfig(bi, "autoRejectNoInteractivity", true);
-              }}
-              autoRejectNoInteractivity={currentConfig.autoRejectNoInteractivity}
-              onAutoRejectNoInteractivityChange={(v) => updateBrandConfig(bi, "autoRejectNoInteractivity", v)}
               blockedCountries={currentConfig.blockedCountries}
               onBlockedCountriesChange={(v) => updateBrandConfig(bi, "blockedCountries", v)}
               newCountryCode={currentConfig.newCountryCode}
@@ -177,6 +175,21 @@ const CreateBrand = () => {
               onNewPhoneCodeChange={(v) => updateBrandConfig(bi, "newPhoneCode", v)}
               phoneCodeError={currentConfig.phoneCodeError}
               onPhoneCodeErrorChange={(v) => updateBrandConfig(bi, "phoneCodeError", v)}
+            />
+          </BrandStepWrapper>
+        );
+      case 10:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepTransformEmails
+              brandLabel={brandLabel}
+              autoGenPasswordForLeads={currentConfig.autoGenPasswordForLeads}
+              onAutoGenPasswordForLeadsChange={(v) => {
+                updateBrandConfig(bi, "autoGenPasswordForLeads", v);
+                if (v) updateBrandConfig(bi, "autoRejectNoInteractivity", true);
+              }}
+              autoRejectNoInteractivity={currentConfig.autoRejectNoInteractivity}
+              onAutoRejectNoInteractivityChange={(v) => updateBrandConfig(bi, "autoRejectNoInteractivity", v)}
               blockedEmailProviders={currentConfig.blockedEmailProviders}
               onBlockedEmailProvidersChange={(v) => updateBrandConfig(bi, "blockedEmailProviders", v)}
               newEmailProvider={currentConfig.newEmailProvider}
@@ -184,19 +197,19 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 10:
+      case 11:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderPlatform value={currentConfig.traderPlatform} onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)} />
           </BrandStepWrapper>
         );
-      case 11:
+      case 12:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderMarkets markets={currentConfig.traderMarkets} onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)} />
           </BrandStepWrapper>
         );
-      case 12:
+      case 13:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTradingFees
@@ -224,7 +237,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 13:
+      case 14:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepClientTas
@@ -239,7 +252,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 14:
+      case 15:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepDefaultSettings

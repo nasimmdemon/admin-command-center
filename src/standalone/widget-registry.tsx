@@ -22,12 +22,13 @@ const CREATE_BRAND_WIDGETS: WidgetDef[] = [
   { id: "step-communication", name: "Step 6: Communication", category: "create-brand", component: <CreateBrandDemos.StepCommunicationDemo />, description: "Email & VoIP providers" },
   { id: "step-upload-workers", name: "Step 7: Upload Workers", category: "create-brand", component: <CreateBrandDemos.StepUploadWorkersDemo />, description: "Worker upload" },
   { id: "step-upload-logo", name: "Step 8: Upload Logo", category: "create-brand", component: <CreateBrandDemos.StepUploadLogoDemo />, description: "Logo upload" },
-  { id: "step-transform", name: "Step 9: Transform", category: "create-brand", component: <CreateBrandDemos.StepTransformDemo />, description: "Transform config" },
-  { id: "step-trader-platform", name: "Step 10: Trader Platform", category: "create-brand", component: <CreateBrandDemos.StepTraderPlatformDemo />, description: "MT5 / No Trader" },
-  { id: "step-trader-markets", name: "Step 11: Trader Markets", category: "create-brand", component: <CreateBrandDemos.StepTraderMarketsDemo />, description: "Market selection" },
-  { id: "step-trading-fees", name: "Step 12: Trading Fees", category: "create-brand", component: <CreateBrandDemos.StepTradingFeesDemo />, description: "Open/close fees" },
-  { id: "step-client-tas", name: "Step 13: Client TAS", category: "create-brand", component: <CreateBrandDemos.StepClientTasDemo />, description: "Multi TAS settings" },
-  { id: "step-default-settings", name: "Step 14: Default Settings", category: "create-brand", component: <CreateBrandDemos.StepDefaultSettingsDemo />, description: "Timezone, language, currency" },
+  { id: "step-transform-voip", name: "Step 9: Transform VoIP", category: "create-brand", component: <CreateBrandDemos.StepTransformVoipDemo />, description: "VoIP & phone config" },
+  { id: "step-transform-emails", name: "Step 10: Transform Emails", category: "create-brand", component: <CreateBrandDemos.StepTransformEmailsDemo />, description: "Email automation" },
+  { id: "step-trader-platform", name: "Step 11: Trader Platform", category: "create-brand", component: <CreateBrandDemos.StepTraderPlatformDemo />, description: "MT5 / No Trader" },
+  { id: "step-trader-markets", name: "Step 12: Trader Markets", category: "create-brand", component: <CreateBrandDemos.StepTraderMarketsDemo />, description: "Market selection" },
+  { id: "step-trading-fees", name: "Step 13: Trading Fees", category: "create-brand", component: <CreateBrandDemos.StepTradingFeesDemo />, description: "Open/close fees" },
+  { id: "step-client-tas", name: "Step 14: Client TAS", category: "create-brand", component: <CreateBrandDemos.StepClientTasDemo />, description: "Multi TAS settings" },
+  { id: "step-default-settings", name: "Step 15: Default Settings", category: "create-brand", component: <CreateBrandDemos.StepDefaultSettingsDemo />, description: "Timezone, language, currency" },
 ];
 
 const MONITOR_WIDGETS: WidgetDef[] = [

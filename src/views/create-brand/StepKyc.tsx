@@ -8,11 +8,13 @@ interface StepKycProps {
   brandDomain: string;
   kycEnabled: boolean;
   onKycEnabledChange: (v: boolean) => void;
+  kycRequireSelfie: boolean;
+  onKycRequireSelfieChange: (v: boolean) => void;
   kycDocs: Record<string, boolean>;
   onKycDocsChange: (docs: Record<string, boolean>) => void;
 }
 
-export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChange, kycDocs, onKycDocsChange }: StepKycProps) => (
+export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChange, kycRequireSelfie, onKycRequireSelfieChange, kycDocs, onKycDocsChange }: StepKycProps) => (
   <div className="space-y-5">
     <h2 className="text-lg font-semibold text-foreground">KYC Settings</h2>
     <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
@@ -25,6 +27,13 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
     </div>
     {kycEnabled && (
       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} className="space-y-4">
+        <div className="flex items-center justify-between rounded-xl border border-border/50 p-4 bg-card shadow-widget">
+          <div>
+            <Label>Require selfie?</Label>
+            <p className="text-xs text-muted-foreground mt-1">Documents only, or documents + selfie for KYC</p>
+          </div>
+          <Switch checked={kycRequireSelfie} onCheckedChange={onKycRequireSelfieChange} />
+        </div>
         <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
           <Label className="text-sm font-medium">Documents (optional – select which the owner requires)</Label>
           <div className="grid grid-cols-2 gap-3 mt-3">

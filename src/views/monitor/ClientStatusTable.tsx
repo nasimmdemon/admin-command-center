@@ -40,7 +40,7 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-border/60 text-xs text-muted-foreground uppercase tracking-wider bg-muted/30">
+            <tr className="border-b border-border/40 text-xs text-muted-foreground uppercase tracking-wider bg-muted/20">
               <th className="text-left p-4 w-10 font-medium"></th>
               <th className="text-left p-4 font-medium">Client Name</th>
               <th className="text-left p-4 font-medium">Name</th>
@@ -57,7 +57,7 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + i * 0.1, duration: 0.3 }}
-                  className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors duration-300 cursor-pointer"
+                  className="border-b border-border/40 last:border-0 hover:bg-muted/20 transition-colors duration-300 cursor-pointer"
                   onClick={() => toggleExpand(c.id)}
                 >
                   <td className="p-4 w-10">
@@ -91,13 +91,13 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
                   {expandedId === c.id && (
                     <motion.tr
                       key={`${c.id}-expanded`}
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ height: 0 }}
+                      animate={{ height: "auto" }}
+                      exit={{ height: 0 }}
+                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                       className="border-b last:border-0"
                     >
-                      <td colSpan={6} className="p-0 bg-muted/20">
+                      <td colSpan={6} className="p-0 bg-muted/20 overflow-hidden">
                         <div className="p-4">
                           <ClientBrandsContent
                             client={c}
@@ -120,7 +120,7 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
         {clients.map((c) => {
           const isExpanded = expandedId === c.id;
           return (
-            <div key={c.id} className="rounded-[1.25rem] border border-border/50 overflow-hidden bg-card shadow-card">
+            <div key={c.id} className="rounded-2xl border border-border/40 overflow-hidden bg-card shadow-widget">
               <div
                 className="p-4 space-y-2 cursor-pointer hover:bg-muted/30 transition-colors duration-300"
                 onClick={() => toggleExpand(c.id)}
@@ -157,10 +157,10 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{ height: 0 }}
+                    animate={{ height: "auto" }}
+                    exit={{ height: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="overflow-hidden border-t bg-muted/20"
                   >
                     <div className="p-4">
