@@ -18,6 +18,7 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
   <div className="space-y-5">
     <h2 className="text-lg font-semibold text-foreground">KYC Settings</h2>
     <p className="text-sm text-muted-foreground">{brandLabel}: {brandDomain}</p>
+    <p className="text-xs text-muted-foreground">KYC with or without; when enabled, documents are allowed but not required.</p>
     <div className="flex items-center justify-between rounded-xl border border-border/50 p-4 bg-card shadow-widget">
       <div>
         <Label>Require KYC to trade?</Label>
@@ -35,7 +36,8 @@ export const StepKyc = ({ brandLabel, brandDomain, kycEnabled, onKycEnabledChang
           <Switch checked={kycRequireSelfie} onCheckedChange={onKycRequireSelfieChange} />
         </div>
         <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
-          <Label className="text-sm font-medium">Documents (optional – select which the owner requires)</Label>
+          <Label className="text-sm font-medium">Documents (allowed, not required – select which the owner accepts)</Label>
+          <p className="text-xs text-muted-foreground mt-1">KYC with or without; documents are optional. Check to allow each type.</p>
           <div className="grid grid-cols-2 gap-3 mt-3">
             {Object.entries(kycDocs).map(([key, val]) => (
               <CheckCard key={key} label={key} checked={val} onChange={(v) => onKycDocsChange({ ...kycDocs, [key]: v })} />

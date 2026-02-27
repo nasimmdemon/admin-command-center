@@ -6,6 +6,8 @@ import { BrandConfig, getDefaultBrandConfig } from "@/types/brand-config-per-bra
 export interface BrandEntry {
   name: string;
   domain: string;
+  /** Fallback domain; same content deployed to both. When main is not live, substitute shows content automatically */
+  substituteDomain: string;
 }
 
 export interface CreateBrandState {
@@ -23,16 +25,17 @@ export interface CreateBrandLocationState {
 
 const getDefaultInitialState = (): CreateBrandState => ({
   step: 1,
-  brands: [{ name: "", domain: "" }],
+  brands: [{ name: "", domain: "", substituteDomain: "" }],
   brandConfigs: [getDefaultBrandConfig()],
   currentBrandSlide: 0,
 });
 
 function getInitialStateFromLocation(locationState: CreateBrandLocationState | null): CreateBrandState {
   if (locationState?.editBrand) {
+    const d = locationState.editBrand.domain;
     return {
       step: 1,
-      brands: [{ name: locationState.editBrand.name, domain: locationState.editBrand.domain }],
+      brands: [{ name: locationState.editBrand.name, domain: d, substituteDomain: d }],
       brandConfigs: [getDefaultBrandConfig()],
       currentBrandSlide: 0,
     };
@@ -57,7 +60,7 @@ export function useCreateBrand() {
   const addBrand = () =>
     setState((s) => ({
       ...s,
-      brands: [...s.brands, { name: "", domain: "" }],
+      brands: [...s.brands, { name: "", domain: "", substituteDomain: "" }],
       brandConfigs: [...s.brandConfigs, getDefaultBrandConfig()],
     }));
 
@@ -69,7 +72,7 @@ export function useCreateBrand() {
       currentBrandSlide: Math.min(s.currentBrandSlide, Math.max(0, s.brands.length - 2)),
     }));
 
-  const updateBrand = (i: number, field: "name" | "domain", value: string) => {
+  const updateBrand = (i: number, field: keyof BrandEntry, value: string) => {
     setState((s) => {
       const updated = [...s.brands];
       updated[i] = { ...updated[i], [field]: value };

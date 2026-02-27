@@ -5,7 +5,7 @@ export const StepUploadLogoDemo = () => {
   const [logoUrl, setLogoUrl] = useState("");
   return (
     <StepUploadLogo
-      brands={[{ name: "Demo Brand", domain: "demo.com" }, { name: "Brand 2", domain: "brand2.com" }]}
+      brands={[{ name: "Demo Brand", domain: "demo.com", substituteDomain: "demo.com" }, { name: "Brand 2", domain: "brand2.com", substituteDomain: "brand2.com" }]}
       logoUrl={logoUrl}
       onLogoChange={setLogoUrl}
     />

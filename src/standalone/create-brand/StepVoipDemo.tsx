@@ -1,18 +1,7 @@
 import { useState } from "react";
-import { StepCommunicationProviders } from "@/views/create-brand";
+import { StepVoipConfig } from "@/views/create-brand";
 
-export const StepCommunicationDemo = () => {
-  const [emailProvider, setEmailProvider] = useState<"maileroo" | "alexders" | "other">("maileroo");
-  const [selectedEmailTemplates, setSelectedEmailTemplates] = useState<Record<string, boolean>>({
-    ClientCardEmailFromUser: false, ClientAuth: false, LeadInitialDetails: false, ClientChangeCreds: false, UserChangeCreds: false,
-  });
-  const [emailTemplateContent, setEmailTemplateContent] = useState<Record<string, { subject: string; body: string }>>({
-    ClientCardEmailFromUser: { subject: "", body: "" },
-    ClientAuth: { subject: "", body: "" },
-    LeadInitialDetails: { subject: "", body: "" },
-    ClientChangeCreds: { subject: "", body: "" },
-    UserChangeCreds: { subject: "", body: "" },
-  });
+export const StepVoipDemo = () => {
   const [voipProvider, setVoipProvider] = useState<"voicex" | "other" | null>("voicex");
   const [voipPhoneNumbers, setVoipPhoneNumbers] = useState("50");
   const [voipCountries, setVoipCountries] = useState("25");
@@ -23,13 +12,7 @@ export const StepCommunicationDemo = () => {
     JSON.stringify({ US: ["US", "CA", "MX"], GB: ["GB", "US", "FR"], FR: ["FR", "GB", "DE"] }, null, 2)
   );
   return (
-    <StepCommunicationProviders
-      emailProvider={emailProvider}
-      onEmailProviderChange={setEmailProvider}
-      selectedEmailTemplates={selectedEmailTemplates}
-      onEmailTemplatesChange={setSelectedEmailTemplates}
-      emailTemplateContent={emailTemplateContent}
-      onEmailTemplateContentChange={(key, val) => setEmailTemplateContent((prev) => ({ ...prev, [key]: val }))}
+    <StepVoipConfig
       voipProvider={voipProvider}
       onVoipProviderChange={setVoipProvider}
       voipPhoneNumbers={voipPhoneNumbers}

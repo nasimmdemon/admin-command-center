@@ -2,7 +2,7 @@ import { useState } from "react";
 import { StepBrands } from "@/views/create-brand";
 
 export const StepBrandsDemo = () => {
-  const [brands, setBrands] = useState([{ name: "Demo Brand", domain: "demo.com" }]);
+  const [brands, setBrands] = useState([{ name: "Demo Brand", domain: "demo.com", substituteDomain: "demo.com" }]);
   return (
     <StepBrands
       brands={brands}

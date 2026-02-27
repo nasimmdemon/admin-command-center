@@ -37,30 +37,39 @@ interface StepCommunicationProvidersProps {
 }
 
 export const StepCommunicationProviders = (props: StepCommunicationProvidersProps) => (
-  <div className="space-y-6">
+  <div className="space-y-8">
     <h2 className="text-lg font-semibold text-foreground">Communication Providers</h2>
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <EmailProviderSection
-        value={props.emailProvider}
-        onChange={props.onEmailProviderChange}
-        mailerooApiKey={props.mailerooApiKey}
-        mailerooFromEmail={props.mailerooFromEmail}
-        onMailerooApiKeyChange={props.onMailerooApiKeyChange}
-        onMailerooFromEmailChange={props.onMailerooFromEmailChange}
-        alexdersApiKey={props.alexdersApiKey}
-        alexdersFromEmail={props.alexdersFromEmail}
-        onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
-        onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
-      />
-      <EmailTemplatesSection
-        selected={props.selectedEmailTemplates}
-        onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })}
-        content={props.emailTemplateContent}
-        onContentChange={(key, val) => props.onEmailTemplateContentChange(key, val)}
-        logoUrl={props.logoUrl}
-      />
+
+    {/* Email section */}
+    <div className="rounded-2xl border border-border/50 p-6 bg-card shadow-widget space-y-6">
+      <h3 className="text-base font-semibold text-foreground">Email</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <EmailProviderSection
+          value={props.emailProvider}
+          onChange={props.onEmailProviderChange}
+          mailerooApiKey={props.mailerooApiKey}
+          mailerooFromEmail={props.mailerooFromEmail}
+          onMailerooApiKeyChange={props.onMailerooApiKeyChange}
+          onMailerooFromEmailChange={props.onMailerooFromEmailChange}
+          alexdersApiKey={props.alexdersApiKey}
+          alexdersFromEmail={props.alexdersFromEmail}
+          onAlexdersApiKeyChange={props.onAlexdersApiKeyChange}
+          onAlexdersFromEmailChange={props.onAlexdersFromEmailChange}
+        />
+        <EmailTemplatesSection
+          selected={props.selectedEmailTemplates}
+          onToggle={(key, val) => props.onEmailTemplatesChange({ ...props.selectedEmailTemplates, [key]: val })}
+          content={props.emailTemplateContent}
+          onContentChange={(key, val) => props.onEmailTemplateContentChange(key, val)}
+          logoUrl={props.logoUrl}
+        />
+      </div>
     </div>
-    <VoipProviderSection
+
+    {/* VoIP section */}
+    <div className="rounded-2xl border border-border/50 p-6 bg-card shadow-widget">
+      <h3 className="text-base font-semibold text-foreground mb-4">VoIP</h3>
+      <VoipProviderSection
       provider={props.voipProvider}
       onProviderChange={props.onVoipProviderChange}
       phoneNumbers={props.voipPhoneNumbers}
@@ -78,5 +87,6 @@ export const StepCommunicationProviders = (props: StepCommunicationProvidersProp
       providersMapData={props.providersMapData}
       onProvidersMapDataChange={props.onProvidersMapDataChange}
     />
+    </div>
   </div>
 );

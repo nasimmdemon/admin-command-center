@@ -73,6 +73,10 @@ export interface BrandConfig {
   timezone: string;
   language: string;
   currency: string;
+  /** Include WhatsApp Business for sending messages from admin account */
+  includeWhatsApp: boolean;
+  /** QR code data URL or pairing URL for WhatsApp Business connection (from backend) */
+  whatsappQrCode: string;
 }
 
 const defaultVoipCoverage = { US: ["US", "CA", "MX", "GB", "FR", "DE"], GB: ["GB", "US", "FR", "DE", "ES", "IT"], FR: ["FR", "GB", "DE", "ES", "IT", "BE"] };
@@ -87,7 +91,7 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   withdrawalWireDetails: { ...DEFAULT_WIRE_DETAILS },
   kycEnabled: true,
   kycRequireSelfie: false,
-  kycDocs: { Passport: false, "ID": false, "Utility Bill": false },
+  kycDocs: { Passport: false, "ID": false, "Utility Bill": false, "Driver Licence": false },
   privacyPolicy: "",
   terms: "",
   emailProvider: "maileroo",
@@ -103,8 +107,9 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   voipAddOutboundFrom: "",
   voipOutboundCountryInput: "",
   providersMapData: JSON.stringify(defaultVoipCoverage, null, 2),
-  selectedEmailTemplates: { ClientAuth: false, LeadInitialDetails: false, ClientChangeCreds: false, UserChangeCreds: false },
+  selectedEmailTemplates: { ClientCardEmailFromUser: false, ClientAuth: false, LeadInitialDetails: false, ClientChangeCreds: false, UserChangeCreds: false },
   emailTemplateContent: {
+    ClientCardEmailFromUser: { subject: "", body: "" },
     ClientAuth: { subject: "", body: "" },
     LeadInitialDetails: { subject: "", body: "" },
     ClientChangeCreds: { subject: "", body: "" },
@@ -140,4 +145,6 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   timezone: "UTC",
   language: "English",
   currency: "USD",
+  includeWhatsApp: false,
+  whatsappQrCode: "",
 });

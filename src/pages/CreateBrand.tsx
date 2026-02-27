@@ -12,7 +12,9 @@ import {
   StepBrands,
   StepKyc,
   StepTerms,
-  StepCommunicationProviders,
+  StepEmailConfig,
+  StepVoipConfig,
+  StepWhatsApp,
   StepUploadWorkers,
   StepUploadLogo,
   StepTransformVoip,
@@ -99,7 +101,7 @@ const CreateBrand = () => {
       case 6:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepCommunicationProviders
+            <StepEmailConfig
               emailProvider={currentConfig.emailProvider}
               onEmailProviderChange={(v) => updateBrandConfig(bi, "emailProvider", v)}
               mailerooApiKey={currentConfig.mailerooApiKey}
@@ -115,6 +117,13 @@ const CreateBrand = () => {
               emailTemplateContent={currentConfig.emailTemplateContent}
               onEmailTemplateContentChange={(key, val) => updateBrandConfig(bi, "emailTemplateContent", { ...currentConfig.emailTemplateContent, [key]: val })}
               logoUrl={currentConfig.logoUrl}
+            />
+          </BrandStepWrapper>
+        );
+      case 7:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepVoipConfig
               voipProvider={currentConfig.voipProvider}
               onVoipProviderChange={(v) => updateBrandConfig(bi, "voipProvider", v)}
               voipPhoneNumbers={currentConfig.voipPhoneNumbers}
@@ -134,13 +143,23 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 7:
+      case 8:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepWhatsApp
+              includeWhatsApp={currentConfig.includeWhatsApp}
+              onIncludeWhatsAppChange={(v) => updateBrandConfig(bi, "includeWhatsApp", v)}
+              whatsappQrCode={currentConfig.whatsappQrCode}
+            />
+          </BrandStepWrapper>
+        );
+      case 9:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepUploadWorkers brands={state.brands} brandIndex={bi} />
           </BrandStepWrapper>
         );
-      case 8:
+      case 10:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepUploadLogo
@@ -151,7 +170,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 9:
+      case 11:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTransformVoip
@@ -178,7 +197,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 10:
+      case 12:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTransformEmails
@@ -197,19 +216,19 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 11:
+      case 13:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderPlatform value={currentConfig.traderPlatform} onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)} />
           </BrandStepWrapper>
         );
-      case 12:
+      case 14:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderMarkets markets={currentConfig.traderMarkets} onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)} />
           </BrandStepWrapper>
         );
-      case 13:
+      case 15:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTradingFees
@@ -237,7 +256,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 14:
+      case 16:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepClientTas
@@ -252,7 +271,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 15:
+      case 17:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepDefaultSettings
