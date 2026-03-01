@@ -11,6 +11,7 @@ import {
   DEFAULT_GLOBAL_SETTINGS,
 } from "./brand-config";
 import { buildDefaultTraderMarkets } from "@/lib/symbol-enums/market_symbols_map";
+import type { VoipDeskConfig } from "./voip-desk";
 
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
@@ -35,6 +36,10 @@ export interface BrandConfig {
   voipPhoneNumbers: string;
   voipCountries: string;
   voipCoverageMap: Record<string, string[]>;
+  /** "legacy" = brand-level phones; "desk" = per-desk allocation (Brand→Dept→Desk) */
+  voipMode: "legacy" | "desk";
+  /** Per-desk VoIP: phone count + origin→destinations per desk */
+  voipDeskConfigs: VoipDeskConfig[];
   voipOriginCountryInput: string;
   voipAddOutboundFrom: string;
   voipOutboundCountryInput: string;
@@ -49,7 +54,13 @@ export interface BrandConfig {
   allowedExtensionPhones: string[];
   newAllowedExtensionPhone: string;
   autoGenPasswordForLeads: boolean;
+  /** When true, welcome email includes link for client to change password */
+  includePasswordChangeLinkInEmail: boolean;
   autoRejectNoInteractivity: boolean;
+  /** Days of no interaction before auto-reject (when autoRejectNoInteractivity is on) */
+  autoRejectDaysAfterWelcome: number;
+  /** Require standard email format (user@domain.com) for client signup */
+  emailFormatValidation: boolean;
   blockedCountries: string[];
   newCountryCode: string;
   countryCodeError: string;
@@ -103,6 +114,8 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   voipPhoneNumbers: "50",
   voipCountries: "25",
   voipCoverageMap: defaultVoipCoverage,
+  voipMode: "legacy",
+  voipDeskConfigs: [],
   voipOriginCountryInput: "",
   voipAddOutboundFrom: "",
   voipOutboundCountryInput: "",
@@ -121,7 +134,10 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   allowedExtensionPhones: [],
   newAllowedExtensionPhone: "",
   autoGenPasswordForLeads: true,
+  includePasswordChangeLinkInEmail: true,
   autoRejectNoInteractivity: true,
+  autoRejectDaysAfterWelcome: 7,
+  emailFormatValidation: true,
   blockedCountries: [],
   newCountryCode: "",
   countryCodeError: "",

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ShortcodeProtectedInput, ShortcodeProtectedTextarea } from "@/components/brand-wizard/ShortcodeProtectedInput";
 import { Button } from "@/components/ui/button";
@@ -137,18 +137,19 @@ export const EmailTemplatesSection = ({ selected, onToggle, content, onContentCh
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-1">
-            <div className="rounded-xl border border-border/30 p-3 bg-muted/10">
-              <p className="text-xs text-muted-foreground mb-2">Insert shortcodes — cursor stays after insertion</p>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="rounded-xl border border-dashed border-primary/30 p-4 bg-primary/5">
+              <p className="text-xs font-medium text-foreground mb-4">Click to insert into subject</p>
+              <div className="flex flex-wrap gap-2">
                 {EMAIL_SHORTCODES.map(({ code, label }) => (
                   <button
                     key={code}
                     type="button"
                     onClick={() => insertShortcodeInSubject(code)}
-                    className="px-2.5 py-1 rounded-lg bg-background border border-border/40 text-xs font-mono hover:bg-primary/10 hover:border-primary/30 transition-colors"
-                    title={`Subject: ${label}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary font-medium text-xs hover:bg-primary/20 hover:border-primary/50 transition-colors shadow-sm"
+                    title={`Insert ${label} into subject`}
                   >
-                    {code}
+                    <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    <span className="font-mono">{code}</span>
                   </button>
                 ))}
               </div>
@@ -165,15 +166,16 @@ export const EmailTemplatesSection = ({ selected, onToggle, content, onContentCh
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium">Message body</Label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {EMAIL_SHORTCODES.map(({ code }) => (
                   <button
                     key={code}
                     type="button"
                     onClick={() => insertShortcodeInBody(code)}
-                    className="px-2.5 py-1 rounded-lg bg-muted/30 border border-border/30 text-xs font-mono hover:bg-primary/10 hover:border-primary/30 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30 text-primary font-medium text-xs hover:bg-primary/20 hover:border-primary/50 transition-colors shadow-sm"
                   >
-                    {code}
+                    <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    <span className="font-mono">{code}</span>
                   </button>
                 ))}
               </div>

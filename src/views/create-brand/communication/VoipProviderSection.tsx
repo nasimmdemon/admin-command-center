@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ExternalLink, Info, MapPin } from "lucide-react";
+import { ExternalLink, Info, MapPin, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountryInput } from "@/components/CountryInput";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InteractiveWorldMap from "@/components/brand-wizard/InteractiveWorldMap";
 import { ProviderOptionCard } from "./ProviderOptionCard";
+import { VoipDeskConfigSection } from "./VoipDeskConfigSection";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
 
 interface VoipProviderSectionProps {
@@ -27,6 +28,10 @@ interface VoipProviderSectionProps {
   onOutboundCountryInputChange: (v: string) => void;
   providersMapData: string;
   onProvidersMapDataChange: (v: string) => void;
+  voipMode?: "legacy" | "desk";
+  onVoipModeChange?: (v: "legacy" | "desk") => void;
+  voipDeskConfigs?: import("@/types/voip-desk").VoipDeskConfig[];
+  onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
 }
 
 export const VoipProviderSection = ({
@@ -46,6 +51,10 @@ export const VoipProviderSection = ({
   onOutboundCountryInputChange,
   providersMapData,
   onProvidersMapDataChange,
+  voipMode = "legacy",
+  onVoipModeChange,
+  voipDeskConfigs = [],
+  onVoipDeskConfigsChange,
 }: VoipProviderSectionProps) => {
   const originCountries = Object.keys(coverageMap);
 
@@ -141,6 +150,36 @@ export const VoipProviderSection = ({
       )}
       {provider === "voicex" && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.3 }} className="space-y-4">
+          {onVoipModeChange && (
+            <div className="flex items-center gap-4 rounded-xl border border-border/40 p-4 bg-muted/5">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Allocation mode</Label>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onVoipModeChange("legacy")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "legacy" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+                >
+                  Legacy (brand-level)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onVoipModeChange("desk")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "desk" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+                >
+                  Desk-based (Dept → Desk)
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground">Desk mode: phones per desk by origin→destinations. No conflicts.</p>
+            </div>
+          )}
+
+          {voipMode === "desk" && onVoipDeskConfigsChange ? (
+            <VoipDeskConfigSection desks={voipDeskConfigs} onDesksChange={onVoipDeskConfigsChange} />
+          ) : (
+            <>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-border/50 p-3 bg-card shadow-widget">
               <p className="text-xs text-muted-foreground mb-1">Phone Numbers</p>
@@ -263,6 +302,8 @@ export const VoipProviderSection = ({
             </div>
             <Button variant="ghost" size="sm" onClick={clearCoverage} className="text-destructive hover:text-destructive">Clear all</Button>
           </div>
+            </>
+          )}
         </motion.div>
       )}
     </div>

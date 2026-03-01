@@ -1,0 +1,51 @@
+full_name,brand name,department name,desks,email,password,title,is_manager,client_data_prem,phone_number
+John Smith,mainstreetcpltd,qa,US,john.smith1@example.com,SecurePass123,Department Manager,TRUE,Add,35799100001
+Maria Garcia,mainstreetcpltd,co,FR,maria.garcia2@example.com,SecurePass123,Worker,FALSE,View,35799100002
+David Chen,mainstreetcpltd,re,AM,david.chen3@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100003
+Emma Wilson,mainstreetcpltd,qa,GB,emma.wilson4@example.com,SecurePass123,Department Manager,TRUE,Add,35799100004
+James Brown,mainstreetcpltd,co,DE,james.brown5@example.com,SecurePass123,Worker,TRUE,View,35799100005
+Sophie Martin,mainstreetcpltd,re,ES,sophie.martin6@example.com,SecurePass123,Worker,FALSE,Edit,35799100006
+Oliver Davis,mainstreetcpltd,qa,IT,oliver.davis7@example.com,SecurePass123,Department Manager,FALSE,Add,35799100007
+Isabella Lopez,mainstreetcpltd,co,FR,isabella.lopez8@example.com,SecurePass123,Worker,TRUE,View,35799100008
+Lucas Anderson,mainstreetcpltd,re,US,lucas.anderson9@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100009
+Ava Thomas,mainstreetcpltd,qa,CA,ava.thomas10@example.com,SecurePass123,Department Manager,FALSE,Add,35799100010
+Noah Jackson,mainstreetcpltd,co,FR,noah.jackson11@example.com,SecurePass123,Worker,TRUE,View,35799100011
+Mia White,mainstreetcpltd,re,GB,mia.white12@example.com,SecurePass123,Worker,FALSE,Edit,35799100012
+Ethan Harris,mainstreetcpltd,qa,AU,ethan.harris13@example.com,SecurePass123,Department Manager,TRUE,Add,35799100013
+Charlotte Clark,mainstreetcpltd,co,DE,charlotte.clark14@example.com,SecurePass123,Worker,FALSE,View,35799100014
+Alexander Lewis,mainstreetcpltd,re,AM,alexander.lewis15@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100015
+Amelia Walker,mainstreetcpltd,qa,NL,amelia.walker16@example.com,SecurePass123,Department Manager,FALSE,Add,35799100016
+Benjamin Hall,mainstreetcpltd,co,FR,benjamin.hall17@example.com,SecurePass123,Worker,TRUE,View,35799100017
+Harper Young,mainstreetcpltd,re,ES,harper.young18@example.com,SecurePass123,Worker,FALSE,Edit,35799100018
+William King,mainstreetcpltd,qa,BE,william.king19@example.com,SecurePass123,Department Manager,TRUE,Add,35799100019
+Evelyn Wright,mainstreetcpltd,co,DE,evelyn.wright20@example.com,SecurePass123,Worker,FALSE,View,35799100020
+Henry Scott,mainstreetcpltd,re,US,henry.scott21@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100021
+Abigail Green,mainstreetcpltd,qa,GB,abigail.green22@example.com,SecurePass123,Department Manager,FALSE,Add,35799100022
+Sebastian Adams,mainstreetcpltd,co,FR,sebastian.adams23@example.com,SecurePass123,Worker,TRUE,View,35799100023
+Emily Baker,mainstreetcpltd,re,AM,emily.baker24@example.com,SecurePass123,Worker,FALSE,Edit,35799100024
+Michael Nelson,mainstreetcpltd,qa,IT,michael.nelson25@example.com,SecurePass123,Department Manager,TRUE,Add,35799100025
+Elizabeth Hill,mainstreetcpltd,co,ES,elizabeth.hill26@example.com,SecurePass123,Worker,FALSE,View,35799100026
+Daniel Campbell,mainstreetcpltd,re,DE,daniel.campbell27@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100027
+Sofia Mitchell,mainstreetcpltd,qa,CA,sofia.mitchell28@example.com,SecurePass123,Department Manager,FALSE,Add,35799100028
+Matthew Roberts,mainstreetcpltd,co,FR,matthew.roberts29@example.com,SecurePass123,Worker,TRUE,View,35799100029
+Aria Turner,mainstreetcpltd,re,GB,aria.turner30@example.com,SecurePass123,Worker,FALSE,Edit,35799100030
+Joseph Phillips,mainstreetcpltd,qa,US,joseph.phillips31@example.com,SecurePass123,Department Manager,TRUE,Add,35799100031
+Scarlett Evans,mainstreetcpltd,co,DE,scarlett.evans32@example.com,SecurePass123,Worker,FALSE,View,35799100032
+David Parker,mainstreetcpltd,re,AM,david.parker33@example.com,SecurePass123,Super Admin,TRUE,Edit,35799100033
+Grace Edwards,mainstreetcpltd,qa,NL,grace.edwards34@example.com,SecurePass123,Department Manager,FALSE,Add,35799100034
+Andrew Collins,mainstreetcpltd,co,FR,andrew.collins35@example.com,SecurePass123,Worker,TRUE,View,35799100035
+,mainstreetcpltd,co,FR,empty.fields@example.com,SecurePass123,Worker,TRUE,View,35799100036
+Missing Desk CO,mainstreetcpltd,co,,missing.desk.co@example.com,SecurePass123,Worker,TRUE,View,35799100037
+Missing Desk RE,mainstreetcpltd,re,,missing.desk.re@example.com,SecurePass123,Worker,FALSE,Edit,35799100038
+First Dupe User,mainstreetcpltd,qa,US,duplicate.email@example.com,SecurePass123,Department Manager,TRUE,Add,35799100039
+Duplicate Email User,mainstreetcpltd,qa,US,duplicate.email@example.com,SecurePass123,Department Manager,FALSE,Add,35799100040
+Invalid Dept XYZ,mainstreetcpltd,XYZ,FR,invalid.dept@example.com,SecurePass123,Worker,TRUE,View,35799100041
+Bad Email Format,mainstreetcpltd,qa,US,not-an-email,SecurePass123,Department Manager,TRUE,Add,35799100042
+Wrong is_manager,mainstreetcpltd,co,FR,wrong.ismanager@example.com,SecurePass123,Worker,YES,View,35799100043
+Wrong client_prem,mainstreetcpltd,re,AM,wrong.clientprem@example.com,SecurePass123,Worker,TRUE,Delete,35799100044
+No Brand Match,unknownbrand123,qa,US,no.brand@example.com,SecurePass123,Department Manager,TRUE,Add,35799100045
+Missing Phone,mainstreetcpltd,qa,US,missing.phone@example.com,SecurePass123,Department Manager,TRUE,Add,
+Missing Password,mainstreetcpltd,co,FR,missing.password@example.com,,Worker,TRUE,View,35799100047
+No Title,mainstreetcpltd,re,GB,no.title@example.com,SecurePass123,,FALSE,Edit,35799100048
+Another Dupe,mainstreetcpltd,co,DE,triple.dupe@example.com,SecurePass123,Worker,TRUE,View,35799100050
+Triple Dupe User,mainstreetcpltd,re,ES,triple.dupe@example.com,SecurePass123,Worker,FALSE,Edit,35799100051

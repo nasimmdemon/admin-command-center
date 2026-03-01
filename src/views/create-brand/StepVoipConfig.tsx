@@ -17,6 +17,10 @@ interface StepVoipConfigProps {
   onVoipAddOutboundFromChange: (v: string) => void;
   onVoipOutboundCountryInputChange: (v: string) => void;
   onProvidersMapDataChange: (v: string) => void;
+  voipMode?: "legacy" | "desk";
+  onVoipModeChange?: (v: "legacy" | "desk") => void;
+  voipDeskConfigs?: import("@/types/voip-desk").VoipDeskConfig[];
+  onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
 }
 
 export const StepVoipConfig = (props: StepVoipConfigProps) => (
@@ -40,6 +44,10 @@ export const StepVoipConfig = (props: StepVoipConfigProps) => (
       onOutboundCountryInputChange={props.onVoipOutboundCountryInputChange}
       providersMapData={props.providersMapData}
       onProvidersMapDataChange={props.onProvidersMapDataChange}
+      voipMode={props.voipMode}
+      onVoipModeChange={props.onVoipModeChange}
+      voipDeskConfigs={props.voipDeskConfigs}
+      onVoipDeskConfigsChange={props.onVoipDeskConfigsChange}
     />
   </div>
 );
