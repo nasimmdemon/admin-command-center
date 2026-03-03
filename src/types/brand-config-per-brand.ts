@@ -146,7 +146,7 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   phoneCodeError: "",
   blockedEmailProviders: ["tempmail.com", "guerrillamail.com", "mailinator.com"],
   newEmailProvider: "",
-  traderPlatform: "MT5",
+  traderPlatform: "DEALING_MENU_WEBTRADER",
   traderMarkets: buildDefaultTraderMarkets(["CRYPTO - CFD'S", "FOREX", "COMMODITIES"]),
   openPositionFeeEnabled: false,
   openPositionFeeType: "fixed",

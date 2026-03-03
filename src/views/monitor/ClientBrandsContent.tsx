@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronRight, Pencil, Plus, Power, PowerOff, Trash2, TrendingUp, TrendingDown, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandMetricsDialog } from "./BrandMetricsDialog";
+import { EditBrandCategoryModal } from "./EditBrandCategoryModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ export const ClientBrandsContent = ({
 }: ClientBrandsContentProps) => {
   const [brandsExpanded, setBrandsExpanded] = useState(true);
   const [metricsBrand, setMetricsBrand] = useState<ClientBrand | null>(null);
+  const [editingBrand, setEditingBrand] = useState<{ client: MonitorClient; brand: ClientBrand } | null>(null);
 
   return (
     <div className="space-y-4">
@@ -117,7 +119,7 @@ export const ClientBrandsContent = ({
                               variant="outline"
                               size="icon"
                               className="h-8 w-8"
-                              onClick={(e) => { e.stopPropagation(); onEditBrand?.(client, brand); }}
+                              onClick={(e) => { e.stopPropagation(); setEditingBrand({ client, brand }); }}
                               title="Edit"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -240,7 +242,18 @@ export const ClientBrandsContent = ({
           onOpenChange={(open) => !open && setMetricsBrand(null)}
           brand={metricsBrand}
           client={client}
-          onEditBrand={onEditBrand}
+          onEditBrand={() => {
+            setMetricsBrand(null);
+            setEditingBrand({ client, brand: metricsBrand });
+          }}
+        />
+      )}
+      {editingBrand && (
+        <EditBrandCategoryModal
+          open={!!editingBrand}
+          onOpenChange={(open) => !open && setEditingBrand(null)}
+          client={editingBrand.client}
+          brand={editingBrand.brand}
         />
       )}
     </div>

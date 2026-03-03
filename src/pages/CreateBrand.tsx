@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/PageTransition";
 import DepositConfigStep from "@/components/brand-wizard/DepositConfigStep";
@@ -8,6 +8,8 @@ import WithdrawalConfigStep from "@/components/brand-wizard/WithdrawalConfigStep
 import { BrandStepWrapper } from "@/components/brand-wizard/BrandStepWrapper";
 import { useCreateBrand } from "@/controllers/useCreateBrand";
 import { ROUTES } from "@/models/routes";
+import { getCategoryLabelForStep } from "@/models/brand-wizard-categories";
+import { StepCreateMode } from "@/views/create-brand/StepCreateMode";
 import {
   StepBrands,
   StepKyc,
@@ -28,11 +30,18 @@ import {
 
 const CreateBrand = () => {
   const navigate = useNavigate();
-  const { state, isEditMode, addBrand, removeBrand, updateBrand, updateBrandConfig, next, prev, nextSlide, prevSlide, brandLabel, currentConfig, totalSteps } = useCreateBrand();
+  const { state, isEditMode, addBrand, removeBrand, updateBrand, updateBrandConfig, next, prev, nextSlide, prevSlide, brandLabel, currentConfig, totalSteps, setCreateMode } = useCreateBrand();
   const bi = state.currentBrandSlide;
 
   const renderStep = () => {
     switch (state.step) {
+      case 0:
+        return (
+          <StepCreateMode
+            value={state.createMode}
+            onChange={setCreateMode}
+          />
+        );
       case 1:
         return (
           <StepBrands
@@ -311,6 +320,11 @@ const CreateBrand = () => {
           </div>
 
           <div className="p-6 min-h-[300px]">
+            {getCategoryLabelForStep(state.step) && (
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                {getCategoryLabelForStep(state.step)}
+              </p>
+            )}
             <AnimatePresence mode="wait">
               <motion.div
                 key={state.step}
@@ -322,13 +336,40 @@ const CreateBrand = () => {
                 {renderStep()}
               </motion.div>
             </AnimatePresence>
+            <div className="mt-6 pt-4 border-t border-border/40">
+              <button
+                type="button"
+                onClick={() => {
+                  const json = JSON.stringify(
+                    { brands: state.brands, brandConfigs: state.brandConfigs },
+                    null,
+                    2
+                  );
+                  const blob = new Blob([json], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download JSON for this brand
+              </button>
+            </div>
           </div>
 
           <div className="p-6 border-t border-border/50 flex justify-between bg-muted/20">
-            <Button variant="outline" onClick={prev} disabled={state.step === 1}>
+            <Button variant="outline" onClick={prev} disabled={state.step === (isEditMode ? 1 : 0)}>
               <ArrowLeft className="w-4 h-4 mr-2" /> Previous
             </Button>
-            {state.step === totalSteps ? (
+            {state.step === 0 ? (
+              <Button onClick={next} disabled={!state.createMode}>
+                Next <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            ) : state.step === totalSteps ? (
               <Button onClick={() => { alert("Brand created! (mock)"); navigate(ROUTES.HOME); }}>
                 Finish Setup
               </Button>

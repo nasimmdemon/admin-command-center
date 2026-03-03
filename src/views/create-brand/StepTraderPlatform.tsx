@@ -8,66 +8,40 @@ interface StepTraderPlatformProps {
   onChange: (v: string) => void;
 }
 
+const OPTIONS = [
+  { id: "NO_TRADING", label: "CRM No Trading At All", desc: "CRM only, no trading capabilities" },
+  { id: "DEALING_MENU", label: "CRM with Dealing Menu", desc: "Backend dealing menu, no WebTrader" },
+  { id: "DEALING_MENU_WEBTRADER", label: "CRM with Dealing Menu & WebTrader", desc: "Full MetaTrader 5 platform with WebTrader" },
+  { id: "EXTERNAL", label: "External solution", desc: "Connect your own trading platform" },
+] as const;
+
 export const StepTraderPlatform = ({ value, onChange }: StepTraderPlatformProps) => (
   <div className="space-y-5">
     <h2 className="text-lg font-semibold text-foreground">TRADER Platform</h2>
     <div className="space-y-3">
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.3 }}
-        onClick={() => onChange("MT5")}
-        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
-          value === "MT5" ? "bg-tint-blue border-primary/60" : "bg-card border-border/50"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${value === "MT5" ? "border-primary" : "border-muted-foreground/30"}`}>
-            {value === "MT5" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+      {OPTIONS.map((opt) => (
+        <motion.button
+          key={opt.id}
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => onChange(opt.id)}
+          className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
+            value === opt.id ? "bg-tint-blue border-primary/60" : "bg-card border-border/50"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${value === opt.id ? "border-primary" : "border-muted-foreground/30"}`}>
+              {value === opt.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">{opt.label}</p>
+              <p className="text-xs text-muted-foreground">{opt.desc}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold text-foreground">HOUSE MT5</p>
-            <p className="text-xs text-muted-foreground">Full MetaTrader 5 platform</p>
-          </div>
-        </div>
-      </motion.button>
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.3 }}
-        onClick={() => onChange("NONE")}
-        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
-          value === "NONE" ? "bg-tint-amber border-warning/60" : "bg-card border-border/50"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${value === "NONE" ? "border-warning" : "border-muted-foreground/30"}`}>
-            {value === "NONE" && <div className="w-2.5 h-2.5 rounded-full bg-warning" />}
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">NO TRADER</p>
-            <p className="text-xs text-warning">Still able to trade but no WebTrader</p>
-          </div>
-        </div>
-      </motion.button>
-      <motion.button
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.3 }}
-        onClick={() => onChange("OTHER")}
-        className={`w-full rounded-xl border p-5 text-left transition-all duration-300 ease-smooth shadow-widget hover:shadow-card ${
-          value === "OTHER" ? "bg-tint-blue border-primary/60" : "bg-card border-border/50"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${value === "OTHER" ? "border-primary" : "border-muted-foreground/30"}`}>
-            {value === "OTHER" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-          </div>
-          <div>
-            <p className="font-semibold text-foreground">Other (external)</p>
-            <p className="text-xs text-muted-foreground">Connect your own trading platform</p>
-          </div>
-        </div>
-      </motion.button>
+        </motion.button>
+      ))}
     </div>
-    {value === "OTHER" && (
+    {value === "EXTERNAL" && (
       <motion.div
         initial={{ opacity: 0, height: 0 }}
         animate={{ opacity: 1, height: "auto" }}

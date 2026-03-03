@@ -1,4 +1,6 @@
 export const TOTAL_BRAND_WIZARD_STEPS = 16;
+/** Total steps when creating (includes mode selection at step 0) */
+export const TOTAL_CREATE_STEPS = 17;
 
 /** Fixed shortcodes – use these in templates; they are replaced at send time. Do not change the format. */
 export const EMAIL_SHORTCODES = [
