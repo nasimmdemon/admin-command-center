@@ -17,10 +17,14 @@ interface StepVoipConfigProps {
   onVoipAddOutboundFromChange: (v: string) => void;
   onVoipOutboundCountryInputChange: (v: string) => void;
   onProvidersMapDataChange: (v: string) => void;
-  voipMode?: "legacy" | "desk";
-  onVoipModeChange?: (v: "legacy" | "desk") => void;
+  voipMode?: "legacy" | "desk" | "worker";
+  onVoipModeChange?: (v: "legacy" | "desk" | "worker") => void;
   voipDeskConfigs?: import("@/types/voip-desk").VoipDeskConfig[];
   onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
+  voipQaDefault?: boolean;
+  onVoipQaDefaultChange?: (v: boolean) => void;
+  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
+  onVoipWorkerConfigsChange?: (v: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>) => void;
 }
 
 export const StepVoipConfig = (props: StepVoipConfigProps) => (
@@ -48,6 +52,10 @@ export const StepVoipConfig = (props: StepVoipConfigProps) => (
       onVoipModeChange={props.onVoipModeChange}
       voipDeskConfigs={props.voipDeskConfigs}
       onVoipDeskConfigsChange={props.onVoipDeskConfigsChange}
+      voipQaDefault={props.voipQaDefault}
+      onVoipQaDefaultChange={props.onVoipQaDefaultChange}
+      voipWorkerConfigs={props.voipWorkerConfigs}
+      onVoipWorkerConfigsChange={props.onVoipWorkerConfigsChange}
     />
   </div>
 );

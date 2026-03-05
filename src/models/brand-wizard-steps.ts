@@ -1,4 +1,4 @@
-export const TOTAL_BRAND_WIZARD_STEPS = 16;
+export const TOTAL_BRAND_WIZARD_STEPS = 17;
 /** Total steps when creating (includes mode selection at step 0) */
 export const TOTAL_CREATE_STEPS = 17;
 

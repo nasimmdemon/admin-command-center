@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ExternalLink, Info, MapPin, Layers } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CountryInput } from "@/components/CountryInput";
@@ -10,6 +11,7 @@ import InteractiveWorldMap from "@/components/brand-wizard/InteractiveWorldMap";
 import { ProviderOptionCard } from "./ProviderOptionCard";
 import { VoipDeskConfigSection } from "./VoipDeskConfigSection";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
+import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps } from "@/types/voip-desk";
 
 interface VoipProviderSectionProps {
   provider: "voicex" | "other" | null;
@@ -28,10 +30,14 @@ interface VoipProviderSectionProps {
   onOutboundCountryInputChange: (v: string) => void;
   providersMapData: string;
   onProvidersMapDataChange: (v: string) => void;
-  voipMode?: "legacy" | "desk";
-  onVoipModeChange?: (v: "legacy" | "desk") => void;
+  voipMode?: "legacy" | "desk" | "worker";
+  onVoipModeChange?: (v: "legacy" | "desk" | "worker") => void;
   voipDeskConfigs?: import("@/types/voip-desk").VoipDeskConfig[];
   onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
+  voipQaDefault?: boolean;
+  onVoipQaDefaultChange?: (v: boolean) => void;
+  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
+  onVoipWorkerConfigsChange?: (v: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>) => void;
 }
 
 export const VoipProviderSection = ({
@@ -55,6 +61,10 @@ export const VoipProviderSection = ({
   onVoipModeChange,
   voipDeskConfigs = [],
   onVoipDeskConfigsChange,
+  voipQaDefault = false,
+  onVoipQaDefaultChange,
+  voipWorkerConfigs = [],
+  onVoipWorkerConfigsChange,
 }: VoipProviderSectionProps) => {
   const originCountries = Object.keys(coverageMap);
 
@@ -156,7 +166,7 @@ export const VoipProviderSection = ({
                 <Layers className="w-4 h-4 text-muted-foreground" />
                 <Label className="text-sm font-medium">Allocation mode</Label>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => onVoipModeChange("legacy")}
@@ -171,13 +181,76 @@ export const VoipProviderSection = ({
                 >
                   Desk-based (Dept → Desk)
                 </button>
+                <button
+                  type="button"
+                  onClick={() => onVoipModeChange("worker")}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "worker" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+                >
+                  Worker-based
+                </button>
               </div>
-              <p className="text-xs text-muted-foreground">Desk mode: phones per desk by origin→destinations. No conflicts.</p>
+              <p className="text-xs text-muted-foreground">
+                {voipMode === "legacy" && "Brand-level phones. Destinations as on desks."}
+                {voipMode === "desk" && "Desk mode: phones per desk by origin→destinations. No conflicts."}
+                {voipMode === "worker" && "Each worker has own origin→destinations. Configure after uploading workers."}
+              </p>
+            </div>
+          )}
+
+          {onVoipQaDefaultChange && (
+            <div className="flex items-center justify-between rounded-xl border border-primary/20 p-4 bg-primary/5">
+              <div>
+                <Label className="text-sm font-medium">QA default: 1 number, all origins → all destinations</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">QA can call all desks regardless of desk config.</p>
+              </div>
+              <Switch checked={voipQaDefault} onCheckedChange={onVoipQaDefaultChange} />
             </div>
           )}
 
           {voipMode === "desk" && onVoipDeskConfigsChange ? (
-            <VoipDeskConfigSection desks={voipDeskConfigs} onDesksChange={onVoipDeskConfigsChange} />
+            <>
+              <VoipDeskConfigSection
+                desks={voipDeskConfigs}
+                onDesksChange={onVoipDeskConfigsChange}
+                voipQaDefault={voipQaDefault}
+              />
+              {voipDeskConfigs.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Coverage preview</Label>
+                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden">
+                    <InteractiveWorldMap
+                      variant="select"
+                      selectedCountries={Object.keys(mergeDeskCoverageMaps(voipDeskConfigs)).filter((c) => isValidISOCountryCode(c))}
+                      onCountryToggle={() => {}}
+                      coverageMap={mergeDeskCoverageMaps(voipDeskConfigs)}
+                      className="w-full h-full min-h-[280px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          ) : voipMode === "worker" ? (
+            <>
+              <div className="rounded-xl border border-dashed border-border/60 p-6 bg-muted/20 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Worker-based VoIP: each worker has own origin→destinations. Upload workers first, then configure per-worker VoIP in the Transform step.
+                </p>
+              </div>
+              {voipWorkerConfigs && voipWorkerConfigs.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Coverage preview</Label>
+                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden">
+                    <InteractiveWorldMap
+                      variant="select"
+                      selectedCountries={Object.keys(mergeWorkerCoverageMaps(voipWorkerConfigs)).filter((c) => isValidISOCountryCode(c))}
+                      onCountryToggle={() => {}}
+                      coverageMap={mergeWorkerCoverageMaps(voipWorkerConfigs)}
+                      className="w-full h-full min-h-[280px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
             <>
           <div className="grid grid-cols-2 gap-3">

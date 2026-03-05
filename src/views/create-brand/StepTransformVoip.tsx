@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { getPhoneCodesFromOutboundCountries } from "@/utils/countryCodes";
-import { getVoipDeskConflicts, mergeDeskCoverageMaps, type VoipDeskConfig } from "@/types/voip-desk";
+import { getVoipDeskConflicts, mergeDeskCoverageMaps, mergeWorkerCoverageMaps, type VoipDeskConfig } from "@/types/voip-desk";
 
 interface StepTransformVoipProps {
   brandLabel: string;
   voipCoverageMap?: Record<string, string[]>;
-  voipMode?: "legacy" | "desk";
+  voipMode?: "legacy" | "desk" | "worker";
   voipDeskConfigs?: VoipDeskConfig[];
+  voipQaDefault?: boolean;
+  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
   phoneExtensionsAllowed: boolean;
   onPhoneExtensionsAllowedChange: (v: boolean) => void;
   allowedExtensionPhones?: string[];
@@ -21,11 +23,25 @@ interface StepTransformVoipProps {
   onNewAllowedExtensionPhoneChange?: (v: string) => void;
 }
 
+const DEFAULT_QA_COUNTRIES = ["US", "GB", "FR", "DE", "ES", "IT", "CA", "AU", "NL", "BE"];
+
 const getEffectiveCoverageMap = (props: StepTransformVoipProps): Record<string, string[]> | undefined => {
+  let base: Record<string, string[]> = {};
   if (props.voipMode === "desk" && props.voipDeskConfigs && props.voipDeskConfigs.length > 0) {
-    return mergeDeskCoverageMaps(props.voipDeskConfigs);
+    base = mergeDeskCoverageMaps(props.voipDeskConfigs);
+  } else if (props.voipMode === "worker" && props.voipWorkerConfigs && props.voipWorkerConfigs.length > 0) {
+    base = mergeWorkerCoverageMaps(props.voipWorkerConfigs);
+  } else {
+    base = props.voipCoverageMap ?? {};
   }
-  return props.voipCoverageMap;
+  if (props.voipQaDefault) {
+    const all = new Set<string>(Object.keys(base));
+    for (const dests of Object.values(base)) dests.forEach((x) => all.add(x));
+    if (all.size === 0) DEFAULT_QA_COUNTRIES.forEach((c) => all.add(c));
+    const arr = [...all];
+    for (const o of arr) base[o] = [...new Set([...(base[o] || []), ...arr])];
+  }
+  return Object.keys(base).length > 0 ? base : undefined;
 };
 
 export const StepTransformVoip = (props: StepTransformVoipProps) => {

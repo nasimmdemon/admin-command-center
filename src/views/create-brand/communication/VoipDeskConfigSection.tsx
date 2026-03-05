@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { CountryInput } from "@/components/CountryInput";
-import { DEPARTMENTS, getVoipDeskConflicts, type VoipDeskConfig, type DepartmentId } from "@/types/voip-desk";
+import { DEPARTMENTS, getVoipDeskConflicts, getReCoRegionViolations, type VoipDeskConfig, type DepartmentId } from "@/types/voip-desk";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
 
 const emptyCoverage = (): Record<string, string[]> => ({});
@@ -15,9 +15,11 @@ const emptyCoverage = (): Record<string, string[]> => ({});
 interface VoipDeskConfigSectionProps {
   desks: VoipDeskConfig[];
   onDesksChange: (desks: VoipDeskConfig[]) => void;
+  /** When true, QA default is at brand level; per-desk QA toggle is hidden for QA desks */
+  voipQaDefault?: boolean;
 }
 
-export const VoipDeskConfigSection = ({ desks, onDesksChange }: VoipDeskConfigSectionProps) => {
+export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = false }: VoipDeskConfigSectionProps) => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editingOrigin, setEditingOrigin] = useState<{ deskId: string; from: string } | null>(null);
   const [newDestInput, setNewDestInput] = useState("");
@@ -81,6 +83,7 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange }: VoipDeskConfigSe
   };
 
   const conflicts = getVoipDeskConflicts(desks);
+  const reCoViolations = getReCoRegionViolations(desks);
 
   return (
     <div className="space-y-4">
@@ -95,6 +98,19 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange }: VoipDeskConfigSe
           <Plus className="w-4 h-4 mr-1" /> Add desk
         </Button>
       </div>
+
+      {reCoViolations.length > 0 && (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">RE & CO must share same region</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {reCoViolations.slice(0, 2).map((v) => `${v.reDesk} (${v.reCountry}) vs ${v.coDesk} (${v.coCountry})`).join("; ")}
+              {reCoViolations.length > 2 && ` (+${reCoViolations.length - 2} more)`}
+            </p>
+          </div>
+        </div>
+      )}
 
       {conflicts.length > 0 && (
         <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex gap-2">
@@ -132,12 +148,12 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange }: VoipDeskConfigSe
                       {desk.countryCode && ` (${desk.countryCode})`}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {desk.allOriginsAllDestinations ? "1 number, all origins → all destinations" : `${desk.phoneCount} numbers, ${Object.keys(desk.coverageMap).length} origins`}
+                      {desk.needsVoip === false ? "No VoIP (org-only)" : desk.allOriginsAllDestinations ? "1 number, all origins → all destinations" : `${desk.phoneCount} numbers, ${Object.keys(desk.coverageMap).length} origins`}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">{desk.phoneCount} phones</span>
+                  <span className="text-xs text-muted-foreground">{desk.needsVoip === false ? "—" : `${desk.phoneCount} phones`}</span>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); removeDesk(desk.id); }}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
@@ -190,14 +206,23 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange }: VoipDeskConfigSe
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={!!desk.allOriginsAllDestinations}
-                          onCheckedChange={(v) => updateDesk(desk.id, { allOriginsAllDestinations: v, coverageMap: v ? emptyCoverage() : desk.coverageMap })}
+                          checked={desk.needsVoip !== false}
+                          onCheckedChange={(v) => updateDesk(desk.id, { needsVoip: v })}
                         />
-                        <Label className="text-sm">QA default: 1 number, all origins → all destinations</Label>
+                        <Label className="text-sm">Needs VoIP number</Label>
                       </div>
+                      {desk.departmentId === "QA" && !voipQaDefault && (
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={!!desk.allOriginsAllDestinations}
+                            onCheckedChange={(v) => updateDesk(desk.id, { allOriginsAllDestinations: v, coverageMap: v ? emptyCoverage() : desk.coverageMap })}
+                          />
+                          <Label className="text-sm">QA default: 1 number, all origins → all destinations</Label>
+                        </div>
+                      )}
                     </div>
 
-                    {!desk.allOriginsAllDestinations && (
+                    {desk.needsVoip !== false && !desk.allOriginsAllDestinations && (
                       <>
                         <div>
                           <Label className="text-xs">Phone count</Label>

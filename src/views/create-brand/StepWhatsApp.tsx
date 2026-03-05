@@ -1,12 +1,16 @@
 import { motion } from "framer-motion";
-import { MessageCircle, Smartphone } from "lucide-react";
+import { MessageCircle, Smartphone, Layers, Building2, User } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { QRCodeSVG } from "qrcode.react";
 
 interface StepWhatsAppProps {
   includeWhatsApp: boolean;
   onIncludeWhatsAppChange: (v: boolean) => void;
+  /** Default: by desk. Additional cases: by brand, by worker */
+  whatsappAdditionalModes: { by_brand: boolean; by_worker: boolean };
+  onWhatsappAdditionalModesChange: (v: { by_brand: boolean; by_worker: boolean }) => void;
   /** Pairing URL for WhatsApp Business - backend provides this when session is created */
   whatsappQrCode: string;
   onWhatsappQrCodeChange?: (v: string) => void;
@@ -18,6 +22,8 @@ const MOCK_WHATSAPP_PAIRING_URL = "https://connect.whatsapp.com/oauth?client_id=
 export const StepWhatsApp = ({
   includeWhatsApp,
   onIncludeWhatsAppChange,
+  whatsappAdditionalModes,
+  onWhatsappAdditionalModesChange,
   whatsappQrCode,
 }: StepWhatsAppProps) => (
   <div className="space-y-5">
@@ -46,6 +52,46 @@ export const StepWhatsApp = ({
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-4"
       >
+        <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
+          <Label className="text-sm font-medium">User initial connection</Label>
+          <p className="text-xs text-muted-foreground mt-1">Default: by desk. RE US, CO US sit on same number.</p>
+          <div className="mt-3 flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+            <Layers className="w-5 h-5 text-primary" />
+            <div>
+              <p className="font-medium text-sm">By desk</p>
+              <p className="text-xs text-muted-foreground">Desk-based allocation (default)</p>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-col gap-2">
+            <p className="text-xs font-medium text-muted-foreground">Include additional cases</p>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border/40 p-3 hover:bg-muted/30 transition-colors">
+                <Checkbox
+                  checked={whatsappAdditionalModes.by_brand}
+                  onCheckedChange={(v) => onWhatsappAdditionalModesChange({ ...whatsappAdditionalModes, by_brand: !!v })}
+                />
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">By brand</span>
+                  <span className="text-xs text-muted-foreground">(brand sits on a certain number)</span>
+                </div>
+                <span className="text-xs text-amber-600 font-medium">Coming soon</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-border/40 p-3 hover:bg-muted/30 transition-colors">
+                <Checkbox
+                  checked={whatsappAdditionalModes.by_worker}
+                  onCheckedChange={(v) => onWhatsappAdditionalModesChange({ ...whatsappAdditionalModes, by_worker: !!v })}
+                />
+                <div className="flex items-center gap-3">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">By worker</span>
+                  <span className="text-xs text-muted-foreground">(worker has a specific number)</span>
+                </div>
+                <span className="text-xs text-amber-600 font-medium">Coming soon</span>
+              </label>
+            </div>
+          </div>
+        </div>
         <div className="rounded-xl border border-border/50 p-6 bg-card shadow-widget">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary border border-primary/20">

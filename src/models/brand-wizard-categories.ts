@@ -9,38 +9,39 @@ export interface EditCategoryOption {
 /** Options for edit modal - select category to jump to that section */
 export const EDIT_CATEGORY_OPTIONS: EditCategoryOption[] = [
   { id: "brands", label: "Brands", firstStep: 1, group: "Brand Scopes" },
-  { id: "departments", label: "Departments", firstStep: 7, group: "Brand Scopes" },
-  { id: "desks", label: "Desks", firstStep: 7, group: "Brand Scopes" },
-  { id: "payment", label: "Payment", firstStep: 2, group: "Providers" },
-  { id: "voip", label: "VoIP", firstStep: 7, group: "Providers" },
-  { id: "email", label: "Email", firstStep: 6, group: "Providers" },
-  { id: "kyc", label: "KYC", firstStep: 4, group: "Other" },
-  { id: "terms", label: "Terms", firstStep: 5, group: "Other" },
-  { id: "workers", label: "Upload Workers", firstStep: 9, group: "Other" },
-  { id: "logo", label: "Logo", firstStep: 10, group: "Other" },
-  { id: "transform", label: "Transform (VoIP & Email)", firstStep: 11, group: "Other" },
-  { id: "trader", label: "Trader Platform & Markets", firstStep: 12, group: "Other" },
-  { id: "fees", label: "Trading Fees", firstStep: 14, group: "Other" },
-  { id: "clientTas", label: "Client TAs", firstStep: 15, group: "Other" },
-  { id: "defaults", label: "Default Settings", firstStep: 16, group: "Other" },
+  { id: "departments", label: "Departments", firstStep: 2, group: "Brand Scopes" },
+  { id: "desks", label: "Desks", firstStep: 8, group: "Brand Scopes" },
+  { id: "payment", label: "Payment", firstStep: 3, group: "Providers" },
+  { id: "voip", label: "VoIP", firstStep: 8, group: "Providers" },
+  { id: "email", label: "Email", firstStep: 7, group: "Providers" },
+  { id: "kyc", label: "KYC", firstStep: 5, group: "Other" },
+  { id: "terms", label: "Terms", firstStep: 6, group: "Other" },
+  { id: "workers", label: "Upload Workers", firstStep: 10, group: "Other" },
+  { id: "logo", label: "Logo", firstStep: 11, group: "Other" },
+  { id: "transform", label: "Transform (VoIP & Email)", firstStep: 12, group: "Other" },
+  { id: "trader", label: "Trader Platform & Markets", firstStep: 13, group: "Other" },
+  { id: "fees", label: "Trading Fees", firstStep: 15, group: "Other" },
+  { id: "clientTas", label: "Client TAs", firstStep: 16, group: "Other" },
+  { id: "defaults", label: "Default Settings", firstStep: 17, group: "Other" },
 ];
 
 /** Get category label for a step (for create flow header) */
 export function getCategoryLabelForStep(step: number): string | null {
   if (step === 0) return null;
   if (step === 1) return "Brand Scopes: Brands";
-  if (step >= 2 && step <= 3) return "Providers: Payment";
-  if (step === 4) return "KYC";
-  if (step === 5) return "Terms";
-  if (step === 6) return "Providers: Email";
-  if (step >= 7 && step <= 8) return "Providers: VoIP";
-  if (step === 9) return "Brand Scopes: Desks (Upload Workers)";
-  if (step === 10) return "Logo";
-  if (step === 11) return "Transform (VoIP & Phone & Email)";
-  if (step === 12) return "Trader Platform";
-  if (step === 13) return "Trader Markets";
-  if (step === 14) return "Trading Fees";
-  if (step === 15) return "Client TAs";
-  if (step === 16) return "Default Settings";
+  if (step === 2) return "Brand Scopes: Departments";
+  if (step >= 3 && step <= 4) return "Providers: Payment";
+  if (step === 5) return "KYC";
+  if (step === 6) return "Terms";
+  if (step === 7) return "Providers: Email";
+  if (step >= 8 && step <= 9) return "Providers: VoIP";
+  if (step === 10) return "Brand Scopes: Desks (Upload Workers)";
+  if (step === 11) return "Logo";
+  if (step === 12) return "Transform (VoIP & Phone & Email)";
+  if (step === 13) return "Trader Platform";
+  if (step === 14) return "Trader Markets";
+  if (step === 15) return "Trading Fees";
+  if (step === 16) return "Client TAs";
+  if (step === 17) return "Default Settings";
   return null;
 }

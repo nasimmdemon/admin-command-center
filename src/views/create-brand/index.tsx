@@ -1,4 +1,5 @@
 export { StepBrands } from "./StepBrands";
+export { StepDepartments } from "./StepDepartments";
 export { StepKyc } from "./StepKyc";
 export { StepTerms } from "./StepTerms";
 export { StepCommunicationProviders } from "./StepCommunicationProviders";

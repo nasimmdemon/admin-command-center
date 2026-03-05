@@ -12,6 +12,7 @@ import {
 } from "./brand-config";
 import { buildDefaultTraderMarkets } from "@/lib/symbol-enums/market_symbols_map";
 import type { VoipDeskConfig } from "./voip-desk";
+import type { BrandDesk } from "./brand-desk";
 
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
@@ -22,9 +23,18 @@ export interface BrandConfig {
   globalSettings: GlobalSettings;
   withdrawalBankDetails: BankDetails;
   withdrawalWireDetails: WireTransferDetails;
+  /** Brand has KYC at all? */
+  brandHasKyc: boolean;
+  /** If brand has KYC: must complete KYC to trade? */
+  brandRequiresKycToTrade: boolean;
+  /** @deprecated use brandHasKyc + brandRequiresKycToTrade */
   kycEnabled: boolean;
+  /** Regardless: require selfie? */
   kycRequireSelfie: boolean;
+  /** Regardless: which documents (allowed) */
   kycDocs: Record<string, boolean>;
+  /** Specific document(s) client needs (e.g. "Passport + Proof of address") */
+  kycSpecificDocumentClientNeeds: string;
   privacyPolicy: string;
   terms: string;
   emailProvider: "maileroo" | "alexders" | "other";
@@ -36,10 +46,16 @@ export interface BrandConfig {
   voipPhoneNumbers: string;
   voipCountries: string;
   voipCoverageMap: Record<string, string[]>;
-  /** "legacy" = brand-level phones; "desk" = per-desk allocation (Brand→Dept→Desk) */
-  voipMode: "legacy" | "desk";
-  /** Per-desk VoIP: phone count + origin→destinations per desk */
+  /** "legacy" = brand-level phones; "desk" = per-desk allocation; "worker" = per-worker origin→destinations */
+  voipMode: "legacy" | "desk" | "worker";
+  /** Per-desk VoIP: phone count + origin→destinations per desk. Desks can exist without VoIP (needsVoip=false). */
   voipDeskConfigs: VoipDeskConfig[];
+  /** Brand-level desks (org structure). Separate from VoIP. Desk can be shared across depts; VoIP optional per desk. */
+  brandDesks: BrandDesk[];
+  /** QA default: 1 number, all origins → all destinations. When true, QA can call all desks regardless of desk config. */
+  voipQaDefault: boolean;
+  /** Per-worker VoIP (when voipMode=worker). Each worker has own origin→destinations. */
+  voipWorkerConfigs: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
   voipOriginCountryInput: string;
   voipAddOutboundFrom: string;
   voipOutboundCountryInput: string;
@@ -86,6 +102,10 @@ export interface BrandConfig {
   currency: string;
   /** Include WhatsApp Business for sending messages from admin account */
   includeWhatsApp: boolean;
+  /** Default: by desk (RE US, CO US sit on same number). Additional cases: by brand, by worker */
+  whatsappConnectionMode: "by_desk";
+  /** Additional cases to include (coming soon) */
+  whatsappAdditionalModes: { by_brand: boolean; by_worker: boolean };
   /** QR code data URL or pairing URL for WhatsApp Business connection (from backend) */
   whatsappQrCode: string;
 }
@@ -100,9 +120,12 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   globalSettings: { ...DEFAULT_GLOBAL_SETTINGS },
   withdrawalBankDetails: { ...DEFAULT_BANK_DETAILS },
   withdrawalWireDetails: { ...DEFAULT_WIRE_DETAILS },
+  brandHasKyc: true,
+  brandRequiresKycToTrade: true,
   kycEnabled: true,
   kycRequireSelfie: false,
   kycDocs: { Passport: false, "ID": false, "Utility Bill": false, "Driver Licence": false },
+  kycSpecificDocumentClientNeeds: "",
   privacyPolicy: "",
   terms: "",
   emailProvider: "maileroo",
@@ -116,6 +139,9 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   voipCoverageMap: defaultVoipCoverage,
   voipMode: "legacy",
   voipDeskConfigs: [],
+  brandDesks: [],
+  voipQaDefault: false,
+  voipWorkerConfigs: [],
   voipOriginCountryInput: "",
   voipAddOutboundFrom: "",
   voipOutboundCountryInput: "",
@@ -162,5 +188,7 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   language: "English",
   currency: "USD",
   includeWhatsApp: false,
+  whatsappConnectionMode: "by_desk",
+  whatsappAdditionalModes: { by_brand: false, by_worker: false },
   whatsappQrCode: "",
 });
