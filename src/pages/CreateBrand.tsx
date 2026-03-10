@@ -173,8 +173,17 @@ const CreateBrand = () => {
               onVoipAddOutboundFromChange={(v) => updateBrandConfig(bi, "voipAddOutboundFrom", v)}
               onVoipOutboundCountryInputChange={(v) => updateBrandConfig(bi, "voipOutboundCountryInput", v)}
               onProvidersMapDataChange={(v) => updateBrandConfig(bi, "providersMapData", v)}
-              voipMode={currentConfig.voipMode}
-              onVoipModeChange={(v) => updateBrandConfig(bi, "voipMode", v)}
+              voipAllocationModes={
+                currentConfig.voipAllocationModes ??
+                (currentConfig.voipMode
+                  ? {
+                      byBrand: currentConfig.voipMode === "legacy",
+                      byDesk: currentConfig.voipMode === "desk",
+                      byWorker: currentConfig.voipMode === "worker",
+                    }
+                  : undefined)
+              }
+              onVoipAllocationModesChange={(v) => updateBrandConfig(bi, "voipAllocationModes", v)}
               voipDeskConfigs={currentConfig.voipDeskConfigs}
               onVoipDeskConfigsChange={(v) => updateBrandConfig(bi, "voipDeskConfigs", v)}
               voipQaDefault={currentConfig.voipQaDefault}
@@ -221,7 +230,16 @@ const CreateBrand = () => {
               <StepTransformVoip
                 brandLabel={brandLabel}
                 voipCoverageMap={currentConfig.voipCoverageMap}
-                voipMode={currentConfig.voipMode}
+                voipAllocationModes={
+                  currentConfig.voipAllocationModes ??
+                  (currentConfig.voipMode
+                    ? {
+                        byBrand: currentConfig.voipMode === "legacy",
+                        byDesk: currentConfig.voipMode === "desk",
+                        byWorker: currentConfig.voipMode === "worker",
+                      }
+                    : undefined)
+                }
                 voipDeskConfigs={currentConfig.voipDeskConfigs}
                 voipQaDefault={currentConfig.voipQaDefault}
                 voipWorkerConfigs={currentConfig.voipWorkerConfigs}

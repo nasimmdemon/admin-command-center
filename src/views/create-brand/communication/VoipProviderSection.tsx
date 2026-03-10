@@ -11,7 +11,7 @@ import InteractiveWorldMap from "@/components/brand-wizard/InteractiveWorldMap";
 import { ProviderOptionCard } from "./ProviderOptionCard";
 import { VoipDeskConfigSection } from "./VoipDeskConfigSection";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
-import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps } from "@/types/voip-desk";
+import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps, mergeCoverageMaps } from "@/types/voip-desk";
 
 interface VoipProviderSectionProps {
   provider: "voicex" | "other" | null;
@@ -30,8 +30,8 @@ interface VoipProviderSectionProps {
   onOutboundCountryInputChange: (v: string) => void;
   providersMapData: string;
   onProvidersMapDataChange: (v: string) => void;
-  voipMode?: "legacy" | "desk" | "worker";
-  onVoipModeChange?: (v: "legacy" | "desk" | "worker") => void;
+  voipAllocationModes?: { byBrand: boolean; byDesk: boolean; byWorker: boolean };
+  onVoipAllocationModesChange?: (v: { byBrand: boolean; byDesk: boolean; byWorker: boolean }) => void;
   voipDeskConfigs?: import("@/types/voip-desk").VoipDeskConfig[];
   onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
   voipQaDefault?: boolean;
@@ -57,8 +57,8 @@ export const VoipProviderSection = ({
   onOutboundCountryInputChange,
   providersMapData,
   onProvidersMapDataChange,
-  voipMode = "legacy",
-  onVoipModeChange,
+  voipAllocationModes = { byBrand: true, byDesk: false, byWorker: false },
+  onVoipAllocationModesChange,
   voipDeskConfigs = [],
   onVoipDeskConfigsChange,
   voipQaDefault = false,
@@ -160,40 +160,36 @@ export const VoipProviderSection = ({
       )}
       {provider === "voicex" && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} transition={{ duration: 0.3 }} className="space-y-4">
-          {onVoipModeChange && (
-            <div className="flex items-center gap-4 rounded-xl border border-border/40 p-4 bg-muted/5">
+          {onVoipAllocationModesChange && (
+            <div className="rounded-xl border border-border/40 p-4 bg-muted/5 space-y-3">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-muted-foreground" />
-                <Label className="text-sm font-medium">Allocation mode</Label>
+                <Label className="text-sm font-medium">Destination allocation</Label>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => onVoipModeChange("legacy")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "legacy" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
-                >
-                  Legacy (brand-level)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onVoipModeChange("desk")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "desk" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
-                >
-                  Desk-based (Dept → Desk)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onVoipModeChange("worker")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${voipMode === "worker" ? "bg-primary/10 text-primary border border-primary/30" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
-                >
-                  Worker-based
-                </button>
+              <p className="text-xs text-muted-foreground">Enable any combination. All enabled sources contribute to the union of destinations.</p>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={voipAllocationModes.byBrand}
+                    onCheckedChange={(v) => onVoipAllocationModesChange({ ...voipAllocationModes, byBrand: v })}
+                  />
+                  <Label className="text-sm cursor-pointer">By brand</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={voipAllocationModes.byDesk}
+                    onCheckedChange={(v) => onVoipAllocationModesChange({ ...voipAllocationModes, byDesk: v })}
+                  />
+                  <Label className="text-sm cursor-pointer">By desk</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={voipAllocationModes.byWorker}
+                    onCheckedChange={(v) => onVoipAllocationModesChange({ ...voipAllocationModes, byWorker: v })}
+                  />
+                  <Label className="text-sm cursor-pointer">By worker</Label>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {voipMode === "legacy" && "Brand-level phones. Destinations as on desks."}
-                {voipMode === "desk" && "Desk mode: phones per desk by origin→destinations. No conflicts."}
-                {voipMode === "worker" && "Each worker has own origin→destinations. Configure after uploading workers."}
-              </p>
             </div>
           )}
 
@@ -207,52 +203,9 @@ export const VoipProviderSection = ({
             </div>
           )}
 
-          {voipMode === "desk" && onVoipDeskConfigsChange ? (
-            <>
-              <VoipDeskConfigSection
-                desks={voipDeskConfigs}
-                onDesksChange={onVoipDeskConfigsChange}
-                voipQaDefault={voipQaDefault}
-              />
-              {voipDeskConfigs.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Coverage preview</Label>
-                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden">
-                    <InteractiveWorldMap
-                      variant="select"
-                      selectedCountries={Object.keys(mergeDeskCoverageMaps(voipDeskConfigs)).filter((c) => isValidISOCountryCode(c))}
-                      onCountryToggle={() => {}}
-                      coverageMap={mergeDeskCoverageMaps(voipDeskConfigs)}
-                      className="w-full h-full min-h-[280px]"
-                    />
-                  </div>
-                </div>
-              )}
-            </>
-          ) : voipMode === "worker" ? (
-            <>
-              <div className="rounded-xl border border-dashed border-border/60 p-6 bg-muted/20 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Worker-based VoIP: each worker has own origin→destinations. Upload workers first, then configure per-worker VoIP in the Transform step.
-                </p>
-              </div>
-              {voipWorkerConfigs && voipWorkerConfigs.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Coverage preview</Label>
-                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden">
-                    <InteractiveWorldMap
-                      variant="select"
-                      selectedCountries={Object.keys(mergeWorkerCoverageMaps(voipWorkerConfigs)).filter((c) => isValidISOCountryCode(c))}
-                      onCountryToggle={() => {}}
-                      coverageMap={mergeWorkerCoverageMaps(voipWorkerConfigs)}
-                      className="w-full h-full min-h-[280px]"
-                    />
-                  </div>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
+          {voipAllocationModes.byBrand && (
+            <div className="space-y-4 rounded-xl border border-border/40 p-4 bg-card">
+              <Label className="text-sm font-medium">By brand</Label>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-border/50 p-3 bg-card shadow-widget">
               <p className="text-xs text-muted-foreground mb-1">Phone Numbers</p>
@@ -268,7 +221,7 @@ export const VoipProviderSection = ({
               <MapPin className="w-4 h-4 text-primary" />
               <Label className="text-sm font-medium">VoIP Coverage Map</Label>
             </div>
-            <p className="text-xs text-muted-foreground">Click countries on the map to add/remove origins. Red = from, blue = to. Lines show connections.</p>
+            <p className="text-xs text-muted-foreground">Click countries on the map to add/remove origins. Blue = origins (from), Red = destinations (to). Lines show connections.</p>
             <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[320px] max-h-[420px] overflow-hidden flex items-center justify-center shadow-widget">
               <div className="w-full h-full min-h-[280px] flex items-center justify-center">
               <InteractiveWorldMap
@@ -293,10 +246,10 @@ export const VoipProviderSection = ({
                     key={country}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium border border-blue-500/20"
                   >
                     {country}
-                    <button onClick={() => removeOrigin(country)} className="hover:text-destructive/70 ml-1">×</button>
+                    <button onClick={() => removeOrigin(country)} className="hover:text-blue-600/70 dark:hover:text-blue-400/70 ml-1">×</button>
                   </motion.span>
                 ))}
               </div>
@@ -356,10 +309,10 @@ export const VoipProviderSection = ({
                       key={country}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-medium border border-red-500/20"
                     >
                       {country}
-                      <button onClick={() => removeOutboundFromOrigin(addOutboundFrom, country)} className="hover:text-primary/70 ml-0.5">×</button>
+                      <button onClick={() => removeOutboundFromOrigin(addOutboundFrom, country)} className="hover:text-red-600/70 dark:hover:text-red-400/70 ml-0.5">×</button>
                     </motion.span>
                   ))}
                 </div>
@@ -370,12 +323,95 @@ export const VoipProviderSection = ({
             <div className="flex gap-2 items-start">
               <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
               <p className="text-xs text-muted-foreground">
-                Use the map to select origins. Then pick an origin and add destinations. Red = from, blue = to.
+                Use the map to select origins. Then pick an origin and add destinations. Blue = origins, Red = destinations.
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={clearCoverage} className="text-destructive hover:text-destructive">Clear all</Button>
           </div>
-            </>
+            </div>
+          )}
+
+          {voipAllocationModes.byDesk && onVoipDeskConfigsChange && (
+            <div className="space-y-4 rounded-xl border border-border/40 p-4 bg-card">
+              <Label className="text-sm font-medium">By desk</Label>
+              <VoipDeskConfigSection
+                desks={voipDeskConfigs}
+                onDesksChange={onVoipDeskConfigsChange}
+                voipQaDefault={voipQaDefault}
+              />
+              {voipDeskConfigs.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Coverage preview (teal = origins, amber = destinations)</Label>
+                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[280px] overflow-hidden">
+                    <InteractiveWorldMap
+                      variant="select"
+                      selectedCountries={[]}
+                      onCountryToggle={() => {}}
+                      coverageLayers={[
+                        {
+                          coverageMap: mergeDeskCoverageMaps(voipDeskConfigs),
+                          source: "desk",
+                          originColor: "#0d9488",
+                          destColor: "#f59e0b",
+                        },
+                      ]}
+                      className="w-full h-full min-h-[240px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {voipAllocationModes.byWorker && (
+            <div className="space-y-4 rounded-xl border border-border/40 p-4 bg-card">
+              <Label className="text-sm font-medium">By worker</Label>
+              <div className="rounded-xl border border-dashed border-border/60 p-6 bg-muted/20 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Each worker has own origin→destinations. Upload workers first, then configure per-worker VoIP in the Transform step.
+                </p>
+              </div>
+              {voipWorkerConfigs && voipWorkerConfigs.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Coverage preview</Label>
+                  <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[280px] overflow-hidden">
+                    <InteractiveWorldMap
+                      variant="select"
+                      selectedCountries={Object.keys(mergeWorkerCoverageMaps(voipWorkerConfigs)).filter((c) => isValidISOCountryCode(c))}
+                      onCountryToggle={() => {}}
+                      coverageMap={mergeWorkerCoverageMaps(voipWorkerConfigs)}
+                      className="w-full h-full min-h-[240px]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {(voipAllocationModes.byBrand || voipAllocationModes.byDesk || voipAllocationModes.byWorker) && (
+            <div className="space-y-2 rounded-xl border border-border/40 p-4 bg-muted/5">
+              <Label className="text-sm font-medium">Combined coverage (all enabled sources)</Label>
+              <p className="text-xs text-muted-foreground">Brand: blue origins / red dest. Desk: teal / amber. Worker: violet / green.</p>
+              <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[280px] overflow-hidden">
+                <InteractiveWorldMap
+                  variant="select"
+                  selectedCountries={[]}
+                  onCountryToggle={() => {}}
+                  coverageLayers={[
+                    ...(voipAllocationModes.byWorker && voipWorkerConfigs?.length
+                      ? [{ coverageMap: mergeWorkerCoverageMaps(voipWorkerConfigs), source: "worker" as const, originColor: "#8b5cf6", destColor: "#22c55e" }]
+                      : []),
+                    ...(voipAllocationModes.byDesk && voipDeskConfigs?.length
+                      ? [{ coverageMap: mergeDeskCoverageMaps(voipDeskConfigs), source: "desk" as const, originColor: "#0d9488", destColor: "#f59e0b" }]
+                      : []),
+                    ...(voipAllocationModes.byBrand && Object.keys(coverageMap).length > 0
+                      ? [{ coverageMap, source: "brand" as const, originColor: "#3b82f6", destColor: "#ef4444" }]
+                      : []),
+                  ]}
+                  className="w-full h-full min-h-[240px]"
+                />
+              </div>
+            </div>
           )}
         </motion.div>
       )}

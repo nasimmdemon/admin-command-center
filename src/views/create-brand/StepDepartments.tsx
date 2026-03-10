@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Building2, Plus, Phone, Trash2 } from "lucide-react";
+import { Building2, Plus, Phone, Trash2, AlertTriangle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { DEPARTMENTS, type DepartmentId } from "@/types/voip-desk";
 import { CountryInput } from "@/components/CountryInput";
-import { createBrandDesk, type BrandDesk } from "@/types/brand-desk";
+import { createBrandDesk, getCoReDeskViolations, type BrandDesk } from "@/types/brand-desk";
 
 interface StepDepartmentsProps {
   brandLabel: string;
@@ -32,11 +32,22 @@ export const StepDepartments = ({ brandLabel, brandDesks = [], onBrandDesksChang
     if (expandedId === id) setExpandedId(null);
   };
 
+  /** CO & RE must share desks: if desk has CO it must have RE, and vice versa */
   const toggleDept = (deskId: string, dept: DepartmentId) => {
     const d = brandDesks.find((x) => x.id === deskId);
     if (!d) return;
     const has = d.departmentIds.includes(dept);
-    const next = has ? d.departmentIds.filter((x) => x !== dept) : [...d.departmentIds, dept];
+    let next: DepartmentId[];
+    if (dept === "CO" || dept === "RE") {
+      const other: DepartmentId = dept === "CO" ? "RE" : "CO";
+      if (has) {
+        next = d.departmentIds.filter((x) => x !== dept && x !== other);
+      } else {
+        next = [...new Set([...d.departmentIds, dept, other])];
+      }
+    } else {
+      next = has ? d.departmentIds.filter((x) => x !== dept) : [...d.departmentIds, dept];
+    }
     updateDesk(deskId, { departmentIds: next });
   };
 
@@ -46,6 +57,21 @@ export const StepDepartments = ({ brandLabel, brandDesks = [], onBrandDesksChang
     <p className="text-sm text-muted-foreground">
       {brandLabel} — Departments (QA, CO, RE, IT) can have desks that correspond to VoIP destinations and explicitly allowed extensions.
     </p>
+
+    {(() => {
+      const coReViolations = getCoReDeskViolations(brandDesks);
+      return coReViolations.length > 0 ? (
+        <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex gap-2">
+          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">CO & RE must share desks</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Desk(s) {coReViolations.map((d) => d.deskName || "Unnamed").join(", ")} have CO or RE but not both. Select both together.
+            </p>
+          </div>
+        </div>
+      ) : null;
+    })()}
 
     <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
       <div className="flex items-center justify-between mb-4">
@@ -95,6 +121,7 @@ export const StepDepartments = ({ brandLabel, brandDesks = [], onBrandDesksChang
                   </div>
                   <div>
                     <Label className="text-xs">Departments using this desk</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5 mb-1">CO & RE are linked: selecting one adds both.</p>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {DEPARTMENTS.map((d) => (
                         <button
@@ -141,7 +168,7 @@ export const StepDepartments = ({ brandLabel, brandDesks = [], onBrandDesksChang
       <div>
         <p className="text-sm font-medium">Desks & VoIP</p>
         <p className="text-xs text-muted-foreground mt-1">
-          Brand desks define org structure (Dept → Desk by country). VoIP is configured separately in the VoIP step. RE & CO must share the same region per brand.
+          Brand desks define org structure (Dept → Desk by country). VoIP is configured separately in the VoIP step. RE & CO must share the same desks: if a desk is on CO it must be on RE, and vice versa.
         </p>
       </div>
     </div>

@@ -12,8 +12,15 @@ interface InteractiveWorldMapProps {
   className?: string;
   /** "reject" = red (Transform), "select" = primary (VoIP) */
   variant?: "reject" | "select";
-  /** VoIP coverage: origin -> [destinations]. When set with variant="select", shows red origins, blue destinations, glow lines and dots */
+  /** VoIP coverage: origin -> [destinations]. When set with variant="select", shows blue origins, red destinations */
   coverageMap?: Record<string, string[]>;
+  /** Multiple layers (brand, desk, worker) with distinct colors. When set, overrides coverageMap. */
+  coverageLayers?: Array<{
+    coverageMap: Record<string, string[]>;
+    source: "brand" | "desk" | "worker";
+    originColor: string;
+    destColor: string;
+  }>;
 }
 
 // Map of country names to ISO codes (common countries)
@@ -133,7 +140,11 @@ const ConstrainedZoomableGroup = ({ children }: { children: React.ReactNode }) =
   );
 };
 
-const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "", variant = "reject", coverageMap }: InteractiveWorldMapProps) => {
+/** Default: blue = origins, red = destinations */
+const DEFAULT_ORIGIN_COLOR = "#3b82f6";
+const DEFAULT_DEST_COLOR = "#ef4444";
+
+const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "", variant = "reject", coverageMap, coverageLayers }: InteractiveWorldMapProps) => {
   const getCountryCode = (geo: any): string | null => {
     if (!geo || !geo.properties) return null;
 
@@ -178,7 +189,9 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
   };
 
   const isReject = variant === "reject";
-  const useCoverageViz = coverageMap && variant === "select" && Object.keys(coverageMap).length > 0;
+  const hasLayers = coverageLayers && coverageLayers.some((l) => Object.keys(l.coverageMap).length > 0);
+  const useSingleCoverage = coverageMap && variant === "select" && Object.keys(coverageMap).length > 0 && !hasLayers;
+  const useCoverageViz = (useSingleCoverage || hasLayers) && variant === "select";
   const fillSelected = isReject ? "#ef4444" : "hsl(var(--primary))";
   const strokeSelected = isReject ? "#dc2626" : "hsl(var(--primary))";
   const fillHover = isReject ? "#dc2626" : "hsl(var(--primary) / 0.8)";
@@ -186,28 +199,34 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
   const fillPressed = isReject ? "#b91c1c" : "hsl(var(--primary) / 0.9)";
 
   const getFillForCountry = (code: string | null): string => {
-    if (!code || !useCoverageViz || !coverageMap) return "#e5e7eb";
-    const originCountries = Object.keys(coverageMap).filter((c) => isValidISOCountryCode(c));
-    const destinationSet = new Set<string>();
-    originCountries.forEach((orig) => (coverageMap[orig] || []).forEach((d) => destinationSet.add(d)));
-    const isOrigin = originCountries.some((o) => o.toUpperCase() === code.toUpperCase());
-    const isDest = [...destinationSet].some((d) => d.toUpperCase() === code.toUpperCase());
-    if (isOrigin) return "#ef4444";
-    if (isDest) return "#3b82f6";
+    if (!code || !useCoverageViz) return "#e5e7eb";
+    const upper = code.toUpperCase();
+    if (hasLayers && coverageLayers) {
+      for (const layer of coverageLayers) {
+        const origins = Object.keys(layer.coverageMap).filter((c) => isValidISOCountryCode(c));
+        const dests = new Set<string>();
+        origins.forEach((o) => (layer.coverageMap[o] || []).forEach((d) => dests.add(d)));
+        if (origins.some((o) => o.toUpperCase() === upper)) return layer.originColor;
+        if ([...dests].some((d) => d.toUpperCase() === upper)) return layer.destColor;
+      }
+      return "#e5e7eb";
+    }
+    if (coverageMap) {
+      const origins = Object.keys(coverageMap).filter((c) => isValidISOCountryCode(c));
+      const dests = new Set<string>();
+      origins.forEach((o) => (coverageMap[o] || []).forEach((d) => dests.add(d)));
+      if (origins.some((o) => o.toUpperCase() === upper)) return DEFAULT_ORIGIN_COLOR;
+      if ([...dests].some((d) => d.toUpperCase() === upper)) return DEFAULT_DEST_COLOR;
+    }
     return "#e5e7eb";
   };
 
   const getStrokeForCountry = (code: string | null): string => {
     if (!code) return "#9ca3af";
-    if (!useCoverageViz || !coverageMap) return "#9ca3af";
-    const originCountries = Object.keys(coverageMap).filter((c) => isValidISOCountryCode(c));
-    const destinationSet = new Set<string>();
-    originCountries.forEach((orig) => (coverageMap[orig] || []).forEach((d) => destinationSet.add(d)));
-    const isOrigin = originCountries.some((o) => o.toUpperCase() === code.toUpperCase());
-    const isDest = [...destinationSet].some((d) => d.toUpperCase() === code.toUpperCase());
-    if (isOrigin) return "#dc2626";
-    if (isDest) return "#2563eb";
-    return "#9ca3af";
+    if (!useCoverageViz) return "#9ca3af";
+    const fill = getFillForCountry(code);
+    if (fill === "#e5e7eb") return "#9ca3af";
+    return fill;
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -271,19 +290,21 @@ const InteractiveWorldMap = ({ selectedCountries, onCountryToggle, className = "
 
               const connections: { from: [number, number]; to: [number, number] }[] = [];
               const dotCoords = new Set<string>();
-              if (useCoverageViz && coverageMap) {
-                const originCountries = Object.keys(coverageMap).filter((c) => isValidISOCountryCode(c));
-                originCountries.forEach((orig) => {
+              if (useCoverageViz) {
+                const iter = hasLayers && coverageLayers
+                  ? coverageLayers.flatMap((l) => Object.keys(l.coverageMap).map((orig) => ({ orig, dests: l.coverageMap[orig] || [] })))
+                  : coverageMap ? Object.entries(coverageMap).map(([orig, dests]) => ({ orig, dests })) : [];
+                for (const { orig, dests } of iter) {
                   const fromKey = orig.toUpperCase();
-                  (coverageMap[orig] || []).forEach((dest) => {
+                  for (const dest of dests) {
                     const toKey = dest.toUpperCase();
                     if (centroidMap[fromKey] && centroidMap[toKey] && fromKey !== toKey) {
                       connections.push({ from: centroidMap[fromKey], to: centroidMap[toKey] });
                       dotCoords.add(`${centroidMap[fromKey][0]},${centroidMap[fromKey][1]}`);
                       dotCoords.add(`${centroidMap[toKey][0]},${centroidMap[toKey][1]}`);
                     }
-                  });
-                });
+                  }
+                }
               }
 
               return (

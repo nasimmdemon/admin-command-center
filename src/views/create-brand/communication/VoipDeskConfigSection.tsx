@@ -29,7 +29,7 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = fa
     const id = `desk-${Date.now()}`;
     onDesksChange([
       ...desks,
-      { id, deskName: "", departmentId: "QA", phoneCount: 1, allOriginsAllDestinations: true, coverageMap: emptyCoverage() },
+      { id, deskName: "", departmentId: "CO", phoneCount: 1, allOriginsAllDestinations: false, coverageMap: emptyCoverage() },
     ]);
     setExpandedId(id);
   };
@@ -203,7 +203,7 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = fa
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={desk.needsVoip !== false}
@@ -211,15 +211,15 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = fa
                         />
                         <Label className="text-sm">Needs VoIP number</Label>
                       </div>
-                      {desk.departmentId === "QA" && !voipQaDefault && (
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={!!desk.allOriginsAllDestinations}
-                            onCheckedChange={(v) => updateDesk(desk.id, { allOriginsAllDestinations: v, coverageMap: v ? emptyCoverage() : desk.coverageMap })}
-                          />
-                          <Label className="text-sm">QA default: 1 number, all origins → all destinations</Label>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={!!desk.allOriginsAllDestinations}
+                          onCheckedChange={(v) => updateDesk(desk.id, { allOriginsAllDestinations: v, coverageMap: v ? emptyCoverage() : desk.coverageMap })}
+                        />
+                        <Label className="text-sm">
+                          {desk.departmentId === "QA" ? "QA default: 1 number, all origins → all destinations" : "All origins → all destinations (no per-origin config)"}
+                        </Label>
+                      </div>
                     </div>
 
                     {desk.needsVoip !== false && !desk.allOriginsAllDestinations && (
@@ -240,10 +240,10 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = fa
                             {Object.entries(desk.coverageMap).map(([from, dests]) => (
                               <div key={from} className="rounded-lg border border-border/40 p-2 bg-background">
                                 <div className="flex items-center gap-1 mb-1">
-                                  <span className="text-xs font-medium text-destructive">{from}</span>
+                                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">{from}</span>
                                   <span className="text-muted-foreground">→</span>
                                   {dests.map((d) => (
-                                    <span key={d} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs">
+                                    <span key={d} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 text-xs">
                                       {d}
                                       <button onClick={() => removeDestination(desk.id, from, d)} className="hover:text-destructive">×</button>
                                     </span>
@@ -267,21 +267,27 @@ export const VoipDeskConfigSection = ({ desks, onDesksChange, voipQaDefault = fa
                                 </div>
                               </div>
                             ))}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap items-center">
                               <CountryInput
                                 value={newOriginInputs[desk.id] ?? ""}
                                 onChange={(v) => setNewOriginInputs((p) => ({ ...p, [desk.id]: v }))}
-                                placeholder="Add origin…"
-                                className="h-8 w-32 text-xs"
+                                placeholder="Type or search country (US, GB, FR…)"
+                                className="h-8 min-w-[180px] flex-1 text-xs"
                                 onSelect={(code) => code && addOrigin(desk.id, code)}
-                                onKeyDown={(e) => e.key === "Enter" && (addOrigin(desk.id, (e.target as HTMLInputElement).value), e.preventDefault())}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    const v = (e.target as HTMLInputElement).value?.trim();
+                                    if (v) addOrigin(desk.id, v);
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="h-8 text-xs"
                                 onClick={() => {
-                                  const v = newOriginInputs[desk.id] ?? "";
+                                  const v = (newOriginInputs[desk.id] ?? "").trim();
                                   if (v) addOrigin(desk.id, v);
                                 }}
                               >

@@ -46,8 +46,10 @@ export interface BrandConfig {
   voipPhoneNumbers: string;
   voipCountries: string;
   voipCoverageMap: Record<string, string[]>;
-  /** "legacy" = brand-level phones; "desk" = per-desk allocation; "worker" = per-worker origin→destinations */
-  voipMode: "legacy" | "desk" | "worker";
+  /** Multi-toggle: brand, desk, worker can all be enabled at once. Each adds its destinations to the union. */
+  voipAllocationModes: { byBrand: boolean; byDesk: boolean; byWorker: boolean };
+  /** @deprecated use voipAllocationModes. Kept for migration. */
+  voipMode?: "legacy" | "desk" | "worker";
   /** Per-desk VoIP: phone count + origin→destinations per desk. Desks can exist without VoIP (needsVoip=false). */
   voipDeskConfigs: VoipDeskConfig[];
   /** Brand-level desks (org structure). Separate from VoIP. Desk can be shared across depts; VoIP optional per desk. */
@@ -137,7 +139,7 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   voipPhoneNumbers: "50",
   voipCountries: "25",
   voipCoverageMap: defaultVoipCoverage,
-  voipMode: "legacy",
+  voipAllocationModes: { byBrand: true, byDesk: false, byWorker: false },
   voipDeskConfigs: [],
   brandDesks: [],
   voipQaDefault: false,

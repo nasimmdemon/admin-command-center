@@ -22,3 +22,12 @@ export function createBrandDesk(overrides?: Partial<BrandDesk>): BrandDesk {
     ...overrides,
   };
 }
+
+/** CO & RE must share desks. Returns desks that have CO without RE or RE without CO. */
+export function getCoReDeskViolations(desks: BrandDesk[]): BrandDesk[] {
+  return desks.filter((d) => {
+    const hasCo = d.departmentIds.includes("CO");
+    const hasRe = d.departmentIds.includes("RE");
+    return (hasCo && !hasRe) || (!hasCo && hasRe);
+  });
+}

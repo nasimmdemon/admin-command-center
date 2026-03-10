@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { getPhoneCodesFromOutboundCountries } from "@/utils/countryCodes";
-import { getVoipDeskConflicts, mergeDeskCoverageMaps, mergeWorkerCoverageMaps, type VoipDeskConfig } from "@/types/voip-desk";
+import { getVoipDeskConflicts, mergeDeskCoverageMaps, mergeWorkerCoverageMaps, mergeCoverageMaps, type VoipDeskConfig } from "@/types/voip-desk";
 
 interface StepTransformVoipProps {
   brandLabel: string;
   voipCoverageMap?: Record<string, string[]>;
-  voipMode?: "legacy" | "desk" | "worker";
+  voipAllocationModes?: { byBrand: boolean; byDesk: boolean; byWorker: boolean };
   voipDeskConfigs?: VoipDeskConfig[];
   voipQaDefault?: boolean;
   voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
@@ -26,14 +26,18 @@ interface StepTransformVoipProps {
 const DEFAULT_QA_COUNTRIES = ["US", "GB", "FR", "DE", "ES", "IT", "CA", "AU", "NL", "BE"];
 
 const getEffectiveCoverageMap = (props: StepTransformVoipProps): Record<string, string[]> | undefined => {
-  let base: Record<string, string[]> = {};
-  if (props.voipMode === "desk" && props.voipDeskConfigs && props.voipDeskConfigs.length > 0) {
-    base = mergeDeskCoverageMaps(props.voipDeskConfigs);
-  } else if (props.voipMode === "worker" && props.voipWorkerConfigs && props.voipWorkerConfigs.length > 0) {
-    base = mergeWorkerCoverageMaps(props.voipWorkerConfigs);
-  } else {
-    base = props.voipCoverageMap ?? {};
+  const modes = props.voipAllocationModes ?? { byBrand: true, byDesk: false, byWorker: false };
+  const maps: Record<string, string[]>[] = [];
+  if (modes.byBrand && props.voipCoverageMap && Object.keys(props.voipCoverageMap).length > 0) {
+    maps.push(props.voipCoverageMap);
   }
+  if (modes.byDesk && props.voipDeskConfigs && props.voipDeskConfigs.length > 0) {
+    maps.push(mergeDeskCoverageMaps(props.voipDeskConfigs));
+  }
+  if (modes.byWorker && props.voipWorkerConfigs && props.voipWorkerConfigs.length > 0) {
+    maps.push(mergeWorkerCoverageMaps(props.voipWorkerConfigs));
+  }
+  const base = maps.length > 0 ? mergeCoverageMaps(maps) : {};
   if (props.voipQaDefault) {
     const all = new Set<string>(Object.keys(base));
     for (const dests of Object.values(base)) dests.forEach((x) => all.add(x));
@@ -46,7 +50,8 @@ const getEffectiveCoverageMap = (props: StepTransformVoipProps): Record<string, 
 
 export const StepTransformVoip = (props: StepTransformVoipProps) => {
   const effectiveCoverageMap = getEffectiveCoverageMap(props);
-  const deskConflicts = props.voipMode === "desk" && props.voipDeskConfigs ? getVoipDeskConflicts(props.voipDeskConfigs) : [];
+  const modes = props.voipAllocationModes ?? { byBrand: true, byDesk: false, byWorker: false };
+  const deskConflicts = modes.byDesk && props.voipDeskConfigs ? getVoipDeskConflicts(props.voipDeskConfigs) : [];
   const [isSyncing, setIsSyncing] = useState(true);
 
   useEffect(() => {

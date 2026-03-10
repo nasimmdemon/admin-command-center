@@ -40,6 +40,18 @@ export function mergeDeskCoverageMaps(desks: VoipDeskConfig[]): Record<string, s
   return merged;
 }
 
+/** Merge multiple coverage maps into one (union of all origin→destinations) */
+export function mergeCoverageMaps(maps: Record<string, string[]>[]): Record<string, string[]> {
+  const merged: Record<string, string[]> = {};
+  for (const m of maps) {
+    for (const [origin, dests] of Object.entries(m)) {
+      const existing = merged[origin] || [];
+      merged[origin] = [...new Set([...existing, ...(dests || [])])];
+    }
+  }
+  return merged;
+}
+
 /** Merge coverage maps from worker configs (when voipMode=worker) */
 export function mergeWorkerCoverageMaps(
   configs: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>
