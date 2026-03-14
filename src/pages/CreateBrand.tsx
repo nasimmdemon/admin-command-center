@@ -7,6 +7,7 @@ import DepositConfigStep from "@/components/brand-wizard/DepositConfigStep";
 import WithdrawalConfigStep from "@/components/brand-wizard/WithdrawalConfigStep";
 import { BrandStepWrapper } from "@/components/brand-wizard/BrandStepWrapper";
 import { useCreateBrand } from "@/controllers/useCreateBrand";
+import { buildCleanExportConfig } from "@/types/brand-config-per-brand";
 import { ROUTES } from "@/models/routes";
 import { getCategoryLabelForStep } from "@/models/brand-wizard-categories";
 import { StepCreateMode } from "@/views/create-brand/StepCreateMode";
@@ -386,12 +387,13 @@ const CreateBrand = () => {
                 {renderStep()}
               </motion.div>
             </AnimatePresence>
-            <div className="mt-6 pt-4 border-t border-border/40">
+            <div className="mt-6 pt-4 border-t border-border/40 space-y-2">
               <button
                 type="button"
                 onClick={() => {
+                  const cleanConfigs = state.brandConfigs.map((c) => buildCleanExportConfig(c));
                   const json = JSON.stringify(
-                    { brands: state.brands, brandConfigs: state.brandConfigs },
+                    { brands: state.brands, brandConfigs: cleanConfigs },
                     null,
                     2
                   );
@@ -406,7 +408,29 @@ const CreateBrand = () => {
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Download className="w-4 h-4" />
-                Download JSON for this brand
+                Download JSON (all brands)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentConfig = state.brandConfigs[bi];
+                  const clean = buildCleanExportConfig(currentConfig);
+                  const json = JSON.stringify(
+                    { brand: state.brands[bi], brandConfig: clean },
+                    null,
+                    2
+                  );
+                  const blob = new Blob([json], { type: "application/json" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Download JSON (current brand only)
               </button>
             </div>
           </div>

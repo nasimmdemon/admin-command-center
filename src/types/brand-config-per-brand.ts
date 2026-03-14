@@ -194,3 +194,36 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   whatsappAdditionalModes: { by_brand: false, by_worker: false },
   whatsappQrCode: "",
 });
+
+/** Merge config with defaults to ensure all fields are present in export (handles newly added fields). Skips undefined to avoid overwriting with empty. */
+export function buildExportConfig(config: Partial<BrandConfig> | undefined): BrandConfig {
+  const defaults = getDefaultBrandConfig();
+  if (!config) return defaults;
+  const defined = Object.fromEntries(
+    Object.entries(config).filter(([, v]) => v !== undefined)
+  ) as Partial<BrandConfig>;
+  return { ...defaults, ...defined } as BrandConfig;
+}
+
+/** Fields that are UI-only transient state, excluded from export */
+const TRANSIENT_UI_FIELDS: (keyof BrandConfig)[] = [
+  "voipOriginCountryInput",
+  "voipAddOutboundFrom",
+  "voipOutboundCountryInput",
+  "newCountryCode",
+  "countryCodeError",
+  "newPhoneCode",
+  "phoneCodeError",
+  "newAllowedExtensionPhone",
+  "newEmailProvider",
+];
+
+/** Build clean config for export (all required fields, no transient UI state) */
+export function buildCleanExportConfig(config: Partial<BrandConfig> | undefined): Omit<BrandConfig, (typeof TRANSIENT_UI_FIELDS)[number]> {
+  const full = buildExportConfig(config);
+  const clean = { ...full };
+  for (const key of TRANSIENT_UI_FIELDS) {
+    delete (clean as Record<string, unknown>)[key];
+  }
+  return clean as Omit<BrandConfig, (typeof TRANSIENT_UI_FIELDS)[number]>;
+}
