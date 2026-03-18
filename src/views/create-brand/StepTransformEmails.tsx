@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 interface StepTransformEmailsProps {
   brandLabel: string;
@@ -16,10 +15,6 @@ interface StepTransformEmailsProps {
   onAutoRejectNoInteractivityChange: (v: boolean) => void;
   autoRejectDaysAfterWelcome: number;
   onAutoRejectDaysAfterWelcomeChange: (v: number) => void;
-  blockedEmailProviders: string[];
-  onBlockedEmailProvidersChange: (v: string[]) => void;
-  newEmailProvider: string;
-  onNewEmailProviderChange: (v: string) => void;
 }
 
 export const StepTransformEmails = (props: StepTransformEmailsProps) => (
@@ -80,50 +75,6 @@ export const StepTransformEmails = (props: StepTransformEmailsProps) => (
           <p className="text-xs text-muted-foreground">Days of no interaction before auto-reject</p>
         </motion.div>
       )}
-    </div>
-
-    <div className="space-y-2">
-      <Label>Blocked email providers (reject clients using these):</Label>
-      <div className="flex flex-wrap gap-2 mb-2">
-        {props.blockedEmailProviders.map((provider) => (
-          <motion.span
-            key={provider}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20"
-          >
-            {provider}
-            <button onClick={() => props.onBlockedEmailProvidersChange(props.blockedEmailProviders.filter((p) => p !== provider))} className="hover:text-destructive/70 ml-1">×</button>
-          </motion.span>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <Input
-          placeholder="tempmail.com"
-          value={props.newEmailProvider}
-          onChange={(e) => props.onNewEmailProviderChange(e.target.value.toLowerCase().trim())}
-          className="flex-1"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && props.newEmailProvider && !props.blockedEmailProviders.includes(props.newEmailProvider)) {
-              props.onBlockedEmailProvidersChange([...props.blockedEmailProviders, props.newEmailProvider]);
-              props.onNewEmailProviderChange("");
-            }
-          }}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (props.newEmailProvider && !props.blockedEmailProviders.includes(props.newEmailProvider)) {
-              props.onBlockedEmailProvidersChange([...props.blockedEmailProviders, props.newEmailProvider]);
-              props.onNewEmailProviderChange("");
-            }
-          }}
-        >
-          Add
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">Uses <code className="text-xs bg-secondary px-1 py-0.5 rounded">email_provider_criteria</code> with <code className="text-xs bg-secondary px-1 py-0.5 rounded">blocked_providers</code>. Allowed providers are configured in Email step.</p>
     </div>
   </div>
 );

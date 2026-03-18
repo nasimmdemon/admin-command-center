@@ -7,8 +7,6 @@ export const StepTransformEmailsDemo = () => {
   const [includePasswordChangeLinkInEmail, setIncludePasswordChangeLinkInEmail] = useState(true);
   const [autoRejectNoInteractivity, setAutoRejectNoInteractivity] = useState(true);
   const [autoRejectDaysAfterWelcome, setAutoRejectDaysAfterWelcome] = useState(7);
-  const [blockedEmailProviders, setBlockedEmailProviders] = useState(["tempmail.com", "guerrillamail.com"]);
-  const [newEmailProvider, setNewEmailProvider] = useState("");
   return (
     <StepTransformEmails
       brandLabel="Demo Brand"
@@ -25,10 +23,6 @@ export const StepTransformEmailsDemo = () => {
       onAutoRejectNoInteractivityChange={setAutoRejectNoInteractivity}
       autoRejectDaysAfterWelcome={autoRejectDaysAfterWelcome}
       onAutoRejectDaysAfterWelcomeChange={setAutoRejectDaysAfterWelcome}
-      blockedEmailProviders={blockedEmailProviders}
-      onBlockedEmailProvidersChange={setBlockedEmailProviders}
-      newEmailProvider={newEmailProvider}
-      onNewEmailProviderChange={setNewEmailProvider}
     />
   );
 };

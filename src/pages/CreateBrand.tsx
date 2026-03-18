@@ -244,12 +244,6 @@ const CreateBrand = () => {
                 voipDeskConfigs={currentConfig.voipDeskConfigs}
                 voipQaDefault={currentConfig.voipQaDefault}
                 voipWorkerConfigs={currentConfig.voipWorkerConfigs}
-                phoneExtensionsAllowed={currentConfig.phoneExtensionsAllowed}
-                onPhoneExtensionsAllowedChange={(v) => updateBrandConfig(bi, "phoneExtensionsAllowed", v)}
-                allowedExtensionPhones={currentConfig.allowedExtensionPhones}
-                newAllowedExtensionPhone={currentConfig.newAllowedExtensionPhone}
-                onAllowedExtensionPhonesChange={(v) => updateBrandConfig(bi, "allowedExtensionPhones", v)}
-                onNewAllowedExtensionPhoneChange={(v) => updateBrandConfig(bi, "newAllowedExtensionPhone", v)}
               />
               <StepTransformEmails
                 brandLabel={brandLabel}
@@ -266,10 +260,6 @@ const CreateBrand = () => {
                 onAutoRejectNoInteractivityChange={(v) => updateBrandConfig(bi, "autoRejectNoInteractivity", v)}
                 autoRejectDaysAfterWelcome={currentConfig.autoRejectDaysAfterWelcome}
                 onAutoRejectDaysAfterWelcomeChange={(v) => updateBrandConfig(bi, "autoRejectDaysAfterWelcome", v)}
-                blockedEmailProviders={currentConfig.blockedEmailProviders}
-                onBlockedEmailProvidersChange={(v) => updateBrandConfig(bi, "blockedEmailProviders", v)}
-                newEmailProvider={currentConfig.newEmailProvider}
-                onNewEmailProviderChange={(v) => updateBrandConfig(bi, "newEmailProvider", v)}
               />
             </div>
           </BrandStepWrapper>
