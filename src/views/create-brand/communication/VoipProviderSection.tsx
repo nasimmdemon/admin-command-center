@@ -14,7 +14,7 @@ import { VoipDeskConfigSection } from "./VoipDeskConfigSection";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
 import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps } from "@/types/voip-desk";
 import type { VoipWorkerConfigEntry } from "@/types/worker-comms";
-import { syncVoipWorkerConfigs } from "@/types/worker-comms";
+import { SAMPLE_WORKER_COVERAGE_MAP, syncVoipWorkerConfigs } from "@/types/worker-comms";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface VoipProviderSectionProps {
@@ -518,6 +518,29 @@ export const VoipProviderSection = ({
                                   Pending — enter number when provider assigns it.
                                 </p>
                               )}
+                              <div className="pt-2 border-t border-border/30">
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  The coverage map below uses each worker&apos;s <strong>origin → destination</strong> countries (not the phone field). Start empty until you add routes.
+                                </p>
+                                <button
+                                  type="button"
+                                  className="text-xs px-2 py-1 rounded-md border border-violet-500/40 bg-violet-500/10 text-violet-800 dark:text-violet-200 hover:bg-violet-500/20"
+                                  onClick={() =>
+                                    patchVoipWorker(w.workerEmail, {
+                                      coverageMap: { ...SAMPLE_WORKER_COVERAGE_MAP },
+                                    })
+                                  }
+                                >
+                                  Use sample routes (map preview)
+                                </button>
+                                <button
+                                  type="button"
+                                  className="text-xs px-2 py-1 rounded-md border border-border/60 ml-2 hover:bg-muted/50"
+                                  onClick={() => patchVoipWorker(w.workerEmail, { coverageMap: {} })}
+                                >
+                                  Clear routes
+                                </button>
+                              </div>
                             </div>
                           )}
                           {w.included === false && (
@@ -530,7 +553,18 @@ export const VoipProviderSection = ({
               )}
               {voipWorkerConfigs && voipWorkerConfigs.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Coverage preview</Label>
+                  <div>
+                    <Label className="text-sm font-medium">Coverage preview</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Shows merged <strong>included</strong> workers only. If the map is empty, click <strong>Use sample routes (map preview)</strong> on a worker above, or import JSON with{" "}
+                      <code className="text-[10px] bg-muted px-1 rounded">voipWorkerConfigs[].coverageMap</code>.
+                    </p>
+                  </div>
+                  {Object.keys(mergeWorkerCoverageMaps(voipWorkerConfigs)).length === 0 && (
+                    <p className="text-xs text-amber-700 dark:text-amber-300 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+                      No routes yet — worker coverage maps are empty. Add sample routes per worker to see violet (origins) and green (destinations) on the map.
+                    </p>
+                  )}
                   <div className="rounded-xl border border-border/50 p-4 bg-muted/30 min-h-[280px] overflow-hidden">
                     <InteractiveWorldMap
                       variant="select"

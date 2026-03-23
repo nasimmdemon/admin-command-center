@@ -27,6 +27,12 @@ export interface WhatsAppWorkerEntry {
   errorMessage?: string;
 }
 
+/** Example origin→destinations for UI map preview (not from provider). */
+export const SAMPLE_WORKER_COVERAGE_MAP: Record<string, string[]> = {
+  US: ["US", "CA", "GB", "FR"],
+  GB: ["GB", "US", "DE"],
+};
+
 export function defaultVoipWorkerEntry(email: string, coverageMap: Record<string, string[]> = {}): VoipWorkerConfigEntry {
   return {
     workerEmail: email,
