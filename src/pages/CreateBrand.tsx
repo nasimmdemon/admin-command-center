@@ -1,3 +1,4 @@
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Download } from "lucide-react";
@@ -10,6 +11,8 @@ import { useCreateBrand } from "@/controllers/useCreateBrand";
 import { buildCleanExportConfig } from "@/types/brand-config-per-brand";
 import { ROUTES } from "@/models/routes";
 import { getCategoryLabelForStep } from "@/models/brand-wizard-categories";
+import { STEP_UPLOAD_WORKERS } from "@/models/brand-wizard-steps";
+import { hasValidWorkersForBrand } from "@/utils/has-valid-workers-for-brand";
 import { StepCreateMode } from "@/views/create-brand/StepCreateMode";
 import {
   StepBrands,
@@ -32,8 +35,92 @@ import {
 
 const CreateBrand = () => {
   const navigate = useNavigate();
-  const { state, isEditMode, addBrand, removeBrand, updateBrand, updateBrandConfig, next, prev, nextSlide, prevSlide, brandLabel, currentConfig, totalSteps, setCreateMode } = useCreateBrand();
+  const {
+    state,
+    isEditMode,
+    addBrand,
+    removeBrand,
+    updateBrand,
+    updateBrandConfig,
+    next,
+    prev,
+    setStep,
+    nextSlide,
+    prevSlide,
+    brandLabel,
+    currentConfig,
+    totalSteps,
+    setCreateMode,
+  } = useCreateBrand();
   const bi = state.currentBrandSlide;
+
+  const [workerUploadRedirectMessage, setWorkerUploadRedirectMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state.step !== STEP_UPLOAD_WORKERS) setWorkerUploadRedirectMessage(null);
+  }, [state.step]);
+
+  const resolveVoipAllocationModes = useCallback(() => {
+    return (
+      currentConfig.voipAllocationModes ??
+      (currentConfig.voipMode
+        ? {
+            byBrand: currentConfig.voipMode === "legacy",
+            byDesk: currentConfig.voipMode === "desk",
+            byWorker: currentConfig.voipMode === "worker",
+          }
+        : { byBrand: true, byDesk: false, byWorker: false })
+    );
+  }, [currentConfig.voipAllocationModes, currentConfig.voipMode]);
+
+  const resolveWhatsappAllocationModes = useCallback(() => {
+    return (
+      currentConfig.whatsappAllocationModes ??
+      (currentConfig.whatsappAdditionalModes
+        ? {
+            byBrand: !!currentConfig.whatsappAdditionalModes.by_brand,
+            byDesk: true,
+            byWorker: !!currentConfig.whatsappAdditionalModes.by_worker,
+          }
+        : { byBrand: false, byDesk: true, byWorker: false })
+    );
+  }, [currentConfig.whatsappAllocationModes, currentConfig.whatsappAdditionalModes]);
+
+  const handleVoipAllocationModesChange = useCallback(
+    (v: { byBrand: boolean; byDesk: boolean; byWorker: boolean }) => {
+      const prev = resolveVoipAllocationModes();
+      const turningOnWorker = v.byWorker && !prev.byWorker;
+      const brandName = state.brands[bi]?.name ?? "";
+      if (turningOnWorker && !hasValidWorkersForBrand(currentConfig.uploadedWorkers, brandName)) {
+        updateBrandConfig(bi, "voipAllocationModes", v);
+        setWorkerUploadRedirectMessage(
+          "You turned on By worker for VoIP. Upload a worker CSV first (valid rows for this brand), then return to the VoIP step."
+        );
+        setStep(STEP_UPLOAD_WORKERS);
+        return;
+      }
+      updateBrandConfig(bi, "voipAllocationModes", v);
+    },
+    [bi, currentConfig.uploadedWorkers, resolveVoipAllocationModes, setStep, state.brands, updateBrandConfig]
+  );
+
+  const handleWhatsappAllocationModesChange = useCallback(
+    (v: { byBrand: boolean; byDesk: boolean; byWorker: boolean }) => {
+      const prev = resolveWhatsappAllocationModes();
+      const turningOnWorker = v.byWorker && !prev.byWorker;
+      const brandName = state.brands[bi]?.name ?? "";
+      if (turningOnWorker && !hasValidWorkersForBrand(currentConfig.uploadedWorkers, brandName)) {
+        updateBrandConfig(bi, "whatsappAllocationModes", v);
+        setWorkerUploadRedirectMessage(
+          "You turned on By worker for WhatsApp. Upload a worker CSV first (valid rows for this brand), then return to the WhatsApp step."
+        );
+        setStep(STEP_UPLOAD_WORKERS);
+        return;
+      }
+      updateBrandConfig(bi, "whatsappAllocationModes", v);
+    },
+    [bi, currentConfig.uploadedWorkers, resolveWhatsappAllocationModes, setStep, state.brands, updateBrandConfig]
+  );
 
   const renderStep = () => {
     switch (state.step) {
@@ -135,6 +222,19 @@ const CreateBrand = () => {
       case 7:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepUploadWorkers
+              brands={state.brands}
+              brandIndex={bi}
+              uploadedWorkers={currentConfig.uploadedWorkers}
+              onUploadedWorkersChange={(v) => updateBrandConfig(bi, "uploadedWorkers", v)}
+              redirectBannerMessage={workerUploadRedirectMessage}
+              onDismissRedirectBanner={() => setWorkerUploadRedirectMessage(null)}
+            />
+          </BrandStepWrapper>
+        );
+      case 8:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepEmailConfig
               emailProvider={currentConfig.emailProvider}
               onEmailProviderChange={(v) => updateBrandConfig(bi, "emailProvider", v)}
@@ -154,7 +254,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 8:
+      case 9:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepVoipConfig
@@ -184,32 +284,44 @@ const CreateBrand = () => {
                     }
                   : undefined)
               }
-              onVoipAllocationModesChange={(v) => updateBrandConfig(bi, "voipAllocationModes", v)}
+              onVoipAllocationModesChange={handleVoipAllocationModesChange}
               voipDeskConfigs={currentConfig.voipDeskConfigs}
               onVoipDeskConfigsChange={(v) => updateBrandConfig(bi, "voipDeskConfigs", v)}
               voipQaDefault={currentConfig.voipQaDefault}
               onVoipQaDefaultChange={(v) => updateBrandConfig(bi, "voipQaDefault", v)}
               voipWorkerConfigs={currentConfig.voipWorkerConfigs}
               onVoipWorkerConfigsChange={(v) => updateBrandConfig(bi, "voipWorkerConfigs", v)}
-            />
-          </BrandStepWrapper>
-        );
-      case 9:
-        return (
-          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepWhatsApp
-              includeWhatsApp={currentConfig.includeWhatsApp}
-              onIncludeWhatsAppChange={(v) => updateBrandConfig(bi, "includeWhatsApp", v)}
-              whatsappAdditionalModes={currentConfig.whatsappAdditionalModes ?? { by_brand: false, by_worker: false }}
-              onWhatsappAdditionalModesChange={(v) => updateBrandConfig(bi, "whatsappAdditionalModes", v)}
-              whatsappQrCode={currentConfig.whatsappQrCode}
+              uploadedWorkers={currentConfig.uploadedWorkers}
+              currentBrandName={state.brands[bi]?.name ?? ""}
             />
           </BrandStepWrapper>
         );
       case 10:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepUploadWorkers brands={state.brands} brandIndex={bi} />
+            <StepWhatsApp
+              includeWhatsApp={currentConfig.includeWhatsApp}
+              onIncludeWhatsAppChange={(v) => updateBrandConfig(bi, "includeWhatsApp", v)}
+              whatsappAllocationModes={
+                currentConfig.whatsappAllocationModes ??
+                (currentConfig.whatsappAdditionalModes
+                  ? {
+                      byBrand: !!currentConfig.whatsappAdditionalModes.by_brand,
+                      byDesk: true,
+                      byWorker: !!currentConfig.whatsappAdditionalModes.by_worker,
+                    }
+                  : { byBrand: false, byDesk: true, byWorker: false })
+              }
+              onWhatsappAllocationModesChange={handleWhatsappAllocationModesChange}
+              whatsappQrCode={currentConfig.whatsappQrCode}
+              onWhatsappQrCodeChange={(v) => updateBrandConfig(bi, "whatsappQrCode", v)}
+              whatsappDeskQrCode={currentConfig.whatsappDeskQrCode ?? ""}
+              onWhatsappDeskQrCodeChange={(v) => updateBrandConfig(bi, "whatsappDeskQrCode", v)}
+              whatsappWorkerEntries={currentConfig.whatsappWorkerEntries ?? []}
+              onWhatsappWorkerEntriesChange={(v) => updateBrandConfig(bi, "whatsappWorkerEntries", v)}
+              uploadedWorkers={currentConfig.uploadedWorkers ?? []}
+              currentBrandName={state.brands[bi]?.name ?? ""}
+            />
           </BrandStepWrapper>
         );
       case 11:

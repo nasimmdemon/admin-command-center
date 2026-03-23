@@ -1,6 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { getVoipDeskConflicts, type VoipDeskConfig } from "@/types/voip-desk";
+import type { VoipWorkerConfigEntry } from "@/types/worker-comms";
 
 interface StepTransformVoipProps {
   brandLabel: string;
@@ -8,7 +9,7 @@ interface StepTransformVoipProps {
   voipAllocationModes?: { byBrand: boolean; byDesk: boolean; byWorker: boolean };
   voipDeskConfigs?: VoipDeskConfig[];
   voipQaDefault?: boolean;
-  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
+  voipWorkerConfigs?: VoipWorkerConfigEntry[];
 }
 
 export const StepTransformVoip = (props: StepTransformVoipProps) => {

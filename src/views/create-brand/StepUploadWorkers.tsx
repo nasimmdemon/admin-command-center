@@ -1,11 +1,13 @@
 import { useState, useCallback } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Upload, CheckCircle2, XCircle, ChevronDown, ChevronRight, FileSpreadsheet, AlertTriangle, Download } from "lucide-react";
+import { Upload, CheckCircle2, XCircle, ChevronDown, ChevronRight, FileSpreadsheet, AlertTriangle, Download, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   validateWorkerCsv,
+  DEPARTMENTS,
+  CLIENT_DATA_PREM_VALUES,
   type ValidatedRow,
   type ValidationError,
 } from "@/utils/worker-csv-validation";
@@ -14,12 +16,34 @@ import type { BrandEntry } from "@/controllers/useCreateBrand";
 interface StepUploadWorkersProps {
   brands: BrandEntry[];
   brandIndex?: number;
+  uploadedWorkers?: Array<{
+    rowIndex: number;
+    full_name: string;
+    brandName: string;
+    departmentName: string;
+    desks: string;
+    email: string;
+    valid: boolean;
+    errors: Array<{ field: string; message: string }>;
+  }>;
+  onUploadedWorkersChange?: (v: NonNullable<StepUploadWorkersProps["uploadedWorkers"]>) => void;
+  /** Shown when user enabled “By worker” on VoIP/WhatsApp without workers — wizard jumped here */
+  redirectBannerMessage?: string | null;
+  onDismissRedirectBanner?: () => void;
 }
 
 type TreeKey = string;
 
-function buildTree(rows: ValidatedRow[]): Map<TreeKey, { brand: string; dept: string; desk: string; users: ValidatedRow[] }> {
-  const map = new Map<TreeKey, { brand: string; dept: string; desk: string; users: ValidatedRow[] }>();
+/** Nested tree: Brand → Department → Desk → Users */
+interface TreeEntry {
+  brand: string;
+  dept: string;
+  desk: string;
+  users: ValidatedRow[];
+}
+
+function buildTree(rows: ValidatedRow[]): Map<TreeKey, TreeEntry> {
+  const map = new Map<TreeKey, TreeEntry>();
   for (const v of rows) {
     const b = v.row.brandName?.trim() || "(no brand)";
     const d = v.row.departmentName?.trim().toUpperCase() || "(no dept)";
@@ -35,8 +59,22 @@ function buildTree(rows: ValidatedRow[]): Map<TreeKey, { brand: string; dept: st
   return map;
 }
 
-function UserRow({ v }: { v: ValidatedRow }) {
-  const [open, setOpen] = useState(false);
+/** Group tree entries by brand, then dept, then desk for hierarchical display */
+function buildHierarchy(entries: [string, TreeEntry][]): Map<string, Map<string, Map<string, ValidatedRow[]>>> {
+  const byBrand = new Map<string, Map<string, Map<string, ValidatedRow[]>>>();
+  for (const [, { brand, dept, desk, users }] of entries) {
+    if (!byBrand.has(brand)) byBrand.set(brand, new Map());
+    const byDept = byBrand.get(brand)!;
+    if (!byDept.has(dept)) byDept.set(dept, new Map());
+    const byDesk = byDept.get(dept)!;
+    if (!byDesk.has(desk)) byDesk.set(desk, []);
+    byDesk.get(desk)!.push(...users);
+  }
+  return byBrand;
+}
+
+function UserRow({ v, defaultOpen = false }: { v: ValidatedRow; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const r = v.row;
   return (
     <div className="flex items-start gap-2 py-1.5 px-2 rounded-lg hover:bg-muted/30">
@@ -101,14 +139,58 @@ function TreeBranch({
   );
 }
 
-export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersProps) => {
+const VALIDATION_RULES: Array<{ field: string; rule: string }> = [
+  { field: "full_name", rule: "Required" },
+  { field: "brand name", rule: "Required; must match brand(s) in wizard" },
+  { field: "department name", rule: `Must be one of: ${DEPARTMENTS.join(", ")}` },
+  { field: "desks", rule: "Required for CO and RE departments" },
+  { field: "email", rule: "Required; valid format; no duplicates (prevents sending same email twice)" },
+  { field: "password", rule: "Required" },
+  { field: "title", rule: "Required" },
+  { field: "is_manager", rule: "Required; must be TRUE or FALSE" },
+  { field: "client_data_prem", rule: `Must be one of: ${CLIENT_DATA_PREM_VALUES.join(", ")}` },
+  { field: "phone_number", rule: "Required" },
+];
+
+export const StepUploadWorkers = ({
+  brands,
+  brandIndex = 0,
+  uploadedWorkers,
+  onUploadedWorkersChange,
+  redirectBannerMessage,
+  onDismissRedirectBanner,
+}: StepUploadWorkersProps) => {
   const b = brands[brandIndex] || brands[0];
   const [result, setResult] = useState<{
     headerErrors: ValidationError[];
     rows: ValidatedRow[];
     fileName: string;
-  } | null>(null);
+  } | null>(() => {
+    if (uploadedWorkers && uploadedWorkers.length > 0) {
+      const rows: ValidatedRow[] = uploadedWorkers.map((u) => ({
+        row: {
+          rowIndex: u.rowIndex,
+          full_name: u.full_name,
+          brandName: u.brandName,
+          departmentName: u.departmentName,
+          desks: u.desks,
+          email: u.email,
+          password: "",
+          title: "",
+          is_manager: "",
+          client_data_prem: "",
+          phone_number: "",
+          raw: {},
+        },
+        valid: u.valid,
+        errors: u.errors,
+      }));
+      return { headerErrors: [], rows, fileName: "Previously uploaded" };
+    }
+    return null;
+  });
   const [dragOver, setDragOver] = useState(false);
+  const [showValidationRules, setShowValidationRules] = useState(false);
 
   const allowedBrands = brands.map((x) => x.name).filter(Boolean);
   const allowedBrandsForValidation = allowedBrands.length > 0 ? allowedBrands : ["*"];
@@ -123,10 +205,22 @@ export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersP
         const text = (e.target?.result as string) || "";
         const { headerErrors, rows } = validateWorkerCsv(text, allowedBrandsForValidation);
         setResult({ headerErrors, rows, fileName: file.name });
+        onUploadedWorkersChange?.(
+          rows.map((v) => ({
+            rowIndex: v.row.rowIndex,
+            full_name: v.row.full_name,
+            brandName: v.row.brandName,
+            departmentName: v.row.departmentName,
+            desks: v.row.desks,
+            email: v.row.email,
+            valid: v.valid,
+            errors: v.errors,
+          }))
+        );
       };
       reader.readAsText(file, "UTF-8");
     },
-    [allowedBrandsForValidation]
+    [allowedBrandsForValidation, onUploadedWorkersChange]
   );
 
   const handleDrop = useCallback(
@@ -150,11 +244,63 @@ export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersP
 
   const validCount = result?.rows.filter((r) => r.valid).length ?? 0;
   const invalidCount = result?.rows.filter((r) => !r.valid).length ?? 0;
+  const invalidRows = result?.rows.filter((r) => !r.valid) ?? [];
+  const duplicateEmailCount = result
+    ? (() => {
+        const counts = new Map<string, number>();
+        for (const r of result.rows) {
+          const e = r.row.email?.trim().toLowerCase();
+          if (e) counts.set(e, (counts.get(e) ?? 0) + 1);
+        }
+        return [...counts.values()].filter((c) => c > 1).length;
+      })()
+    : 0;
   const tree = result ? buildTree(result.rows) : null;
 
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-semibold text-foreground">Upload Workers</h2>
+      {redirectBannerMessage && (
+        <div className="rounded-xl border border-primary/40 bg-primary/10 p-4 flex gap-3 items-start">
+          <AlertTriangle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">Upload workers first</p>
+            <p className="text-sm text-muted-foreground mt-1">{redirectBannerMessage}</p>
+          </div>
+          {onDismissRedirectBanner && (
+            <button
+              type="button"
+              onClick={onDismissRedirectBanner}
+              className="shrink-0 p-1 rounded-md hover:bg-background/80 text-muted-foreground hover:text-foreground"
+              aria-label="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground">
+        Upload a CSV of workers. Invalid rows are rejected and will not be created. No email is sent twice—duplicate emails are detected and blocked.
+      </p>
+      <Collapsible open={showValidationRules} onOpenChange={setShowValidationRules}>
+        <CollapsibleTrigger asChild>
+          <button type="button" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
+            {showValidationRules ? "−" : "+"} Fields that block user creation (Step 3 / All)
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-2 rounded-xl border border-border/50 p-3 bg-muted/20 text-xs">
+            <p className="text-muted-foreground mb-2">If any of these fail, the row is invalid and the user will not be created:</p>
+            <ul className="list-disc list-inside space-y-0.5">
+              {VALIDATION_RULES.map((r, i) => (
+                <li key={i}>
+                  <strong>{r.field}</strong>: {r.rule}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
       <div className="space-y-2">
         <Label>Your Workers On {b?.name || `Brand ${brandIndex + 1}`} Accounts</Label>
         <div
@@ -206,7 +352,7 @@ export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersP
               <FileSpreadsheet className="w-4 h-4" />
               <span>{result.fileName}</span>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-wrap">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {validCount} valid
@@ -217,8 +363,27 @@ export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersP
                   {invalidCount} errors
                 </span>
               )}
+              {duplicateEmailCount > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 text-xs font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  {duplicateEmailCount} duplicate email{duplicateEmailCount !== 1 ? "s" : ""} (no email sent twice)
+                </span>
+              )}
             </div>
           </div>
+
+          {invalidRows.length > 0 && (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4">
+              <p className="text-sm font-medium text-destructive mb-2">Users with incorrect data ({invalidRows.length})</p>
+              <ScrollArea className="h-[180px] pr-4">
+                <div className="space-y-1">
+                  {invalidRows.map((v, i) => (
+                    <UserRow key={i} v={v} defaultOpen={true} />
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           {result.headerErrors.length > 0 && (
             <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 flex gap-2">
@@ -236,14 +401,26 @@ export const StepUploadWorkers = ({ brands, brandIndex = 0 }: StepUploadWorkersP
 
           {tree && tree.size > 0 && (
             <div className="rounded-xl border border-border/50 p-4 bg-card">
-              <Label className="text-sm font-medium mb-3 block">Tree: Brand → Department → Desk → Users</Label>
+              <Label className="text-sm font-medium mb-3 block">Full tree: Brand → Department → Desk → Users</Label>
               <ScrollArea className="h-[320px] pr-4">
                 <div className="space-y-2">
-                  {Array.from(tree.entries()).map(([key, { brand, dept, desk, users }]) => (
-                    <TreeBranch key={key} label={`${brand} / ${dept} / ${desk}`} defaultOpen={true}>
-                      <div className="space-y-0.5 mt-1">
-                        {users.map((v, i) => (
-                          <UserRow key={i} v={v} />
+                  {Array.from(buildHierarchy(Array.from(tree.entries()))).map(([brand, byDept]) => (
+                    <TreeBranch key={brand} label={`Brand: ${brand}`} defaultOpen={true}>
+                      <div className="space-y-2 mt-1">
+                        {Array.from(byDept.entries()).map(([dept, byDesk]) => (
+                          <TreeBranch key={`${brand}-${dept}`} label={`Department: ${dept}`} defaultOpen={true}>
+                            <div className="space-y-2 mt-1">
+                              {Array.from(byDesk.entries()).map(([desk, users]) => (
+                                <TreeBranch key={`${brand}-${dept}-${desk}`} label={`Desk: ${desk}`} defaultOpen={true}>
+                                  <div className="space-y-0.5 mt-1">
+                                    {users.map((v, i) => (
+                                      <UserRow key={i} v={v} defaultOpen={!v.valid} />
+                                    ))}
+                                  </div>
+                                </TreeBranch>
+                              ))}
+                            </div>
+                          </TreeBranch>
                         ))}
                       </div>
                     </TreeBranch>

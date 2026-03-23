@@ -10,13 +10,13 @@ export interface EditCategoryOption {
 export const EDIT_CATEGORY_OPTIONS: EditCategoryOption[] = [
   { id: "brands", label: "Brands", firstStep: 1, group: "Brand Scopes" },
   { id: "departments", label: "Departments", firstStep: 2, group: "Brand Scopes" },
-  { id: "desks", label: "Desks", firstStep: 8, group: "Brand Scopes" },
+  { id: "desks", label: "Desks", firstStep: 2, group: "Brand Scopes" },
   { id: "payment", label: "Payment", firstStep: 3, group: "Providers" },
-  { id: "voip", label: "VoIP", firstStep: 8, group: "Providers" },
-  { id: "email", label: "Email", firstStep: 7, group: "Providers" },
+  { id: "voip", label: "VoIP", firstStep: 9, group: "Providers" },
+  { id: "email", label: "Email", firstStep: 8, group: "Providers" },
   { id: "kyc", label: "KYC", firstStep: 5, group: "Other" },
   { id: "terms", label: "Terms", firstStep: 6, group: "Other" },
-  { id: "workers", label: "Upload Workers", firstStep: 10, group: "Other" },
+  { id: "workers", label: "Upload Workers", firstStep: 7, group: "Other" },
   { id: "logo", label: "Logo", firstStep: 11, group: "Other" },
   { id: "transform", label: "Transform (VoIP & Email)", firstStep: 12, group: "Other" },
   { id: "trader", label: "Trader Platform & Markets", firstStep: 13, group: "Other" },
@@ -33,9 +33,10 @@ export function getCategoryLabelForStep(step: number): string | null {
   if (step >= 3 && step <= 4) return "Providers: Payment";
   if (step === 5) return "KYC";
   if (step === 6) return "Terms";
-  if (step === 7) return "Providers: Email";
-  if (step >= 8 && step <= 9) return "Providers: VoIP";
-  if (step === 10) return "Brand Scopes: Desks (Upload Workers)";
+  if (step === 7) return "Upload Workers";
+  if (step === 8) return "Providers: Email";
+  if (step === 9) return "Providers: VoIP";
+  if (step === 10) return "Providers: WhatsApp";
   if (step === 11) return "Logo";
   if (step === 12) return "Transform (VoIP & Phone & Email)";
   if (step === 13) return "Trader Platform";

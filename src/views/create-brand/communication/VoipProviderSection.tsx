@@ -1,6 +1,7 @@
+import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ExternalLink, Info, MapPin, Layers } from "lucide-react";
+import { ExternalLink, Info, MapPin, Layers, AlertTriangle, CheckCircle2, Phone } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,10 @@ import InteractiveWorldMap from "@/components/brand-wizard/InteractiveWorldMap";
 import { ProviderOptionCard } from "./ProviderOptionCard";
 import { VoipDeskConfigSection } from "./VoipDeskConfigSection";
 import { isValidISOCountryCode, normalizeCountryInputToISO } from "@/utils/countryCodes";
-import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps, mergeCoverageMaps } from "@/types/voip-desk";
+import { mergeDeskCoverageMaps, mergeWorkerCoverageMaps } from "@/types/voip-desk";
+import type { VoipWorkerConfigEntry } from "@/types/worker-comms";
+import { syncVoipWorkerConfigs } from "@/types/worker-comms";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface VoipProviderSectionProps {
   provider: "voicex" | "other" | null;
@@ -36,8 +40,11 @@ interface VoipProviderSectionProps {
   onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
   voipQaDefault?: boolean;
   onVoipQaDefaultChange?: (v: boolean) => void;
-  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
-  onVoipWorkerConfigsChange?: (v: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>) => void;
+  voipWorkerConfigs?: VoipWorkerConfigEntry[];
+  onVoipWorkerConfigsChange?: (v: VoipWorkerConfigEntry[]) => void;
+  /** Workers from CSV; filtered by current brand when currentBrandName is set */
+  uploadedWorkers?: Array<{ email: string; full_name: string; valid: boolean; brandName?: string }>;
+  currentBrandName?: string;
 }
 
 export const VoipProviderSection = ({
@@ -65,7 +72,45 @@ export const VoipProviderSection = ({
   onVoipQaDefaultChange,
   voipWorkerConfigs = [],
   onVoipWorkerConfigsChange,
+  uploadedWorkers = [],
+  currentBrandName = "",
 }: VoipProviderSectionProps) => {
+  const brandNorm = currentBrandName.trim().toLowerCase();
+  const validWorkersForBrand = useMemo(() => {
+    return uploadedWorkers.filter(
+      (w) =>
+        w.valid &&
+        (!brandNorm || (w.brandName?.trim().toLowerCase() ?? "") === brandNorm)
+    );
+  }, [uploadedWorkers, brandNorm]);
+
+  const voipWorkerSyncKey = useMemo(
+    () => validWorkersForBrand.map((w) => w.email).sort().join("|"),
+    [validWorkersForBrand]
+  );
+  const prevVoipSyncKey = useRef<string | null>(null);
+  const voipConfigsRef = useRef(voipWorkerConfigs);
+  voipConfigsRef.current = voipWorkerConfigs;
+
+  useEffect(() => {
+    if (!onVoipWorkerConfigsChange) return;
+    if (prevVoipSyncKey.current === voipWorkerSyncKey) return;
+    prevVoipSyncKey.current = voipWorkerSyncKey;
+    const next = syncVoipWorkerConfigs(
+      validWorkersForBrand.map((w) => ({ email: w.email, full_name: w.full_name })),
+      voipConfigsRef.current
+    );
+    onVoipWorkerConfigsChange(next);
+  }, [voipWorkerSyncKey, validWorkersForBrand, onVoipWorkerConfigsChange]);
+
+  const patchVoipWorker = (email: string, patch: Partial<VoipWorkerConfigEntry>) => {
+    onVoipWorkerConfigsChange?.(
+      voipWorkerConfigs.map((w) =>
+        w.workerEmail.toLowerCase() === email.toLowerCase() ? { ...w, ...patch } : w
+      )
+    );
+  };
+
   const originCountries = Object.keys(coverageMap);
 
   const addOriginCountry = (code: string) => {
@@ -366,11 +411,123 @@ export const VoipProviderSection = ({
           {voipAllocationModes.byWorker && (
             <div className="space-y-4 rounded-xl border border-border/40 p-4 bg-card">
               <Label className="text-sm font-medium">By worker</Label>
-              <div className="rounded-xl border border-dashed border-border/60 p-6 bg-muted/20 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Each worker has own origin→destinations. Upload workers first, then configure per-worker VoIP in the Transform step.
-                </p>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                Workers for <strong>{currentBrandName || "this brand"}</strong> from your CSV. Include or exclude each worker; assign a phone number when the provider provisions it — or mark error.
+              </p>
+              {validWorkersForBrand.length === 0 ? (
+                <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 flex gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    Upload workers for this brand first (Upload Workers step). Then configure per-worker VoIP here.
+                  </p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[min(380px,55vh)] pr-3">
+                  <div className="space-y-3">
+                    {voipWorkerConfigs
+                      .filter((c) =>
+                        validWorkersForBrand.some((w) => w.email.toLowerCase() === c.workerEmail.toLowerCase())
+                      )
+                      .map((w) => (
+                        <div
+                          key={w.workerEmail}
+                          className="rounded-xl border border-border/40 p-4 bg-muted/10 space-y-3"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="font-medium text-sm">
+                                {validWorkersForBrand.find((x) => x.email.toLowerCase() === w.workerEmail.toLowerCase())
+                                  ?.full_name || w.workerEmail}
+                              </p>
+                              <p className="text-xs text-muted-foreground">{w.workerEmail}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs text-muted-foreground">Include</Label>
+                              <Switch
+                                checked={w.included !== false}
+                                onCheckedChange={(v) => patchVoipWorker(w.workerEmail, { included: v })}
+                              />
+                            </div>
+                          </div>
+                          {w.included !== false && (
+                            <div className="space-y-2 border-t border-border/40 pt-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Phone className="w-4 h-4 text-muted-foreground" />
+                                <Label className="text-xs">Phone number (VoIP line)</Label>
+                                <Input
+                                  className="h-8 max-w-[220px] text-sm"
+                                  placeholder="+1…"
+                                  value={w.phoneNumber ?? ""}
+                                  onChange={(e) =>
+                                    patchVoipWorker(w.workerEmail, { phoneNumber: e.target.value })
+                                  }
+                                />
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  className="text-xs px-2 py-1 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                                  onClick={() =>
+                                    patchVoipWorker(w.workerEmail, {
+                                      voipStatus: "ready",
+                                      errorMessage: undefined,
+                                    })
+                                  }
+                                >
+                                  Mark ready (demo)
+                                </button>
+                                <button
+                                  type="button"
+                                  className="text-xs px-2 py-1 rounded-md bg-destructive/15 text-destructive"
+                                  onClick={() =>
+                                    patchVoipWorker(w.workerEmail, {
+                                      voipStatus: "error",
+                                      errorMessage: "Number provisioning failed (demo)",
+                                    })
+                                  }
+                                >
+                                  Mark error (demo)
+                                </button>
+                                <button
+                                  type="button"
+                                  className="text-xs px-2 py-1 rounded-md border border-border/60"
+                                  onClick={() =>
+                                    patchVoipWorker(w.workerEmail, {
+                                      voipStatus: "pending",
+                                      errorMessage: undefined,
+                                    })
+                                  }
+                                >
+                                  Reset pending
+                                </button>
+                              </div>
+                              {w.voipStatus === "ready" && (
+                                <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  VoIP line ready for this worker.
+                                </div>
+                              )}
+                              {w.voipStatus === "error" && (
+                                <div className="flex items-start gap-1.5 text-xs text-destructive">
+                                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                  {w.errorMessage || "Error"}
+                                </div>
+                              )}
+                              {w.voipStatus === "pending" && (
+                                <p className="text-xs text-amber-700 dark:text-amber-300">
+                                  Pending — enter number when provider assigns it.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {w.included === false && (
+                            <p className="text-xs text-muted-foreground italic">Excluded from per-worker VoIP.</p>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </ScrollArea>
+              )}
               {voipWorkerConfigs && voipWorkerConfigs.length > 0 && (
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Coverage preview</Label>

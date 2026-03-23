@@ -13,6 +13,8 @@ import {
 import { buildDefaultTraderMarkets } from "@/lib/symbol-enums/market_symbols_map";
 import type { VoipDeskConfig } from "./voip-desk";
 import type { BrandDesk } from "./brand-desk";
+import type { VoipWorkerConfigEntry, WhatsAppWorkerEntry } from "./worker-comms";
+export type { VoipWorkerConfigEntry, WhatsAppWorkerEntry } from "./worker-comms";
 
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
@@ -56,8 +58,8 @@ export interface BrandConfig {
   brandDesks: BrandDesk[];
   /** QA default: 1 number, all origins → all destinations. When true, QA can call all desks regardless of desk config. */
   voipQaDefault: boolean;
-  /** Per-worker VoIP (when voipMode=worker). Each worker has own origin→destinations. */
-  voipWorkerConfigs: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
+  /** Per-worker VoIP. Each row: include toggle, phone number, coverage, status. */
+  voipWorkerConfigs: VoipWorkerConfigEntry[];
   voipOriginCountryInput: string;
   voipAddOutboundFrom: string;
   voipOutboundCountryInput: string;
@@ -106,10 +108,27 @@ export interface BrandConfig {
   includeWhatsApp: boolean;
   /** Default: by desk (RE US, CO US sit on same number). Additional cases: by brand, by worker */
   whatsappConnectionMode: "by_desk";
-  /** Additional cases to include (coming soon) */
+  /** @deprecated use whatsappAllocationModes */
   whatsappAdditionalModes: { by_brand: boolean; by_worker: boolean };
-  /** QR code data URL or pairing URL for WhatsApp Business connection (from backend) */
+  /** Brand / desk / worker — same pattern as VoIP; all enabled levels apply */
+  whatsappAllocationModes: { byBrand: boolean; byDesk: boolean; byWorker: boolean };
+  /** Pairing URL for brand-level WhatsApp (when byBrand) */
   whatsappQrCode: string;
+  /** Pairing URL for desk default (when byDesk); falls back to whatsappQrCode if empty */
+  whatsappDeskQrCode: string;
+  /** Per-worker WhatsApp: include, own QR, linked or error */
+  whatsappWorkerEntries: WhatsAppWorkerEntry[];
+  /** Uploaded & validated workers (CSV). Used for VoIP/WhatsApp worker selection. */
+  uploadedWorkers?: Array<{
+    rowIndex: number;
+    full_name: string;
+    brandName: string;
+    departmentName: string;
+    desks: string;
+    email: string;
+    valid: boolean;
+    errors: Array<{ field: string; message: string }>;
+  }>;
 }
 
 const defaultVoipCoverage = { US: ["US", "CA", "MX", "GB", "FR", "DE"], GB: ["GB", "US", "FR", "DE", "ES", "IT"], FR: ["FR", "GB", "DE", "ES", "IT", "BE"] };
@@ -192,7 +211,11 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   includeWhatsApp: false,
   whatsappConnectionMode: "by_desk",
   whatsappAdditionalModes: { by_brand: false, by_worker: false },
+  whatsappAllocationModes: { byBrand: false, byDesk: true, byWorker: false },
   whatsappQrCode: "",
+  whatsappDeskQrCode: "",
+  whatsappWorkerEntries: [],
+  uploadedWorkers: [],
 });
 
 /** Merge config with defaults to ensure all fields are present in export (handles newly added fields). Skips undefined to avoid overwriting with empty. */
@@ -202,7 +225,15 @@ export function buildExportConfig(config: Partial<BrandConfig> | undefined): Bra
   const defined = Object.fromEntries(
     Object.entries(config).filter(([, v]) => v !== undefined)
   ) as Partial<BrandConfig>;
-  return { ...defaults, ...defined } as BrandConfig;
+  const merged = { ...defaults, ...defined } as BrandConfig;
+  if (!defined.whatsappAllocationModes && defined.whatsappAdditionalModes) {
+    merged.whatsappAllocationModes = {
+      byBrand: !!defined.whatsappAdditionalModes.by_brand,
+      byDesk: true,
+      byWorker: !!defined.whatsappAdditionalModes.by_worker,
+    };
+  }
+  return merged;
 }
 
 /** Fields that are UI-only transient state, excluded from export */

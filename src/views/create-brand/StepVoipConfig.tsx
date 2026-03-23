@@ -23,8 +23,10 @@ interface StepVoipConfigProps {
   onVoipDeskConfigsChange?: (v: import("@/types/voip-desk").VoipDeskConfig[]) => void;
   voipQaDefault?: boolean;
   onVoipQaDefaultChange?: (v: boolean) => void;
-  voipWorkerConfigs?: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>;
-  onVoipWorkerConfigsChange?: (v: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>) => void;
+  voipWorkerConfigs?: import("@/types/worker-comms").VoipWorkerConfigEntry[];
+  onVoipWorkerConfigsChange?: (v: import("@/types/worker-comms").VoipWorkerConfigEntry[]) => void;
+  uploadedWorkers?: Array<{ email: string; full_name: string; valid: boolean; brandName?: string }>;
+  currentBrandName?: string;
 }
 
 export const StepVoipConfig = (props: StepVoipConfigProps) => (
@@ -56,6 +58,8 @@ export const StepVoipConfig = (props: StepVoipConfigProps) => (
       onVoipQaDefaultChange={props.onVoipQaDefaultChange}
       voipWorkerConfigs={props.voipWorkerConfigs}
       onVoipWorkerConfigsChange={props.onVoipWorkerConfigsChange}
+      uploadedWorkers={props.uploadedWorkers}
+      currentBrandName={props.currentBrandName}
     />
   </div>
 );

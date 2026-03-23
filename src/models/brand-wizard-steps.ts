@@ -2,6 +2,9 @@ export const TOTAL_BRAND_WIZARD_STEPS = 17;
 /** Total steps when creating (includes mode selection at step 0) */
 export const TOTAL_CREATE_STEPS = 17;
 
+/** Wizard step index for Upload Workers (same in create & edit flows). */
+export const STEP_UPLOAD_WORKERS = 7;
+
 /** Fixed shortcodes – use these in templates; they are replaced at send time. Do not change the format. */
 export const EMAIL_SHORTCODES = [
   { code: "{user_name}", label: "User name" },

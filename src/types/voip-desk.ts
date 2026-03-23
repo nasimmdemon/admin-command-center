@@ -52,13 +52,14 @@ export function mergeCoverageMaps(maps: Record<string, string[]>[]): Record<stri
   return merged;
 }
 
-/** Merge coverage maps from worker configs (when voipMode=worker) */
+/** Merge coverage maps from worker configs (when voipMode=worker). Skips workers with included: false. */
 export function mergeWorkerCoverageMaps(
-  configs: Array<{ workerEmail: string; coverageMap: Record<string, string[]> }>
+  configs: Array<{ workerEmail: string; coverageMap: Record<string, string[]>; included?: boolean }>
 ): Record<string, string[]> {
   const merged: Record<string, string[]> = {};
   for (const c of configs) {
-    for (const [origin, dests] of Object.entries(c.coverageMap)) {
+    if (c.included === false) continue;
+    for (const [origin, dests] of Object.entries(c.coverageMap || {})) {
       const existing = merged[origin] || [];
       merged[origin] = [...new Set([...existing, ...(dests || [])])];
     }

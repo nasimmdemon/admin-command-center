@@ -134,6 +134,18 @@ export function useCreateBrand() {
       };
     });
 
+  /** Jump to a specific wizard step (e.g. redirect to Upload Workers). */
+  const setStep = (step: number) =>
+    setState((s) => {
+      const isEdit = !!locationState?.editBrand;
+      const maxStep = isEdit ? TOTAL_BRAND_WIZARD_STEPS : 17;
+      const minStep = isEdit ? 1 : 0;
+      return {
+        ...s,
+        step: Math.max(minStep, Math.min(step, maxStep)),
+      };
+    });
+
   const brandLabel = state.brands[state.currentBrandSlide]?.name || state.brands[state.currentBrandSlide]?.domain || `Brand ${state.currentBrandSlide + 1}`;
   const currentConfig = state.brandConfigs[state.currentBrandSlide] ?? getDefaultBrandConfig();
   const isEditMode = !!locationState?.editBrand;
@@ -150,6 +162,7 @@ export function useCreateBrand() {
     updateBrandConfig,
     next,
     prev,
+    setStep,
     nextSlide,
     prevSlide,
     brandLabel,
