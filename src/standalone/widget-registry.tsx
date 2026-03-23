@@ -29,8 +29,8 @@ const CREATE_BRAND_WIDGETS: WidgetDef[] = [
   { id: "step-trader-platform", name: "Step 12: Trader Platform", category: "create-brand", component: <CreateBrandDemos.StepTraderPlatformDemo />, description: "CRM trading options" },
   { id: "step-trader-markets", name: "Step 14: Trader Markets", category: "create-brand", component: <CreateBrandDemos.StepTraderMarketsDemo />, description: "Market selection" },
   { id: "step-trading-fees", name: "Step 15: Trading Fees", category: "create-brand", component: <CreateBrandDemos.StepTradingFeesDemo />, description: "Open/close fees" },
-  { id: "step-client-tas", name: "Step 16: Client TAS", category: "create-brand", component: <CreateBrandDemos.StepClientTasDemo />, description: "Multi TAS settings" },
-  { id: "step-default-settings", name: "Step 17: Default Settings", category: "create-brand", component: <CreateBrandDemos.StepDefaultSettingsDemo />, description: "Timezone, language, currency" },
+  { id: "step-client-tas", name: "Step 15: Client TAS", category: "create-brand", component: <CreateBrandDemos.StepClientTasDemo />, description: "Multi TAS settings" },
+  { id: "step-default-settings", name: "Step 16: Default Settings", category: "create-brand", component: <CreateBrandDemos.StepDefaultSettingsDemo />, description: "Timezone, language, currency" },
 ];
 
 const MONITOR_WIDGETS: WidgetDef[] = [

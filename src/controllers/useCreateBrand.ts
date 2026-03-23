@@ -115,7 +115,7 @@ export function useCreateBrand() {
   const next = () =>
     setState((s) => {
       const isEdit = !!locationState?.editBrand;
-      const maxStep = isEdit ? TOTAL_BRAND_WIZARD_STEPS : 17;
+      const maxStep = TOTAL_BRAND_WIZARD_STEPS;
       const minStep = isEdit ? 1 : 0;
       return {
         ...s,
@@ -138,7 +138,7 @@ export function useCreateBrand() {
   const setStep = (step: number) =>
     setState((s) => {
       const isEdit = !!locationState?.editBrand;
-      const maxStep = isEdit ? TOTAL_BRAND_WIZARD_STEPS : 17;
+      const maxStep = TOTAL_BRAND_WIZARD_STEPS;
       const minStep = isEdit ? 1 : 0;
       return {
         ...s,
@@ -149,7 +149,7 @@ export function useCreateBrand() {
   const brandLabel = state.brands[state.currentBrandSlide]?.name || state.brands[state.currentBrandSlide]?.domain || `Brand ${state.currentBrandSlide + 1}`;
   const currentConfig = state.brandConfigs[state.currentBrandSlide] ?? getDefaultBrandConfig();
   const isEditMode = !!locationState?.editBrand;
-  const totalSteps = isEditMode ? TOTAL_BRAND_WIZARD_STEPS : 17;
+  const totalSteps = TOTAL_BRAND_WIZARD_STEPS;
 
   return {
     state,

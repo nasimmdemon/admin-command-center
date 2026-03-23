@@ -1,9 +1,10 @@
-export const TOTAL_BRAND_WIZARD_STEPS = 17;
+/** Last step index (Default Settings). Create flow: 0 … 16. */
+export const TOTAL_BRAND_WIZARD_STEPS = 16;
 /** Total steps when creating (includes mode selection at step 0) */
-export const TOTAL_CREATE_STEPS = 17;
+export const TOTAL_CREATE_STEPS = 16;
 
-/** Wizard step index for Upload Workers (same in create & edit flows). */
-export const STEP_UPLOAD_WORKERS = 7;
+/** Departments + workers merged here — redirect when By worker needs CSV */
+export const STEP_DEPARTMENTS_AND_WORKERS = 2;
 
 /** Fixed shortcodes – use these in templates; they are replaced at send time. Do not change the format. */
 export const EMAIL_SHORTCODES = [

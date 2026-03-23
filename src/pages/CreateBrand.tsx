@@ -11,7 +11,7 @@ import { useCreateBrand } from "@/controllers/useCreateBrand";
 import { buildCleanExportConfig } from "@/types/brand-config-per-brand";
 import { ROUTES } from "@/models/routes";
 import { getCategoryLabelForStep } from "@/models/brand-wizard-categories";
-import { STEP_UPLOAD_WORKERS } from "@/models/brand-wizard-steps";
+import { STEP_DEPARTMENTS_AND_WORKERS } from "@/models/brand-wizard-steps";
 import { hasValidWorkersForBrand } from "@/utils/has-valid-workers-for-brand";
 import { StepCreateMode } from "@/views/create-brand/StepCreateMode";
 import {
@@ -22,7 +22,6 @@ import {
   StepEmailConfig,
   StepVoipConfig,
   StepWhatsApp,
-  StepUploadWorkers,
   StepUploadLogo,
   StepTransformVoip,
   StepTransformEmails,
@@ -57,7 +56,7 @@ const CreateBrand = () => {
   const [workerUploadRedirectMessage, setWorkerUploadRedirectMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (state.step !== STEP_UPLOAD_WORKERS) setWorkerUploadRedirectMessage(null);
+    if (state.step !== STEP_DEPARTMENTS_AND_WORKERS) setWorkerUploadRedirectMessage(null);
   }, [state.step]);
 
   const resolveVoipAllocationModes = useCallback(() => {
@@ -94,9 +93,9 @@ const CreateBrand = () => {
       if (turningOnWorker && !hasValidWorkersForBrand(currentConfig.uploadedWorkers, brandName)) {
         updateBrandConfig(bi, "voipAllocationModes", v);
         setWorkerUploadRedirectMessage(
-          "You turned on By worker for VoIP. Upload a worker CSV first (valid rows for this brand), then return to the VoIP step."
+          "You turned on By worker for VoIP. Upload a worker CSV on the Departments step first (valid rows for this brand), then return to the VoIP step."
         );
-        setStep(STEP_UPLOAD_WORKERS);
+        setStep(STEP_DEPARTMENTS_AND_WORKERS);
         return;
       }
       updateBrandConfig(bi, "voipAllocationModes", v);
@@ -112,9 +111,9 @@ const CreateBrand = () => {
       if (turningOnWorker && !hasValidWorkersForBrand(currentConfig.uploadedWorkers, brandName)) {
         updateBrandConfig(bi, "whatsappAllocationModes", v);
         setWorkerUploadRedirectMessage(
-          "You turned on By worker for WhatsApp. Upload a worker CSV first (valid rows for this brand), then return to the WhatsApp step."
+          "You turned on By worker for WhatsApp. Upload a worker CSV on the Departments step first (valid rows for this brand), then return to the WhatsApp step."
         );
-        setStep(STEP_UPLOAD_WORKERS);
+        setStep(STEP_DEPARTMENTS_AND_WORKERS);
         return;
       }
       updateBrandConfig(bi, "whatsappAllocationModes", v);
@@ -147,6 +146,12 @@ const CreateBrand = () => {
               brandLabel={brandLabel}
               brandDesks={currentConfig.brandDesks}
               onBrandDesksChange={(v) => updateBrandConfig(bi, "brandDesks", v)}
+              brands={state.brands}
+              brandIndex={bi}
+              uploadedWorkers={currentConfig.uploadedWorkers}
+              onUploadedWorkersChange={(v) => updateBrandConfig(bi, "uploadedWorkers", v)}
+              redirectBannerMessage={workerUploadRedirectMessage}
+              onDismissRedirectBanner={() => setWorkerUploadRedirectMessage(null)}
             />
           </BrandStepWrapper>
         );
@@ -222,19 +227,6 @@ const CreateBrand = () => {
       case 7:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepUploadWorkers
-              brands={state.brands}
-              brandIndex={bi}
-              uploadedWorkers={currentConfig.uploadedWorkers}
-              onUploadedWorkersChange={(v) => updateBrandConfig(bi, "uploadedWorkers", v)}
-              redirectBannerMessage={workerUploadRedirectMessage}
-              onDismissRedirectBanner={() => setWorkerUploadRedirectMessage(null)}
-            />
-          </BrandStepWrapper>
-        );
-      case 8:
-        return (
-          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepEmailConfig
               emailProvider={currentConfig.emailProvider}
               onEmailProviderChange={(v) => updateBrandConfig(bi, "emailProvider", v)}
@@ -254,7 +246,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 9:
+      case 8:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepVoipConfig
@@ -296,7 +288,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 10:
+      case 9:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepWhatsApp
@@ -324,7 +316,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 11:
+      case 10:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepUploadLogo
@@ -335,7 +327,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 12:
+      case 11:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <div className="space-y-8">
@@ -376,19 +368,19 @@ const CreateBrand = () => {
             </div>
           </BrandStepWrapper>
         );
-      case 13:
+      case 12:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderPlatform value={currentConfig.traderPlatform} onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)} />
           </BrandStepWrapper>
         );
-      case 14:
+      case 13:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderMarkets markets={currentConfig.traderMarkets} onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)} />
           </BrandStepWrapper>
         );
-      case 15:
+      case 14:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTradingFees
@@ -416,7 +408,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 16:
+      case 15:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepClientTas
@@ -431,7 +423,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 17:
+      case 16:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepDefaultSettings

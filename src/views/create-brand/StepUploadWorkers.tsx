@@ -30,6 +30,8 @@ interface StepUploadWorkersProps {
   /** Shown when user enabled “By worker” on VoIP/WhatsApp without workers — wizard jumped here */
   redirectBannerMessage?: string | null;
   onDismissRedirectBanner?: () => void;
+  /** When true, used inside Departments step — smaller heading and unique file input id */
+  embedded?: boolean;
 }
 
 type TreeKey = string;
@@ -159,6 +161,7 @@ export const StepUploadWorkers = ({
   onUploadedWorkersChange,
   redirectBannerMessage,
   onDismissRedirectBanner,
+  embedded = false,
 }: StepUploadWorkersProps) => {
   const b = brands[brandIndex] || brands[0];
   const [result, setResult] = useState<{
@@ -257,9 +260,15 @@ export const StepUploadWorkers = ({
     : 0;
   const tree = result ? buildTree(result.rows) : null;
 
+  const uploadId = embedded ? `worker-csv-upload-embedded-${brandIndex}` : "worker-csv-upload";
+
   return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-semibold text-foreground">Upload Workers</h2>
+    <div className={embedded ? "space-y-4" : "space-y-5"}>
+      {embedded ? (
+        <h3 className="text-base font-semibold text-foreground">Upload workers</h3>
+      ) : (
+        <h2 className="text-lg font-semibold text-foreground">Upload Workers</h2>
+      )}
       {redirectBannerMessage && (
         <div className="rounded-xl border border-primary/40 bg-primary/10 p-4 flex gap-3 items-start">
           <AlertTriangle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -319,9 +328,9 @@ export const StepUploadWorkers = ({
             accept=".csv,.txt"
             onChange={handleFileInput}
             className="hidden"
-            id="worker-csv-upload"
+            id={uploadId}
           />
-          <label htmlFor="worker-csv-upload" className="cursor-pointer block">
+          <label htmlFor={uploadId} className="cursor-pointer block">
             <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground">Drag & drop or click to upload</p>
             <p className="text-xs text-muted-foreground mt-1">CSV with: full_name, brand name, department name, desks, email, password, title, is_manager, client_data_prem, phone_number</p>
