@@ -23,6 +23,9 @@ export const EDIT_CATEGORY_OPTIONS: EditCategoryOption[] = [
   { id: "fees", label: "Trading Fees", firstStep: 14, group: "Other" },
   { id: "clientTas", label: "Client TAs", firstStep: 15, group: "Other" },
   { id: "defaults", label: "Default Settings", firstStep: 16, group: "Other" },
+  { id: "brandStatuses", label: "Brand statuses", firstStep: 17, group: "Other" },
+  { id: "caseOfDesign", label: "Case of design", firstStep: 18, group: "Other" },
+  { id: "brandDesign", label: "Brand design", firstStep: 19, group: "Other" },
 ];
 
 /** Get category label for a step (for create flow header) */
@@ -43,5 +46,8 @@ export function getCategoryLabelForStep(step: number): string | null {
   if (step === 14) return "Trading Fees";
   if (step === 15) return "Client TAs";
   if (step === 16) return "Default Settings";
+  if (step === 17) return "Brand statuses";
+  if (step === 18) return "Case of design";
+  if (step === 19) return "Brand design";
   return null;
 }

@@ -30,6 +30,9 @@ import {
   StepTradingFees,
   StepClientTas,
   StepDefaultSettings,
+  StepBrandStatuses,
+  StepCaseOfDesign,
+  StepBrandDesign,
 } from "@/views/create-brand";
 
 const CreateBrand = () => {
@@ -433,6 +436,39 @@ const CreateBrand = () => {
               onLanguageChange={(v) => updateBrandConfig(bi, "language", v)}
               currency={currentConfig.currency}
               onCurrencyChange={(v) => updateBrandConfig(bi, "currency", v)}
+            />
+          </BrandStepWrapper>
+        );
+      case 17:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepBrandStatuses
+              auto={currentConfig.brandStatusAuto}
+              onAutoChange={(patch) =>
+                updateBrandConfig(bi, "brandStatusAuto", { ...currentConfig.brandStatusAuto, ...patch })
+              }
+              regSelectableIds={currentConfig.brandStatusRegSelectableIds}
+              onRegSelectableIdsChange={(ids) => updateBrandConfig(bi, "brandStatusRegSelectableIds", ids)}
+            />
+          </BrandStepWrapper>
+        );
+      case 18:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepCaseOfDesign
+              value={currentConfig.brandCaseDesign}
+              onChange={(patch) =>
+                updateBrandConfig(bi, "brandCaseDesign", { ...currentConfig.brandCaseDesign, ...patch })
+              }
+            />
+          </BrandStepWrapper>
+        );
+      case 19:
+        return (
+          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
+            <StepBrandDesign
+              value={currentConfig.brandDesign}
+              onChange={(patch) => updateBrandConfig(bi, "brandDesign", { ...currentConfig.brandDesign, ...patch })}
             />
           </BrandStepWrapper>
         );

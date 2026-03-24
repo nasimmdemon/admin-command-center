@@ -15,6 +15,15 @@ import type { VoipDeskConfig } from "./voip-desk";
 import type { BrandDesk } from "./brand-desk";
 import type { VoipWorkerConfigEntry, WhatsAppWorkerEntry } from "./worker-comms";
 export type { VoipWorkerConfigEntry, WhatsAppWorkerEntry } from "./worker-comms";
+import {
+  DEFAULT_BRAND_CASE_DESIGN,
+  DEFAULT_BRAND_DESIGN_TOKENS,
+  DEFAULT_BRAND_STATUS_AUTO,
+  type BrandCaseDesignConfig,
+  type BrandDesignTokens,
+  type BrandStatusAutoConfig,
+} from "./brand-experience";
+export type { BrandCaseDesignConfig, BrandDesignTokens, BrandStatusAutoConfig } from "./brand-experience";
 
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
@@ -129,6 +138,14 @@ export interface BrandConfig {
     valid: boolean;
     errors: Array<{ field: string; message: string }>;
   }>;
+  /** Auto status routing (transfer, alloc/pull, creation). Transform is mandatory — not stored as a toggle */
+  brandStatusAuto: BrandStatusAutoConfig;
+  /** Registration: allowed status ids (excludes fixed auto-reject outcomes) */
+  brandStatusRegSelectableIds: string[];
+  /** Micro-variations for same product under one design case */
+  brandCaseDesign: BrandCaseDesignConfig;
+  /** Fonts 1–4 and theme colors */
+  brandDesign: BrandDesignTokens;
 }
 
 const defaultVoipCoverage = { US: ["US", "CA", "MX", "GB", "FR", "DE"], GB: ["GB", "US", "FR", "DE", "ES", "IT"], FR: ["FR", "GB", "DE", "ES", "IT", "BE"] };
@@ -216,6 +233,10 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   whatsappDeskQrCode: "",
   whatsappWorkerEntries: [],
   uploadedWorkers: [],
+  brandStatusAuto: { ...DEFAULT_BRAND_STATUS_AUTO },
+  brandStatusRegSelectableIds: [],
+  brandCaseDesign: { ...DEFAULT_BRAND_CASE_DESIGN },
+  brandDesign: { ...DEFAULT_BRAND_DESIGN_TOKENS },
 });
 
 /** Merge config with defaults to ensure all fields are present in export (handles newly added fields). Skips undefined to avoid overwriting with empty. */

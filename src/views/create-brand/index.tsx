@@ -15,3 +15,6 @@ export { StepTraderMarkets } from "./StepTraderMarkets";
 export { StepTradingFees } from "./StepTradingFees";
 export { StepClientTas } from "./StepClientTas";
 export { StepDefaultSettings } from "./StepDefaultSettings";
+export { StepBrandStatuses } from "./StepBrandStatuses";
+export { StepCaseOfDesign } from "./StepCaseOfDesign";
+export { StepBrandDesign } from "./StepBrandDesign";
