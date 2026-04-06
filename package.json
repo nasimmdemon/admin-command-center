@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:api": "vitest run src/api",
     "test:watch": "vitest"
   },
   "dependencies": {

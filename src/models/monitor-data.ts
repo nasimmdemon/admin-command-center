@@ -8,7 +8,8 @@ export interface BrandMetrics {
 }
 
 export interface ClientBrand {
-  id: number;
+  /** Mongo ``_id`` string from admin API */
+  id: string;
   name: string;
   domain: string;
   status: "Online" | "Offline" | "Warning";
@@ -17,7 +18,8 @@ export interface ClientBrand {
 }
 
 export interface MonitorClient {
-  id: number;
+  /** Mongo ``_id`` string from admin API */
+  id: string;
   name: string;
   clientName: string;
   status: string;
@@ -25,36 +27,37 @@ export interface MonitorClient {
   brands: ClientBrand[];
 }
 
+/** Local-only demo data (Monitor uses live API by default). */
 export const MOCK_CLIENTS: MonitorClient[] = [
   {
-    id: 1,
+    id: "1",
     name: "maiclptd",
     clientName: "GT45",
     status: "Good",
     paid: "12K",
     brands: [
-      { id: 1, name: "Brand Alpha", domain: "alpha.com", status: "Online", disabled: false, metrics: { deposits: "1.2M", withdrawals: "890K", clients: 342, leads: 1205, monthlyRevenue: 1250000 } },
-      { id: 2, name: "Brand Beta", domain: "beta.com", status: "Offline", disabled: false, metrics: { deposits: "45K", withdrawals: "38K", clients: 12, leads: 89, monthlyRevenue: 8500 } },
+      { id: "b1", name: "Brand Alpha", domain: "alpha.com", status: "Online", disabled: false, metrics: { deposits: "1.2M", withdrawals: "890K", clients: 342, leads: 1205, monthlyRevenue: 1250000 } },
+      { id: "b2", name: "Brand Beta", domain: "beta.com", status: "Offline", disabled: false, metrics: { deposits: "45K", withdrawals: "38K", clients: 12, leads: 89, monthlyRevenue: 8500 } },
     ],
   },
   {
-    id: 2,
+    id: "2",
     name: "johnwk",
     clientName: "BX12",
     status: "Good",
     paid: "8.5K",
-    brands: [{ id: 3, name: "Brand Gamma", domain: "gamma.com", status: "Online", disabled: false, metrics: { deposits: "520K", withdrawals: "410K", clients: 156, leads: 432, monthlyRevenue: 420000 } }],
+    brands: [{ id: "b3", name: "Brand Gamma", domain: "gamma.com", status: "Online", disabled: false, metrics: { deposits: "520K", withdrawals: "410K", clients: 156, leads: 432, monthlyRevenue: 420000 } }],
   },
-  { id: 3, name: "sarahm", clientName: "LP78", status: "Bad", paid: "2.1K", brands: [] },
+  { id: "3", name: "sarahm", clientName: "LP78", status: "Bad", paid: "2.1K", brands: [] },
   {
-    id: 4,
+    id: "4",
     name: "alexfr",
     clientName: "NQ33",
     status: "Good",
     paid: "15K",
-    brands: [{ id: 4, name: "Brand Delta", domain: "delta.com", status: "Online", disabled: false, metrics: { deposits: "85K", withdrawals: "72K", clients: 28, leads: 156, monthlyRevenue: 18500 } }],
+    brands: [{ id: "b4", name: "Brand Delta", domain: "delta.com", status: "Online", disabled: false, metrics: { deposits: "85K", withdrawals: "72K", clients: 28, leads: 156, monthlyRevenue: 18500 } }],
   },
-  { id: 5, name: "robertl", clientName: "DW91", status: "Bad", paid: "500", brands: [] },
+  { id: "5", name: "robertl", clientName: "DW91", status: "Bad", paid: "500", brands: [] },
 ];
 
 export const ACTIVE_BRANDS = [

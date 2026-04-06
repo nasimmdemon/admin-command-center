@@ -15,9 +15,9 @@ interface ClientStatusTableProps {
 
 export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBrand }: ClientStatusTableProps) => {
   const navigate = useNavigate();
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const toggleExpand = (clientId: number) => {
+  const toggleExpand = (clientId: string) => {
     setExpandedId((prev) => (prev === clientId ? null : clientId));
   };
 

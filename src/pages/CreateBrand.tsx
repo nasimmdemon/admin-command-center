@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,11 @@ import { PageTransition } from "@/components/PageTransition";
 import DepositConfigStep from "@/components/brand-wizard/DepositConfigStep";
 import WithdrawalConfigStep from "@/components/brand-wizard/WithdrawalConfigStep";
 import { BrandStepWrapper } from "@/components/brand-wizard/BrandStepWrapper";
-import { useCreateBrand } from "@/controllers/useCreateBrand";
+import {
+  useCreateBrand,
+  type CreateBrandLocationState,
+} from "@/controllers/useCreateBrand";
+import { submitBrandWizardToServer } from "@/api/submit-brand-wizard";
 import { buildCleanExportConfig } from "@/types/brand-config-per-brand";
 import { ROUTES } from "@/models/routes";
 import { getCategoryLabelForStep } from "@/models/brand-wizard-categories";
@@ -37,6 +42,13 @@ import {
 
 const CreateBrand = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as CreateBrandLocationState | null;
+  const existingClientId =
+    locationState?.clientId != null
+      ? String(locationState.clientId)
+      : undefined;
+
   const {
     state,
     isEditMode,
@@ -57,6 +69,27 @@ const CreateBrand = () => {
   const bi = state.currentBrandSlide;
 
   const [workerUploadRedirectMessage, setWorkerUploadRedirectMessage] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const saveToServer = async () => {
+    setSaving(true);
+    try {
+      const r = await submitBrandWizardToServer({
+        brands: state.brands,
+        brandConfigs: state.brandConfigs,
+        existingClientId,
+      });
+      toast.success(
+        `Saved to database — client: ${r.clientId}, brands: ${r.brandIds.length}`
+      );
+      return r;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+      throw e;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     if (state.step !== STEP_DEPARTMENTS_AND_WORKERS) setWorkerUploadRedirectMessage(null);
@@ -295,6 +328,7 @@ const CreateBrand = () => {
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepWhatsApp
+              entityId={state.brands[bi]?._id ?? ""}
               includeWhatsApp={currentConfig.includeWhatsApp}
               onIncludeWhatsAppChange={(v) => updateBrandConfig(bi, "includeWhatsApp", v)}
               whatsappAllocationModes={
@@ -520,6 +554,18 @@ const CreateBrand = () => {
             <div className="mt-6 pt-4 border-t border-border/40 space-y-2">
               <button
                 type="button"
+                disabled={saving}
+                onClick={() => {
+                  void saveToServer().catch(() => {
+                    /* toast in saveToServer */
+                  });
+                }}
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline disabled:opacity-50"
+              >
+                Save all brands to database
+              </button>
+              <button
+                type="button"
                 onClick={() => {
                   const cleanConfigs = state.brandConfigs.map((c) => buildCleanExportConfig(c));
                   const json = JSON.stringify(
@@ -574,8 +620,17 @@ const CreateBrand = () => {
                 Next <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : state.step === totalSteps ? (
-              <Button onClick={() => { alert("Brand created! (mock)"); navigate(ROUTES.HOME); }}>
-                Finish Setup
+              <Button
+                disabled={saving}
+                onClick={() => {
+                  void saveToServer()
+                    .then(() => navigate(ROUTES.HOME))
+                    .catch(() => {
+                      /* toast in saveToServer */
+                    });
+                }}
+              >
+                {saving ? "Saving…" : "Finish setup & save"}
               </Button>
             ) : (
               <Button onClick={next}>

@@ -4,6 +4,8 @@ import { TOTAL_BRAND_WIZARD_STEPS } from "@/models/brand-wizard-steps";
 import { BrandConfig, getDefaultBrandConfig } from "@/types/brand-config-per-brand";
 
 export interface BrandEntry {
+  /** Populated by the server after the brand is saved to the database. Used as entity_id for WhatsApp QR sessions. */
+  _id?: string;
   name: string;
   domain: string;
   /** Fallback domain; same content deployed to both. When main is not live, substitute shows content automatically */
@@ -21,9 +23,9 @@ export interface CreateBrandState {
 }
 
 export interface CreateBrandLocationState {
-  clientId?: number;
+  clientId?: string | number;
   clientName?: string;
-  editBrand?: { id: number; name: string; domain: string };
+  editBrand?: { id: string | number; name: string; domain: string };
   /** When editing, start at this step (from category modal) */
   startStep?: number;
 }
