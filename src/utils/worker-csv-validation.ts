@@ -192,10 +192,6 @@ export function validateRow(
 
   const emailNorm = row.email?.trim().toLowerCase();
   if (emailNorm) {
-    const basicEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!basicEmail.test(emailNorm)) {
-      errors.push({ field: "email", message: "Invalid email format" });
-    }
     if (options.duplicateEmails.has(emailNorm)) {
       errors.push({ field: "email", message: "Duplicate email (used in another row)" });
     }

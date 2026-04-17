@@ -1,7 +1,7 @@
-/** Last step index (Brand design). Create flow: 0 … 19. */
-export const TOTAL_BRAND_WIZARD_STEPS = 19;
+/** Last step index (Brand design). Create flow: 0 … 18. */
+export const TOTAL_BRAND_WIZARD_STEPS = 18;
 /** Total steps when creating (includes mode selection at step 0) */
-export const TOTAL_CREATE_STEPS = 19;
+export const TOTAL_CREATE_STEPS = 18;
 
 /** Departments + workers merged here — redirect when By worker needs CSV */
 export const STEP_DEPARTMENTS_AND_WORKERS = 2;

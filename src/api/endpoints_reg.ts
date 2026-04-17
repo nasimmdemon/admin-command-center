@@ -1,9 +1,13 @@
 /**
- * Step 1 — Central registry of admin backend routes (path + method).
- * Pattern: static readonly for fixed routes; helpers for dynamic path segments.
+ * Central registry of admin backend routes (path + method).
+ *
+ * Rules enforced here:
+ *  - Only GET and POST are used — no PATCH, PUT, DELETE.
+ *  - Every path string lives ONLY here; services import from this file.
+ *  - Dynamic segments are produced by typed helper functions, not inline template literals.
  */
 
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+export type HttpMethod = "GET" | "POST";
 
 export type AdminEndpointDef = {
   readonly path: string;
@@ -14,7 +18,7 @@ function enc(s: string): string {
   return encodeURIComponent(s);
 }
 
-// ─── Aggregated stats (Monitor KPIs) ─────────────────────────────────────────
+// ─── Stats (Monitor KPIs) ────────────────────────────────────────────────────
 
 export class AdminStatsEndpoints {
   /** GET /admin/stats/summary */
@@ -24,97 +28,93 @@ export class AdminStatsEndpoints {
   };
 }
 
-// ─── Clients (aggregate root; no nested id lists on document) ───────────────
+// ─── Clients ─────────────────────────────────────────────────────────────────
 
 export class ClientsEndpoints {
-  /** POST /admin/clients */
+  /** POST /admin/clients/create */
   static readonly create: AdminEndpointDef = {
-    path: "/admin/clients",
+    path: "/admin/clients/create",
     method: "POST",
   };
 
-  /** GET /admin/clients */
+  /** GET /admin/clients/list */
   static readonly list: AdminEndpointDef = {
-    path: "/admin/clients",
+    path: "/admin/clients/list",
     method: "GET",
+  };
+
+  /** POST /admin/clients/update  (document_id goes in the body) */
+  static readonly update: AdminEndpointDef = {
+    path: "/admin/clients/update",
+    method: "POST",
   };
 }
 
-/** GET /admin/clients/{client_id} — use with {@link ClientsEndpoints.list}.method */
-export function getClientByIdPath(clientId: string): string {
-  return `/admin/clients/${enc(clientId)}`;
+/** GET /admin/clients/get/{document_id} */
+export function getClientByIdEndpoint(documentId: string): AdminEndpointDef {
+  return { path: `/admin/clients/get/${enc(documentId)}`, method: "GET" };
 }
 
-export function clientByIdEndpoint(
-  clientId: string,
-  method: Extract<HttpMethod, "GET" | "PUT" | "PATCH" | "DELETE">
-): AdminEndpointDef {
-  return { path: getClientByIdPath(clientId), method };
-}
-
-// ─── Brands (each doc has client_id) ───────────────────────────────────────
+// ─── Brands ──────────────────────────────────────────────────────────────────
 
 export class BrandsEndpoints {
-  /** POST /admin/brands — body includes client_id */
+  /** POST /admin/brands/create  (body includes client_id) */
   static readonly create: AdminEndpointDef = {
-    path: "/admin/brands",
+    path: "/admin/brands/create",
     method: "POST",
   };
 
-  /** GET /admin/brands — optional ?client_id= on caller side */
+  /** GET /admin/brands/list  (optional ?client_id= query param) */
   static readonly list: AdminEndpointDef = {
-    path: "/admin/brands",
+    path: "/admin/brands/list",
     method: "GET",
+  };
+
+  /** POST /admin/brands/update  (document_id goes in the body) */
+  static readonly update: AdminEndpointDef = {
+    path: "/admin/brands/update",
+    method: "POST",
   };
 }
 
-/** GET /admin/brands/{brand_id} */
-export function getBrandByIdPath(brandId: string): string {
-  return `/admin/brands/${enc(brandId)}`;
+/** GET /admin/brands/get/{document_id} */
+export function getBrandByIdEndpoint(documentId: string): AdminEndpointDef {
+  return { path: `/admin/brands/get/${enc(documentId)}`, method: "GET" };
 }
 
-export function brandByIdEndpoint(
-  brandId: string,
-  method: Extract<HttpMethod, "GET" | "PUT" | "PATCH" | "DELETE">
-): AdminEndpointDef {
-  return { path: getBrandByIdPath(brandId), method };
-}
-
-// ─── Deposits (each doc has client_id; Client has no deposit_ids) ───────────
+// ─── Deposits ────────────────────────────────────────────────────────────────
 
 export class DepositsEndpoints {
-  /** POST /admin/deposits — body includes client_id */
+  /** POST /admin/deposits/create  (body includes client_id) */
   static readonly create: AdminEndpointDef = {
-    path: "/admin/deposits",
+    path: "/admin/deposits/create",
     method: "POST",
   };
 
-  /** GET /admin/deposits — filter with ?client_id= on caller side */
+  /** GET /admin/deposits/list  (optional ?client_id= query param) */
   static readonly list: AdminEndpointDef = {
-    path: "/admin/deposits",
+    path: "/admin/deposits/list",
     method: "GET",
+  };
+
+  /** POST /admin/deposits/update  (document_id goes in the body) */
+  static readonly update: AdminEndpointDef = {
+    path: "/admin/deposits/update",
+    method: "POST",
   };
 }
 
-/** GET /admin/deposits/{deposit_id} */
-export function getDepositByIdPath(depositId: string): string {
-  return `/admin/deposits/${enc(depositId)}`;
+/** GET /admin/deposits/get/{document_id} */
+export function getDepositByIdEndpoint(documentId: string): AdminEndpointDef {
+  return { path: `/admin/deposits/get/${enc(documentId)}`, method: "GET" };
 }
 
-export function depositByIdEndpoint(
-  depositId: string,
-  method: Extract<HttpMethod, "GET" | "PUT" | "PATCH" | "DELETE">
-): AdminEndpointDef {
-  return { path: getDepositByIdPath(depositId), method };
-}
-
-// ─── WhatsApp Auth ─────────────────────────────────────────────────────────
+// ─── WhatsApp Auth ────────────────────────────────────────────────────────────
 
 export class WhatsAppAuthEndpoints {
   /**
    * GET /auth/get-qr
    * Query params: entity_id, phone_number, entity_type?, force_new?
-   * Response: WhatsAppQrResponse (see domain-models.ts)
    *
    * NOTE: Calls the WhatsApp backend (VITE_WHATSAPP_API_BASE_URL),
    *       NOT the admin backend. Use `whatsapp.service.ts`, not `adminRequest`.
@@ -124,4 +124,3 @@ export class WhatsAppAuthEndpoints {
     method: "GET",
   };
 }
-

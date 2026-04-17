@@ -5,6 +5,7 @@ export const ROUTES = {
   MONITOR: "/monitor",
   PROVIDERS: "/providers",
   STANDALONE: "/standalone",
+  API_TEST: "/api-test",
 } as const;
 
 export type RoutePath = (typeof ROUTES)[keyof typeof ROUTES];

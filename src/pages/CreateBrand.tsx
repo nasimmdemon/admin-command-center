@@ -28,8 +28,6 @@ import {
   StepVoipConfig,
   StepWhatsApp,
   StepUploadLogo,
-  StepTransformVoip,
-  StepTransformEmails,
   StepTraderPlatform,
   StepTraderMarkets,
   StepTradingFees,
@@ -56,6 +54,7 @@ const CreateBrand = () => {
     removeBrand,
     updateBrand,
     updateBrandConfig,
+    applyBrandIdsFromSave,
     next,
     prev,
     setStep,
@@ -79,6 +78,7 @@ const CreateBrand = () => {
         brandConfigs: state.brandConfigs,
         existingClientId,
       });
+      applyBrandIdsFromSave(r.brandIds);
       toast.success(
         `Saved to database — client: ${r.clientId}, brands: ${r.brandIds.length}`
       );
@@ -362,47 +362,6 @@ const CreateBrand = () => {
               logoUrl={currentConfig.logoUrl}
               onLogoChange={(url) => updateBrandConfig(bi, "logoUrl", url)}
             />
-          </BrandStepWrapper>
-        );
-      case 11:
-        return (
-          <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <div className="space-y-8">
-              <h2 className="text-xl font-semibold text-foreground">Transform (VoIP & Phone & Email Automation)</h2>
-              <StepTransformVoip
-                brandLabel={brandLabel}
-                voipCoverageMap={currentConfig.voipCoverageMap}
-                voipAllocationModes={
-                  currentConfig.voipAllocationModes ??
-                  (currentConfig.voipMode
-                    ? {
-                        byBrand: currentConfig.voipMode === "legacy",
-                        byDesk: currentConfig.voipMode === "desk",
-                        byWorker: currentConfig.voipMode === "worker",
-                      }
-                    : undefined)
-                }
-                voipDeskConfigs={currentConfig.voipDeskConfigs}
-                voipQaDefault={currentConfig.voipQaDefault}
-                voipWorkerConfigs={currentConfig.voipWorkerConfigs}
-              />
-              <StepTransformEmails
-                brandLabel={brandLabel}
-                emailFormatValidation={currentConfig.emailFormatValidation}
-                onEmailFormatValidationChange={(v) => updateBrandConfig(bi, "emailFormatValidation", v)}
-                autoGenPasswordForLeads={currentConfig.autoGenPasswordForLeads}
-                onAutoGenPasswordForLeadsChange={(v) => {
-                  updateBrandConfig(bi, "autoGenPasswordForLeads", v);
-                  if (v) updateBrandConfig(bi, "autoRejectNoInteractivity", true);
-                }}
-                includePasswordChangeLinkInEmail={currentConfig.includePasswordChangeLinkInEmail}
-                onIncludePasswordChangeLinkInEmailChange={(v) => updateBrandConfig(bi, "includePasswordChangeLinkInEmail", v)}
-                autoRejectNoInteractivity={currentConfig.autoRejectNoInteractivity}
-                onAutoRejectNoInteractivityChange={(v) => updateBrandConfig(bi, "autoRejectNoInteractivity", v)}
-                autoRejectDaysAfterWelcome={currentConfig.autoRejectDaysAfterWelcome}
-                onAutoRejectDaysAfterWelcomeChange={(v) => updateBrandConfig(bi, "autoRejectDaysAfterWelcome", v)}
-              />
-            </div>
           </BrandStepWrapper>
         );
       case 12:

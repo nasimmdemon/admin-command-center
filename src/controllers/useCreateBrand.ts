@@ -42,10 +42,19 @@ function getInitialStateFromLocation(locationState: CreateBrandLocationState | n
   if (locationState?.editBrand) {
     const d = locationState.editBrand.domain;
     const startStep = Math.max(1, Math.min(locationState.startStep ?? 1, TOTAL_BRAND_WIZARD_STEPS));
+    const id =
+      locationState.editBrand.id != null ? String(locationState.editBrand.id) : undefined;
     return {
       step: startStep,
       createMode: "simple",
-      brands: [{ name: locationState.editBrand.name, domain: d, substituteDomain: d }],
+      brands: [
+        {
+          name: locationState.editBrand.name,
+          domain: d,
+          substituteDomain: d,
+          ...(id ? { _id: id } : {}),
+        },
+      ],
       brandConfigs: [getDefaultBrandConfig()],
       currentBrandSlide: 0,
     };
@@ -101,6 +110,14 @@ export function useCreateBrand() {
       updated[brandIndex] = { ...updated[brandIndex], [key]: value };
       return { ...s, brandConfigs: updated };
     });
+  };
+
+  /** After POST /admin/brands, merge returned Mongo ids so WhatsApp QR can use entity_id */
+  const applyBrandIdsFromSave = (brandIds: string[]) => {
+    setState((s) => ({
+      ...s,
+      brands: s.brands.map((b, i) => ({ ...b, _id: brandIds[i] ?? b._id })),
+    }));
   };
 
   const nextSlide = () =>
@@ -162,6 +179,7 @@ export function useCreateBrand() {
     removeBrand,
     updateBrand,
     updateBrandConfig,
+    applyBrandIdsFromSave,
     next,
     prev,
     setStep,

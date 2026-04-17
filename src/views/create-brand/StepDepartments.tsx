@@ -109,11 +109,6 @@ export const StepDepartments = ({
         <div className="rounded-xl border border-border/50 p-4 bg-card shadow-widget">
           <div className="flex items-center justify-between mb-4">
             <Label className="text-sm font-medium">Brand desks (org structure)</Label>
-            {onBrandDesksChange && (
-              <Button variant="outline" size="sm" onClick={addDesk}>
-                <Plus className="w-4 h-4 mr-1" /> Add desk
-              </Button>
-            )}
           </div>
           {brandDesks.length > 0 ? (
             <div className="space-y-2">

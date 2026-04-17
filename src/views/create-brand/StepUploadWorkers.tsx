@@ -146,7 +146,7 @@ const VALIDATION_RULES: Array<{ field: string; rule: string }> = [
   { field: "brand name", rule: "Required; must match brand(s) in wizard" },
   { field: "department name", rule: `Must be one of: ${DEPARTMENTS.join(", ")}` },
   { field: "desks", rule: "Required for CO and RE departments" },
-  { field: "email", rule: "Required; valid format; no duplicates (prevents sending same email twice)" },
+  { field: "email", rule: "Required; no duplicates (prevents sending same email twice)" },
   { field: "password", rule: "Required" },
   { field: "title", rule: "Required" },
   { field: "is_manager", rule: "Required; must be TRUE or FALSE" },

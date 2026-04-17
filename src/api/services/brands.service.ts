@@ -1,11 +1,9 @@
 /**
- * Step 2 — Brand API wrappers. Every brand carries `client_id` (FK to client doc).
+ * Brand API service — GET and POST only.
+ * All path strings come from {@link BrandsEndpoints} / {@link getBrandByIdEndpoint}.
  */
 
-import {
-  BrandsEndpoints,
-  brandByIdEndpoint,
-} from "@/api/endpoints_reg";
+import { BrandsEndpoints, getBrandByIdEndpoint } from "@/api/endpoints_reg";
 import { adminRequest } from "@/api/http-client";
 import type { AdminApiEnvelope, AdminBrand } from "@/api/contract/domain-models";
 
@@ -27,24 +25,21 @@ export async function listBrands(clientId?: string) {
   });
 }
 
-export async function getBrand(brandId: string) {
+export async function getBrand(documentId: string) {
   return adminRequest<AdminApiEnvelope<AdminBrand>>(
-    brandByIdEndpoint(brandId, "GET")
+    getBrandByIdEndpoint(documentId)
   );
 }
 
+/**
+ * Updates a brand document. `document_id` is sent inside the request body
+ * so the backend can use a plain POST without needing PATCH.
+ */
 export async function updateBrand(
-  brandId: string,
-  body: Partial<Omit<AdminBrand, "_id">>
+  documentId: string,
+  fields: Partial<Omit<AdminBrand, "_id" | "client_id">>
 ) {
-  return adminRequest<AdminApiEnvelope<AdminBrand>>(
-    brandByIdEndpoint(brandId, "PATCH"),
-    { jsonBody: body }
-  );
-}
-
-export async function deleteBrand(brandId: string) {
-  return adminRequest<AdminApiEnvelope<unknown>>(
-    brandByIdEndpoint(brandId, "DELETE")
-  );
+  return adminRequest<AdminApiEnvelope<AdminBrand>>(BrandsEndpoints.update, {
+    jsonBody: { document_id: documentId, ...fields },
+  });
 }

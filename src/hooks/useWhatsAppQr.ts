@@ -1,16 +1,21 @@
 /**
- * useWhatsAppQr — React hook for GET /auth/get-qr
+ * useWhatsAppQr — React hook for WhatsApp QR (create→poll pattern)
  *
- * Manages loading / error / success states and exposes:
- *  - fetchQr(params)  → triggers the API call
- *  - qrDataUrl        → ready-to-use data-URI for <img src={...}>
- *  - sessionReused    → true when backend says session already exists
- *  - sessionData      → full response data (container info, ws_path, etc.)
+ * The prod API uses a MongoDB CRUD proxy. QR generation is async:
+ *  1. POST /create  → submits a qr_requests doc
+ *  2. Poll /find    → waits until status != "pending"
+ *
+ * Exposes:
+ *  - fetchQr(params)    → triggers the create+poll flow
+ *  - qrDataUrl          → ready-to-use data-URI for <img src={...}>
+ *  - sessionReused      → true when backend says session already exists
+ *  - sessionData        → full response data
+ *  - pollingMessage     → human-readable hint for the loading UI phase
  *  - loading / error
- *  - reset()          → clears state (e.g. before retrying)
+ *  - reset()            → clears state (e.g. before retrying)
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import {
   getWhatsAppQr,
   qrToDataUrl,
@@ -38,6 +43,8 @@ export interface UseWhatsAppQrState {
   errorStatus: number | null;
   /** Human-readable error string */
   errorMessage: string | null;
+  /** Friendly status hint during the loading phase (create vs poll) */
+  pollingMessage: string;
 }
 
 const INITIAL_STATE: UseWhatsAppQrState = {
@@ -47,6 +54,7 @@ const INITIAL_STATE: UseWhatsAppQrState = {
   sessionData: null,
   errorStatus: null,
   errorMessage: null,
+  pollingMessage: "",
 };
 
 // ─── Friendly error messages for known status codes ───────────────────────────
@@ -60,7 +68,7 @@ function friendlyError(status: number, detail: string): string {
     case 409:
       return "This phone number is already linked to a different entity. Use a different number or contact support.";
     case 504:
-      return "QR retrieval timed out. The server is slow — wait a moment and retry.";
+      return "QR retrieval timed out after 90 s. The server is slow — wait a moment and retry.";
     case 500:
       return "Internal server error. Contact the WhatsApp backend team.";
     default:
@@ -68,20 +76,50 @@ function friendlyError(status: number, detail: string): string {
   }
 }
 
+// ─── Polling messages cycle ───────────────────────────────────────────────────
+
+const POLL_MESSAGES = [
+  "Submitting request to WhatsApp server…",
+  "Waiting for backend to start container…",
+  "Generating QR code…",
+  "Almost there — fetching QR…",
+];
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useWhatsAppQr() {
   const [state, setState] = useState<UseWhatsAppQrState>(INITIAL_STATE);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPollMessages = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  };
 
   /**
    * Fetch a QR code (or detect a reused session) for the given entity + phone.
-   *
-   * @param params  entity_id, phone_number, entity_type, force_new
+   * Uses create→poll pattern against the MongoDB CRUD proxy.
    */
   const fetchQr = useCallback(async (params: GetWhatsAppQrParams) => {
-    setState({ ...INITIAL_STATE, status: "loading" });
+    stopPollMessages();
+
+    // Start cycling through human-friendly status messages
+    let msgIdx = 0;
+    setState({ ...INITIAL_STATE, status: "loading", pollingMessage: POLL_MESSAGES[0] });
+
+    pollTimerRef.current = setInterval(() => {
+      msgIdx = (msgIdx + 1) % POLL_MESSAGES.length;
+      setState((prev) =>
+        prev.status === "loading"
+          ? { ...prev, pollingMessage: POLL_MESSAGES[msgIdx] }
+          : prev
+      );
+    }, 4000);
 
     const result = await getWhatsAppQr(params);
+    stopPollMessages();
 
     if (!result.ok) {
       const err = result as { ok: false; status: number; detail: string };
@@ -90,6 +128,7 @@ export function useWhatsAppQr() {
         status: "error",
         errorStatus: err.status,
         errorMessage: friendlyError(err.status, err.detail),
+        pollingMessage: "",
       });
       return;
     }
@@ -105,11 +144,13 @@ export function useWhatsAppQr() {
       sessionData: data,
       errorStatus: null,
       errorMessage: null,
+      pollingMessage: "",
     });
   }, []);
 
   /** Reset back to idle (e.g. before showing the panel again) */
   const reset = useCallback(() => {
+    stopPollMessages();
     setState(INITIAL_STATE);
   }, []);
 

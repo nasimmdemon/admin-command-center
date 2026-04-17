@@ -12,7 +12,7 @@
  *   onSessionReady  — called when QR scan succeeds or session is reused
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
@@ -51,15 +51,23 @@ export function WhatsAppQrFetcher({
   const [phone, setPhone] = useState(defaultPhone);
   const [forceNew, setForceNew] = useState(false);
 
-  const { status, qrDataUrl, sessionData, errorMessage, fetchQr, reset } =
+  const { status, qrDataUrl, sessionData, errorMessage, pollingMessage, fetchQr, reset } =
     useWhatsAppQr();
 
-  const canFetch = entityId.trim().length > 0 && phone.trim().length > 0;
+  // If no real entity ID is available yet, generate a stable temporary one so
+  // testing works without saving the brand to the database first.
+  const tempIdRef = useRef<string>(
+    `temp-${entityType}-${Math.random().toString(36).slice(2, 10)}`
+  );
+  const effectiveEntityId = entityId.trim() || tempIdRef.current;
+  const isUsingTempId = !entityId.trim();
+
+  const canFetch = phone.trim().length > 0;
 
   const handleFetch = () => {
     if (!canFetch) return;
     void fetchQr({
-      entity_id: entityId.trim(),
+      entity_id: effectiveEntityId,
       phone_number: phone.trim(),
       entity_type: entityType,
       force_new: forceNew,
@@ -74,7 +82,7 @@ export function WhatsAppQrFetcher({
   const handleNewQr = () => {
     setForceNew(true);
     void fetchQr({
-      entity_id: entityId.trim(),
+      entity_id: effectiveEntityId,
       phone_number: phone.trim(),
       entity_type: entityType,
       force_new: true,
@@ -119,10 +127,10 @@ export function WhatsAppQrFetcher({
               Get QR
             </Button>
           </div>
-          {!entityId && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3 shrink-0" />
-              Save the brand to the database first to generate a real entity ID.
+          {isUsingTempId && (
+            <p className="text-xs text-muted-foreground/60 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3 shrink-0 text-amber-500" />
+              Using temporary ID for testing — save the brand to persist the session.
             </p>
           )}
         </div>
@@ -140,10 +148,10 @@ export function WhatsAppQrFetcher({
           >
             <Loader2 className="w-8 h-8 text-[#25D366] animate-spin" />
             <p className="text-sm text-muted-foreground">
-              Requesting QR from WhatsApp server…
+              {pollingMessage || "Requesting QR from WhatsApp server…"}
             </p>
             <p className="text-xs text-muted-foreground/60">
-              This can take several seconds
+              This may take up to 90 seconds
             </p>
           </motion.div>
         )}
