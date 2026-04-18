@@ -3,6 +3,7 @@
  */
 
 export const DEFAULT_ADMIN_API_BASE_URL = "http://localhost:9302";
+export const DEFAULT_ADMIN_PROD_API_BASE_URL = "https://beadmin.gogamify.xyz";
 
 /**
  * Pure normalizer for tests and callers that inject a raw base string.
@@ -19,20 +20,42 @@ export function normalizeAdminApiBaseUrl(
  * Base URL with no trailing slash. Used by `http-client` to resolve full URLs.
  */
 export function getAdminApiBaseUrl(): string {
-  return normalizeAdminApiBaseUrl(import.meta.env.VITE_ADMIN_API_BASE_URL);
+  if (import.meta.env.PROD) {
+    return normalizeAdminApiBaseUrl(
+      import.meta.env.VITE_ADMIN_PROD_API_BASE_URL,
+      DEFAULT_ADMIN_PROD_API_BASE_URL
+    );
+  }
+
+  return normalizeAdminApiBaseUrl(
+    import.meta.env.VITE_ADMIN_API_BASE_URL,
+    DEFAULT_ADMIN_API_BASE_URL
+  );
 }
 
 // ─── WhatsApp API ────────────────────────────────────────────────
 
-export const DEFAULT_WHATSAPP_API_BASE_URL = "http://localhost:8000";
+export const DEFAULT_WHATSAPP_API_LOCAL_BASE_URL = "http://localhost:9080";
+export const DEFAULT_WHATSAPP_API_BASE_URL =
+  "https://whatsapp.mainstreetcpltd.com";
 
 /**
  * Base URL for the WhatsApp integration backend (WAHA/routing server).
- * Separate from the admin API — configure via VITE_WHATSAPP_API_BASE_URL.
+ * Separate from the admin API.
+ *
+ * - Dev:  VITE_WHATSAPP_API_LOCAL_BASE_URL (defaults to localhost)
+ * - Prod: VITE_WHATSAPP_API_BASE_URL (defaults to whatsapp.mainstreetcpltd.com)
  */
 export function getWhatsAppApiBaseUrl(): string {
+  if (import.meta.env.PROD) {
+    return normalizeAdminApiBaseUrl(
+      import.meta.env.VITE_WHATSAPP_API_BASE_URL,
+      DEFAULT_WHATSAPP_API_BASE_URL
+    );
+  }
+
   return normalizeAdminApiBaseUrl(
-    import.meta.env.VITE_WHATSAPP_API_BASE_URL,
-    DEFAULT_WHATSAPP_API_BASE_URL
+    import.meta.env.VITE_WHATSAPP_API_LOCAL_BASE_URL,
+    DEFAULT_WHATSAPP_API_LOCAL_BASE_URL
   );
 }
