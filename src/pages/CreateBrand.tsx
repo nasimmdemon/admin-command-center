@@ -364,19 +364,19 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 12:
+      case 11:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderPlatform value={currentConfig.traderPlatform} onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)} />
           </BrandStepWrapper>
         );
-      case 13:
+      case 12:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTraderMarkets markets={currentConfig.traderMarkets} onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)} />
           </BrandStepWrapper>
         );
-      case 14:
+      case 13:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepTradingFees
@@ -404,7 +404,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 15:
+      case 14:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepClientTas
@@ -419,7 +419,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 16:
+      case 15:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepDefaultSettings
@@ -432,7 +432,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 17:
+      case 16:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepBrandStatuses
@@ -445,7 +445,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 18:
+      case 17:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepCaseOfDesign
@@ -456,7 +456,7 @@ const CreateBrand = () => {
             />
           </BrandStepWrapper>
         );
-      case 19:
+      case 18:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
             <StepBrandDesign
@@ -471,112 +471,184 @@ const CreateBrand = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dotted w-full px-4 py-6 md:px-6 md:py-8 lg:px-8">
-      <PageTransition className="w-full max-w-6xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate(ROUTES.HOME)} className="mb-6 text-muted-foreground hover:text-foreground -ml-1">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back
-        </Button>
+    <div className="min-h-screen bg-dotted w-full flex flex-col">
+      <PageTransition className="flex-1 w-full flex flex-col">
 
-        <div className="bg-card rounded-[1.5rem] shadow-card border border-border/50 overflow-hidden">
-          <div className="p-6 border-b border-border/50 bg-tint-blue/30">
-            <div className="flex items-center justify-between mb-3">
-              <h1 className="text-xl font-bold text-foreground">{isEditMode ? "Edit Brand" : "Create New Brand"}</h1>
-              <span className="text-sm text-muted-foreground font-medium">Step {state.step} of {totalSteps}</span>
-            </div>
-            <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-primary rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${(state.step / totalSteps) * 100}%` }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              />
-            </div>
+        {/* ── Top nav bar ── */}
+        <div className="sticky top-0 z-20 flex items-center gap-4 px-4 py-3 md:px-8 border-b border-border/40 bg-white/70 backdrop-blur-xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(ROUTES.HOME)}
+            className="text-muted-foreground hover:text-foreground gap-1.5 -ml-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-sm font-bold text-foreground truncate">
+              {isEditMode ? "Edit Brand" : "Create New Brand"}
+            </h1>
           </div>
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground bg-secondary px-3 py-1 rounded-full">
+            Step {state.step} of {totalSteps}
+          </span>
+        </div>
 
-          <div className="p-6 min-h-[300px]">
-            {getCategoryLabelForStep(state.step) && (
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                {getCategoryLabelForStep(state.step)}
-              </p>
-            )}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={state.step}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              >
-                {renderStep()}
-              </motion.div>
-            </AnimatePresence>
-            <div className="mt-6 pt-4 border-t border-border/40 space-y-2">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => {
-                  void saveToServer().catch(() => {
-                    /* toast in saveToServer */
-                  });
-                }}
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline disabled:opacity-50"
-              >
-                Save all brands to database
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const cleanConfigs = state.brandConfigs.map((c) => buildCleanExportConfig(c));
-                  const json = JSON.stringify(
-                    { brands: state.brands, brandConfigs: cleanConfigs },
-                    null,
-                    2
-                  );
-                  const blob = new Blob([json], { type: "application/json" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download JSON (all brands)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const currentConfig = state.brandConfigs[bi];
-                  const clean = buildCleanExportConfig(currentConfig);
-                  const json = JSON.stringify(
-                    { brand: state.brands[bi], brandConfig: clean },
-                    null,
-                    2
-                  );
-                  const blob = new Blob([json], { type: "application/json" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="block text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Download JSON (current brand only)
-              </button>
-            </div>
+        {/* ── Progress bar ── */}
+        <div className="h-1 bg-secondary w-full">
+          <motion.div
+            className="h-full bg-gradient-to-r from-[hsl(217,91%,60%)] to-[hsl(250,80%,65%)] rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${(state.step / totalSteps) * 100}%` }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </div>
+
+        {/* ── Main content ── */}
+        <div className="flex-1 w-full px-4 py-8 md:px-10 lg:px-16 xl:px-24">
+          {/* Step hero header (Step 0 only) */}
+          {state.step === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-10 rounded-3xl overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, hsl(217,91%,97%) 0%, hsl(250,80%,97%) 50%, hsl(160,60%,96%) 100%)",
+                boxShadow: "0 4px 32px -8px rgba(100,120,240,0.12)",
+              }}
+            >
+              <div className="px-8 py-10 md:px-14 md:py-14">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[hsl(217,80%,60%)] mb-3">
+                  Brand Wizard
+                </p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight leading-tight mb-3">
+                  {isEditMode ? "Edit Your Brand" : "Create a New Brand"}
+                </h2>
+                <p className="text-base text-muted-foreground max-w-lg leading-relaxed">
+                  Select how you'd like to build your brand. Each option takes you through a tailored setup experience.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Category label for other steps */}
+          {getCategoryLabelForStep(state.step) && state.step !== 0 && (
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-5">
+              {getCategoryLabelForStep(state.step)}
+            </p>
+          )}
+
+          {/* Step content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={state.step}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="min-h-[300px]"
+            >
+              {renderStep()}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Utility links */}
+          <div className="mt-10 pt-6 border-t border-border/40 flex flex-wrap gap-x-6 gap-y-2">
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => {
+                void saveToServer().catch(() => {
+                  /* toast in saveToServer */
+                });
+              }}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline disabled:opacity-50 transition-opacity"
+            >
+              Save all brands to database
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const cleanConfigs = state.brandConfigs.map((c) => buildCleanExportConfig(c));
+                const json = JSON.stringify(
+                  { brands: state.brands, brandConfigs: cleanConfigs },
+                  null,
+                  2
+                );
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download JSON (all brands)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const currentConfig = state.brandConfigs[bi];
+                const clean = buildCleanExportConfig(currentConfig);
+                const json = JSON.stringify(
+                  { brand: state.brands[bi], brandConfig: clean },
+                  null,
+                  2
+                );
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `brand-${state.brands[bi]?.name || "config"}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download JSON (current brand only)
+            </button>
           </div>
+        </div>
 
-          <div className="p-6 border-t border-border/50 flex justify-between bg-muted/20">
-            <Button variant="outline" onClick={prev} disabled={state.step === (isEditMode ? 1 : 0)}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Previous
+        {/* ── Bottom nav bar ── */}
+        <div className="sticky bottom-0 z-20 border-t border-border/40 bg-white/80 backdrop-blur-xl px-4 py-4 md:px-10 lg:px-16 xl:px-24">
+          <div className="flex items-center justify-between gap-4">
+            <Button
+              variant="outline"
+              onClick={prev}
+              disabled={state.step === (isEditMode ? 1 : 0)}
+              className="gap-2 rounded-xl px-5"
+            >
+              <ArrowLeft className="w-4 h-4" /> Previous
             </Button>
+
+            {/* Step dots */}
+            <div className="hidden sm:flex items-center gap-1.5 flex-wrap">
+              {Array.from({ length: totalSteps + 1 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={[
+                    "rounded-full transition-all duration-300",
+                    i === state.step
+                      ? "w-5 h-2 bg-primary"
+                      : "w-2 h-2 bg-muted-foreground/20",
+                  ].join(" ")}
+                />
+              ))}
+            </div>
+
             {state.step === 0 ? (
-              <Button onClick={next} disabled={!state.createMode}>
-                Next <ArrowRight className="w-4 h-4 ml-2" />
+              <Button
+                onClick={next}
+                disabled={!state.createMode}
+                className="gap-2 rounded-xl px-6 bg-gradient-to-r from-[hsl(217,91%,60%)] to-[hsl(250,70%,62%)] hover:opacity-90 transition-opacity border-0"
+              >
+                Continue <ArrowRight className="w-4 h-4" />
               </Button>
             ) : state.step === totalSteps ? (
               <Button
@@ -588,16 +660,18 @@ const CreateBrand = () => {
                       /* toast in saveToServer */
                     });
                 }}
+                className="gap-2 rounded-xl px-6"
               >
                 {saving ? "Saving…" : "Finish setup & save"}
               </Button>
             ) : (
-              <Button onClick={next}>
-                Next <ArrowRight className="w-4 h-4 ml-2" />
+              <Button onClick={next} className="gap-2 rounded-xl px-6">
+                Next <ArrowRight className="w-4 h-4" />
               </Button>
             )}
           </div>
         </div>
+
       </PageTransition>
     </div>
   );

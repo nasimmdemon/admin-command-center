@@ -1,74 +1,83 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import type { BrandDesignTokens } from "@/types/brand-experience";
+import { Palette } from "lucide-react";
+import { StepShell, StepCard } from "@/views/shared/StepShell";
 
 interface StepBrandDesignProps {
   value: BrandDesignTokens;
   onChange: (patch: Partial<BrandDesignTokens>) => void;
 }
 
-const COLOR_FIELDS: { key: keyof BrandDesignTokens; label: string }[] = [
-  { key: "colorPrimary", label: "Primary" },
-  { key: "colorSecondary", label: "Secondary" },
-  { key: "colorAccent", label: "Accent" },
-  { key: "colorBackground", label: "Background" },
-  { key: "colorSurface", label: "Surface" },
+const COLOR_FIELDS: { key: keyof BrandDesignTokens; label: string; desc: string }[] = [
+  { key: "colorPrimary", label: "Primary", desc: "Main brand color — buttons, links, highlights" },
+  { key: "colorSecondary", label: "Secondary", desc: "Supporting accent color" },
+  { key: "colorAccent", label: "Accent", desc: "Call-to-action and focus states" },
+  { key: "colorBackground", label: "Background", desc: "Page background" },
+  { key: "colorSurface", label: "Surface", desc: "Card and panel surfaces" },
 ];
 
 export const StepBrandDesign = ({ value, onChange }: StepBrandDesignProps) => (
-  <div className="space-y-6">
-    <div>
-      <h2 className="text-lg font-semibold text-foreground">Brand design</h2>
-      <p className="text-sm text-muted-foreground mt-1">
-        Fonts (four slots) and core colors. Use web font family names or stack (e.g. Inter, system-ui).
-      </p>
-    </div>
+  <StepShell
+    icon={Palette}
+    iconBg="bg-[hsl(250,80%,96%)]"
+    iconColor="text-[hsl(250,65%,58%)]"
+    title="Brand Design"
+    subtitle="Font slots (up to four) and core color tokens. Use web font family names or stacks (e.g. Inter, system-ui)."
+  >
+    <div className="space-y-4">
+      {/* Fonts */}
+      <StepCard className="p-6 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Font slots</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {([1, 2, 3, 4] as const).map((n) => {
+            const key = `fontSlot${n}` as keyof BrandDesignTokens;
+            return (
+              <div key={key} className="space-y-1.5">
+                <Label htmlFor={key} className="text-xs font-semibold text-muted-foreground">Font {n}</Label>
+                <Input
+                  id={key}
+                  className="rounded-xl border-border/50 focus:border-primary/50 h-10 text-sm"
+                  value={value[key] as string}
+                  onChange={(e) => onChange({ [key]: e.target.value })}
+                  placeholder={n === 1 ? "e.g. Inter" : "Optional"}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </StepCard>
 
-    <div className="grid gap-4 sm:grid-cols-2">
-      {([1, 2, 3, 4] as const).map((n) => {
-        const key = `fontSlot${n}` as keyof BrandDesignTokens;
-        return (
-          <div key={key} className="space-y-2">
-            <Label htmlFor={key}>Font {n}</Label>
-            <Input
-              id={key}
-              className="rounded-xl border-border/50"
-              value={value[key] as string}
-              onChange={(e) => onChange({ [key]: e.target.value })}
-              placeholder={n === 1 ? "e.g. Inter" : "Optional"}
-            />
-          </div>
-        );
-      })}
-    </div>
-
-    <div className="space-y-3">
-      <Label className="text-sm font-semibold">Colors</Label>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {COLOR_FIELDS.map(({ key, label }) => (
-          <div key={key} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            <Label htmlFor={key} className="sm:w-28 shrink-0">
-              {label}
-            </Label>
-            <div className="flex flex-1 gap-2 items-center">
-              <input
-                id={key}
-                type="color"
-                className="h-10 w-14 cursor-pointer rounded-md border border-border/50 bg-background p-1"
-                value={value[key]}
-                onChange={(e) => onChange({ [key]: e.target.value })}
-                aria-label={`${label} color`}
-              />
-              <Input
-                className="rounded-xl border-border/50 font-mono text-sm flex-1"
-                value={value[key]}
-                onChange={(e) => onChange({ [key]: e.target.value })}
-                placeholder="#000000"
-              />
+      {/* Colors */}
+      <StepCard className="p-6 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Color tokens</p>
+        <div className="space-y-4">
+          {COLOR_FIELDS.map(({ key, label, desc }) => (
+            <div key={key} className="flex items-center gap-4 py-2 border-b border-border/30 last:border-0">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground">{desc}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  id={key}
+                  type="color"
+                  className="h-9 w-10 cursor-pointer rounded-lg border border-border/50 bg-background p-0.5 shrink-0"
+                  value={value[key]}
+                  onChange={(e) => onChange({ [key]: e.target.value })}
+                  aria-label={`${label} color`}
+                />
+                <Input
+                  className="rounded-xl border-border/50 focus:border-primary/50 font-mono text-sm h-9 w-28"
+                  value={value[key]}
+                  onChange={(e) => onChange({ [key]: e.target.value })}
+                  placeholder="#000000"
+                />
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </StepCard>
     </div>
-  </div>
+  </StepShell>
 );

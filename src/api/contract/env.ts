@@ -2,7 +2,7 @@
  * Step 0 — API base URL for all admin backend calls (Vite injects VITE_* at build time).
  */
 
-export const DEFAULT_ADMIN_API_BASE_URL = "http://localhost:9302";
+export const DEFAULT_ADMIN_API_BASE_URL = "http://localhost:9052";
 export const DEFAULT_ADMIN_PROD_API_BASE_URL = "https://beadmin.gogamify.xyz";
 
 /**

@@ -1,13 +1,15 @@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Activity, Info } from "lucide-react";
 import {
   AUTO_REJECT_STATUS_INFO,
   REGISTRATION_STATUS_CANDIDATES,
   type BrandStatusAutoConfig,
   type BrandStatusCreationMode,
 } from "@/types/brand-experience";
-import { Checkbox } from "@/components/ui/checkbox";
+import { StepShell, StepCard, SettingsRow } from "@/views/shared/StepShell";
 
 interface StepBrandStatusesProps {
   auto: BrandStatusAutoConfig;
@@ -28,111 +30,102 @@ export const StepBrandStatuses = ({
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">Brand statuses</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Configure automatic status routing and which registration statuses are allowed. Auto-rejecting outcomes are fixed below.
-        </p>
+    <StepShell
+      icon={Activity}
+      iconBg="bg-[hsl(217,91%,96%)]"
+      iconColor="text-[hsl(217,80%,55%)]"
+      title="Brand Statuses"
+      subtitle="Configure automatic status routing and which registration statuses are available. Auto-rejecting outcomes are fixed and cannot be changed."
+    >
+      <div className="space-y-4">
+        {/* Auto routing */}
+        <StepCard className="px-6 pb-0">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground pt-6 pb-3">
+            Auto routing
+          </p>
+          <div className="divide-y divide-border/40">
+            {(
+              [
+                ["transferAutoBrand", "Brand", "Automatically set status on brand transfer"],
+                ["transferAutoDepartment", "Department", "Automatically set status on department transfer"],
+                ["transferAutoDesk", "Desk", "Automatically set status on desk transfer"],
+                ["allocPull", "Alloc / Pull", "Automatic allocation and pull operations"],
+              ] as const
+            ).map(([key, label, desc]) => (
+              <SettingsRow key={key} label={label} description={desc} border={false}>
+                <Switch
+                  id={key}
+                  checked={auto[key]}
+                  onCheckedChange={(v) => onAutoChange({ [key]: v })}
+                />
+              </SettingsRow>
+            ))}
+
+            <div className="py-4">
+              <p className="text-[14px] font-semibold text-foreground mb-1">Creation mode</p>
+              <p className="text-xs text-muted-foreground mb-3">Auto status assignment on new lead creation</p>
+              <RadioGroup
+                value={auto.creation}
+                onValueChange={(v) => onAutoChange({ creation: v as BrandStatusCreationMode })}
+                className="flex flex-wrap gap-4"
+              >
+                {(["off", "yes", "mandatory_yes"] as const).map((val) => (
+                  <div key={val} className="flex items-center gap-2">
+                    <RadioGroupItem value={val} id={`creation-${val}`} />
+                    <Label htmlFor={`creation-${val}`} className="font-normal cursor-pointer capitalize text-sm">
+                      {val === "mandatory_yes" ? "Mandatory yes" : val.charAt(0).toUpperCase() + val.slice(1)}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="py-4 flex items-start gap-2">
+              <Info className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">Transform</span> (client → lead on approved) is mandatory in the product and is not configurable here.
+              </p>
+            </div>
+          </div>
+        </StepCard>
+
+        {/* Reg allowed statuses */}
+        <StepCard className="p-6 space-y-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">Registration — allowed statuses</p>
+            <p className="text-xs text-muted-foreground">Select statuses available during registration (auto-rejecting outcomes are excluded).</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {REGISTRATION_STATUS_CANDIDATES.map((s) => (
+              <div key={s.id} className="flex items-center gap-3 rounded-xl border border-border/40 px-3 py-2.5 bg-background/60">
+                <Checkbox
+                  id={`reg-${s.id}`}
+                  checked={regSelectableIds.includes(s.id)}
+                  onCheckedChange={(c) => toggleReg(s.id, c === true)}
+                />
+                <Label htmlFor={`reg-${s.id}`} className="text-sm font-normal cursor-pointer">
+                  {s.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+        </StepCard>
+
+        {/* Auto-rejecting (read-only) */}
+        <StepCard className="p-6 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Auto-rejecting statuses <span className="font-normal normal-case tracking-normal">(fixed, not configurable)</span>
+          </p>
+          <ul className="space-y-2">
+            {AUTO_REJECT_STATUS_INFO.map((item) => (
+              <li key={item.id} className="rounded-xl border border-border/40 bg-muted/30 px-4 py-2.5 text-sm">
+                <span className="font-semibold text-foreground">{item.title}</span>
+                <span className="text-muted-foreground"> — {item.description}</span>
+              </li>
+            ))}
+          </ul>
+        </StepCard>
       </div>
-
-      <section className="space-y-4 rounded-xl border border-border/50 bg-card/50 p-4">
-        <h3 className="text-sm font-semibold text-foreground">Auto</h3>
-        <p className="text-xs text-muted-foreground">Transfer → auto status</p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {(
-            [
-              ["transferAutoBrand", "Brand"],
-              ["transferAutoDepartment", "Department"],
-              ["transferAutoDesk", "Desk"],
-            ] as const
-          ).map(([key, label]) => (
-            <div key={key} className="flex items-center justify-between gap-3 rounded-lg border border-border/40 px-3 py-2">
-              <Label htmlFor={key} className="text-sm font-normal cursor-pointer">
-                {label}
-              </Label>
-              <Switch
-                id={key}
-                checked={auto[key]}
-                onCheckedChange={(v) => onAutoChange({ [key]: v })}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-border/40 px-3 py-2">
-          <Label htmlFor="allocPull" className="text-sm font-normal cursor-pointer">
-            Alloc / pull
-          </Label>
-          <Switch id="allocPull" checked={auto.allocPull} onCheckedChange={(v) => onAutoChange({ allocPull: v })} />
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-sm">Creation</Label>
-          <RadioGroup
-            value={auto.creation}
-            onValueChange={(v) => onAutoChange({ creation: v as BrandStatusCreationMode })}
-            className="flex flex-wrap gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="off" id="creation-off" />
-              <Label htmlFor="creation-off" className="font-normal cursor-pointer">
-                Off
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="yes" id="creation-yes" />
-              <Label htmlFor="creation-yes" className="font-normal cursor-pointer">
-                Yes
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="mandatory_yes" id="creation-mandatory" />
-              <Label htmlFor="creation-mandatory" className="font-normal cursor-pointer">
-                Mandatory yes
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="rounded-lg border border-dashed border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Transform (client → lead on approved)</span> is mandatory in the product and is not configurable here.
-        </div>
-      </section>
-
-      <section className="space-y-3 rounded-xl border border-border/50 bg-card/50 p-4">
-        <h3 className="text-sm font-semibold text-foreground">Reg — allowed statuses</h3>
-        <p className="text-xs text-muted-foreground">
-          Select statuses that are allowed for registration. These exclude the auto-rejecting outcomes listed below.
-        </p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {REGISTRATION_STATUS_CANDIDATES.map((s) => (
-            <div key={s.id} className="flex items-center space-x-2">
-              <Checkbox
-                id={`reg-${s.id}`}
-                checked={regSelectableIds.includes(s.id)}
-                onCheckedChange={(c) => toggleReg(s.id, c === true)}
-              />
-              <Label htmlFor={`reg-${s.id}`} className="text-sm font-normal cursor-pointer">
-                {s.label}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="space-y-3 rounded-xl border border-border/50 bg-muted/20 p-4">
-        <h3 className="text-sm font-semibold text-foreground">Auto-rejecting statuses</h3>
-        <p className="text-xs text-muted-foreground">These are always treated as rejections; they are not part of the selectable registration list.</p>
-        <ul className="space-y-2">
-          {AUTO_REJECT_STATUS_INFO.map((item) => (
-            <li key={item.id} className="rounded-md border border-border/40 bg-background/80 px-3 py-2 text-sm">
-              <span className="font-medium text-foreground">{item.title}</span>
-              <span className="text-muted-foreground"> — {item.description}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+    </StepShell>
   );
 };

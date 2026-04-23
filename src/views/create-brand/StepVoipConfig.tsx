@@ -1,4 +1,6 @@
+import { Phone } from "lucide-react";
 import { VoipProviderSection } from "./communication/VoipProviderSection";
+import { StepShell, StepCard } from "@/views/shared/StepShell";
 
 interface StepVoipConfigProps {
   voipProvider: "voicex" | "other" | null;
@@ -30,36 +32,42 @@ interface StepVoipConfigProps {
 }
 
 export const StepVoipConfig = (props: StepVoipConfigProps) => (
-  <div className="space-y-6">
-    <h2 className="text-lg font-semibold text-foreground">VoIP</h2>
-    <p className="text-sm text-muted-foreground">Configure your VoIP provider for phone communications.</p>
-    <VoipProviderSection
-      provider={props.voipProvider}
-      onProviderChange={props.onVoipProviderChange}
-      phoneNumbers={props.voipPhoneNumbers}
-      onPhoneNumbersChange={props.onVoipPhoneNumbersChange}
-      countries={props.voipCountries}
-      onCountriesChange={props.onVoipCountriesChange}
-      coverageMap={props.voipCoverageMap}
-      onCoverageMapChange={props.onVoipCoverageMapChange}
-      originCountryInput={props.voipOriginCountryInput}
-      onOriginCountryInputChange={props.onVoipOriginCountryInputChange}
-      addOutboundFrom={props.voipAddOutboundFrom}
-      onAddOutboundFromChange={props.onVoipAddOutboundFromChange}
-      outboundCountryInput={props.voipOutboundCountryInput}
-      onOutboundCountryInputChange={props.onVoipOutboundCountryInputChange}
-      providersMapData={props.providersMapData}
-      onProvidersMapDataChange={props.onProvidersMapDataChange}
-      voipAllocationModes={props.voipAllocationModes}
-      onVoipAllocationModesChange={props.onVoipAllocationModesChange}
-      voipDeskConfigs={props.voipDeskConfigs}
-      onVoipDeskConfigsChange={props.onVoipDeskConfigsChange}
-      voipQaDefault={props.voipQaDefault}
-      onVoipQaDefaultChange={props.onVoipQaDefaultChange}
-      voipWorkerConfigs={props.voipWorkerConfigs}
-      onVoipWorkerConfigsChange={props.onVoipWorkerConfigsChange}
-      uploadedWorkers={props.uploadedWorkers}
-      currentBrandName={props.currentBrandName}
-    />
-  </div>
+  <StepShell
+    icon={Phone}
+    iconBg="bg-[hsl(160,60%,95%)]"
+    iconColor="text-[hsl(160,65%,38%)]"
+    title="VoIP Configuration"
+    subtitle="Configure your VoIP provider, phone numbers, and allocation modes for phone communications."
+  >
+    <StepCard className="p-6">
+      <VoipProviderSection
+        provider={props.voipProvider}
+        onProviderChange={props.onVoipProviderChange}
+        phoneNumbers={props.voipPhoneNumbers}
+        onPhoneNumbersChange={props.onVoipPhoneNumbersChange}
+        countries={props.voipCountries}
+        onCountriesChange={props.onVoipCountriesChange}
+        coverageMap={props.voipCoverageMap}
+        onCoverageMapChange={props.onVoipCoverageMapChange}
+        originCountryInput={props.voipOriginCountryInput}
+        onOriginCountryInputChange={props.onVoipOriginCountryInputChange}
+        addOutboundFrom={props.voipAddOutboundFrom}
+        onAddOutboundFromChange={props.onVoipAddOutboundFromChange}
+        outboundCountryInput={props.voipOutboundCountryInput}
+        onOutboundCountryInputChange={props.onVoipOutboundCountryInputChange}
+        providersMapData={props.providersMapData}
+        onProvidersMapDataChange={props.onProvidersMapDataChange}
+        voipAllocationModes={props.voipAllocationModes}
+        onVoipAllocationModesChange={props.onVoipAllocationModesChange}
+        voipDeskConfigs={props.voipDeskConfigs}
+        onVoipDeskConfigsChange={props.onVoipDeskConfigsChange}
+        voipQaDefault={props.voipQaDefault}
+        onVoipQaDefaultChange={props.onVoipQaDefaultChange}
+        voipWorkerConfigs={props.voipWorkerConfigs}
+        onVoipWorkerConfigsChange={props.onVoipWorkerConfigsChange}
+        uploadedWorkers={props.uploadedWorkers}
+        currentBrandName={props.currentBrandName}
+      />
+    </StepCard>
+  </StepShell>
 );

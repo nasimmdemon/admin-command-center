@@ -18,14 +18,13 @@ export const EDIT_CATEGORY_OPTIONS: EditCategoryOption[] = [
   { id: "terms", label: "Terms", firstStep: 6, group: "Other" },
   { id: "workers", label: "Upload Workers", firstStep: 2, group: "Other" },
   { id: "logo", label: "Logo", firstStep: 10, group: "Other" },
-  { id: "transform", label: "Transform (VoIP & Email)", firstStep: 11, group: "Other" },
-  { id: "trader", label: "Trader Platform & Markets", firstStep: 12, group: "Other" },
-  { id: "fees", label: "Trading Fees", firstStep: 14, group: "Other" },
-  { id: "clientTas", label: "Client TAs", firstStep: 15, group: "Other" },
-  { id: "defaults", label: "Default Settings", firstStep: 16, group: "Other" },
-  { id: "brandStatuses", label: "Brand statuses", firstStep: 17, group: "Other" },
-  { id: "caseOfDesign", label: "Case of design", firstStep: 18, group: "Other" },
-  { id: "brandDesign", label: "Brand design", firstStep: 19, group: "Other" },
+  { id: "trader", label: "Trader Platform & Markets", firstStep: 11, group: "Other" },
+  { id: "fees", label: "Trading Fees", firstStep: 13, group: "Other" },
+  { id: "clientTas", label: "Client TAs", firstStep: 14, group: "Other" },
+  { id: "defaults", label: "Default Settings", firstStep: 15, group: "Other" },
+  { id: "brandStatuses", label: "Brand statuses", firstStep: 16, group: "Other" },
+  { id: "caseOfDesign", label: "Case of design", firstStep: 17, group: "Other" },
+  { id: "brandDesign", label: "Brand design", firstStep: 18, group: "Other" },
 ];
 
 /** Get category label for a step (for create flow header) */
@@ -40,14 +39,13 @@ export function getCategoryLabelForStep(step: number): string | null {
   if (step === 8) return "Providers: VoIP";
   if (step === 9) return "Providers: WhatsApp";
   if (step === 10) return "Logo";
-  if (step === 11) return "Transform (VoIP & Phone & Email)";
-  if (step === 12) return "Trader Platform";
-  if (step === 13) return "Trader Markets";
-  if (step === 14) return "Trading Fees";
-  if (step === 15) return "Client TAs";
-  if (step === 16) return "Default Settings";
-  if (step === 17) return "Brand statuses";
-  if (step === 18) return "Case of design";
-  if (step === 19) return "Brand design";
+  if (step === 11) return "Trader Platform";
+  if (step === 12) return "Trader Markets";
+  if (step === 13) return "Trading Fees";
+  if (step === 14) return "Client TAs";
+  if (step === 15) return "Default Settings";
+  if (step === 16) return "Brand statuses";
+  if (step === 17) return "Case of design";
+  if (step === 18) return "Brand design";
   return null;
 }
