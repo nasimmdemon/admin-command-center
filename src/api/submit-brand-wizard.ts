@@ -58,24 +58,35 @@ export async function submitBrandWizardToServer(
     const b = brands[i];
     const cfg = brandConfigs[i];
     const clean = cfg ? buildCleanExportConfig(cfg) : undefined;
-    const br = await brandsService.createBrand({
-      client_id: clientId,
-      name:
-        b.name?.trim() ||
-        b.domain?.trim() ||
-        `Brand ${i + 1}`,
-      domain: b.domain?.trim() || undefined,
-      substitute_domain: b.substituteDomain?.trim() || undefined,
-      config: clean as Record<string, unknown>,
-    });
-    if (!br.ok) {
-      throw new Error(br.rawText || `Create brand failed (HTTP ${br.status})`);
+    
+    if (b._id) {
+      const br = await brandsService.updateBrand(b._id, {
+        name: b.name?.trim() || b.domain?.trim() || `Brand ${i + 1}`,
+        domain: b.domain?.trim() || undefined,
+        substitute_domain: b.substituteDomain?.trim() || undefined,
+        config: clean as Record<string, unknown>,
+      });
+      if (!br.ok) {
+        throw new Error(br.rawText || `Update brand failed (HTTP ${br.status})`);
+      }
+      brandIds.push(b._id);
+    } else {
+      const br = await brandsService.createBrand({
+        client_id: clientId,
+        name: b.name?.trim() || b.domain?.trim() || `Brand ${i + 1}`,
+        domain: b.domain?.trim() || undefined,
+        substitute_domain: b.substituteDomain?.trim() || undefined,
+        config: clean as Record<string, unknown>,
+      });
+      if (!br.ok) {
+        throw new Error(br.rawText || `Create brand failed (HTTP ${br.status})`);
+      }
+      const bid = idFromEnvelope(br.data);
+      if (!bid) {
+        throw new Error("Brand created but response had no data._id");
+      }
+      brandIds.push(bid);
     }
-    const bid = idFromEnvelope(br.data);
-    if (!bid) {
-      throw new Error("Brand created but response had no data._id");
-    }
-    brandIds.push(bid);
   }
 
   return { clientId, brandIds };

@@ -11,9 +11,11 @@ interface StepBrandsProps {
   onAddBrand: () => void;
   onRemoveBrand: (i: number) => void;
   onUpdateBrand: (i: number, field: keyof BrandEntry, value: string) => void;
+  /** Called when Enter is pressed on the last input to advance to the next step */
+  onNext?: () => void;
 }
 
-export const StepBrands = ({ brands, onAddBrand, onRemoveBrand, onUpdateBrand }: StepBrandsProps) => (
+export const StepBrands = ({ brands, onAddBrand, onRemoveBrand, onUpdateBrand, onNext }: StepBrandsProps) => (
   <StepShell
     icon={Globe}
     iconBg="bg-[hsl(160,60%,95%)]"
@@ -73,6 +75,7 @@ export const StepBrands = ({ brands, onAddBrand, onRemoveBrand, onUpdateBrand }:
                 value={b.substituteDomain}
                 onChange={(e) => onUpdateBrand(i, "substituteDomain", e.target.value)}
                 className="rounded-xl border-border/50 focus:border-primary/50 h-10"
+                onKeyDown={i === brands.length - 1 ? (e) => { if (e.key === "Enter") { e.preventDefault(); onNext?.(); } } : undefined}
               />
             </div>
           </div>

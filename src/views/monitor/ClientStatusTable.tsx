@@ -1,8 +1,8 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, RefreshCw, XCircle } from "lucide-react";
 import type { MonitorClient, ClientBrand } from "@/models/monitor-data";
 import { ClientBrandsContent } from "./ClientBrandsContent";
 import { ROUTES } from "@/models/routes";
@@ -36,134 +36,115 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
   };
 
   return (
-    <>
-      <div className="hidden md:block overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border/40 text-xs text-muted-foreground uppercase tracking-wider bg-muted/20">
-              <th className="text-left p-4 w-10 font-medium"></th>
-              <th className="text-left p-4 font-medium">Client Name</th>
-              <th className="text-left p-4 font-medium">Name</th>
-              <th className="text-left p-4 font-medium">Status</th>
-              <th className="text-left p-4 font-medium">Paid</th>
-              <th className="text-right p-4 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((c, i) => (
-              <Fragment key={c.id}>
-                <motion.tr
-                  key={c.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + i * 0.1, duration: 0.3 }}
-                  className="border-b border-border/40 last:border-0 hover:bg-muted/20 transition-colors duration-300 cursor-pointer"
-                  onClick={() => toggleExpand(c.id)}
-                >
-                  <td className="p-4 w-10">
-                    <button
-                      type="button"
-                      className="flex items-center justify-center w-7 h-7 rounded-lg hover:bg-muted/80 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpand(c.id);
-                      }}
-                    >
-                      {expandedId === c.id ? (
-                        <ChevronDown className="w-4 h-4" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4" />
-                      )}
-                    </button>
-                  </td>
-                  <td className="p-4 font-medium text-foreground">{c.clientName}</td>
-                  <td className="p-4 text-muted-foreground">{c.name}</td>
-                  <td className="p-4">
-                    <span className={c.status === "Good" ? "badge-success" : "badge-danger"}>{c.status}</span>
-                  </td>
-                  <td className="p-4 text-foreground">{c.paid}</td>
-                  <td className="p-4 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="outline" size="sm" className="text-xs">Close</Button>
-                    <Button variant="outline" size="sm" className="text-xs"><RefreshCw className="w-3 h-3" /></Button>
-                  </td>
-                </motion.tr>
-                <AnimatePresence>
-                  {expandedId === c.id && (
-                    <motion.tr
-                      key={`${c.id}-expanded`}
-                      initial={{ height: 0 }}
-                      animate={{ height: "auto" }}
-                      exit={{ height: 0 }}
-                      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                      className="border-b last:border-0"
-                    >
-                      <td colSpan={6} className="p-0 bg-muted/20 overflow-hidden">
-                        <div className="p-4">
-                          <ClientBrandsContent
-                            client={c}
-                            onEditBrand={handleEditBrand}
-                            onAddBrand={handleAddBrand}
-                            onToggleBrandDisabled={onToggleBrandDisabled}
-                            onDeleteBrand={onDeleteBrand}
-                          />
-                        </div>
-                      </td>
-                    </motion.tr>
-                  )}
-                </AnimatePresence>
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
+    <div className="flex flex-col w-full">
+      {/* Desktop Header */}
+      <div className="hidden md:grid grid-cols-[40px_2fr_2fr_1fr_1fr_120px] items-center px-4 py-3 border-b border-border/40 bg-muted/30 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+        <div></div>
+        <div>Client Name</div>
+        <div>Name</div>
+        <div>Status</div>
+        <div>Paid</div>
+        <div className="text-right">Actions</div>
       </div>
-      <div className="md:hidden p-4 space-y-3">
-        {clients.map((c) => {
+
+      {/* Rows */}
+      <div className="flex flex-col divide-y divide-border/40">
+        {clients.map((c, i) => {
           const isExpanded = expandedId === c.id;
           return (
-            <div key={c.id} className="rounded-2xl border border-border/40 overflow-hidden bg-card shadow-widget">
-              <div
-                className="p-4 space-y-2 cursor-pointer hover:bg-muted/30 transition-colors duration-300"
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + i * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col group bg-card transition-colors hover:bg-muted/10"
+            >
+              {/* Desktop Row */}
+              <div 
+                className="hidden md:grid grid-cols-[40px_2fr_2fr_1fr_1fr_120px] items-center px-4 py-4 cursor-pointer transition-colors"
                 onClick={() => toggleExpand(c.id)}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <button
-                      type="button"
-                      className="flex-shrink-0 p-1 rounded hover:bg-muted"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpand(c.id);
-                      }}
+                <div className="flex items-center justify-center">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full transition-colors ${isExpanded ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-muted-foreground'}`}>
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 90 : 0 }}
+                      transition={{ duration: 0.2 }}
                     >
-                      {isExpanded ? (
-                        <ChevronDown className="w-4 h-4" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4" />
-                      )}
-                    </button>
-                    <span className="font-medium text-foreground truncate">{c.clientName}</span>
+                      <ChevronRight className="w-5 h-5" />
+                    </motion.div>
                   </div>
-                  <span className={`flex-shrink-0 ${c.status === "Good" ? "badge-success" : "badge-danger"}`}>{c.status}</span>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground pl-6">
-                  <span>{c.name}</span>
-                  <span>Paid: {c.paid}</span>
+                <div className="font-semibold text-foreground text-sm pl-2">{c.clientName}</div>
+                <div className="text-muted-foreground text-sm">{c.name}</div>
+                <div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    c.status === "Good" 
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" 
+                      : "bg-destructive/10 text-destructive border-destructive/20"
+                  }`}>
+                    {c.status}
+                  </span>
                 </div>
-                <div className="flex gap-2 pl-6" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm" className="text-xs flex-1">Close</Button>
-                  <Button variant="outline" size="sm" className="text-xs"><RefreshCw className="w-3 h-3" /></Button>
+                <div className="text-sm font-medium text-foreground">{c.paid}</div>
+                <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Close">
+                    <XCircle className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" title="Refresh">
+                    <RefreshCw className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
-              <AnimatePresence>
+
+              {/* Mobile Row */}
+              <div 
+                className="md:hidden flex flex-col p-4 space-y-3 cursor-pointer"
+                onClick={() => toggleExpand(c.id)}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${isExpanded ? 'bg-primary/10 text-primary' : 'bg-muted/50 text-muted-foreground'}`}>
+                      <motion.div animate={{ rotate: isExpanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronRight className="w-4 h-4" />
+                      </motion.div>
+                    </div>
+                    <span className="font-semibold text-foreground text-base truncate">{c.clientName}</span>
+                  </div>
+                  <span className={`flex-shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                    c.status === "Good" 
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" 
+                      : "bg-destructive/10 text-destructive border-destructive/20"
+                  }`}>
+                    {c.status}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-sm pl-11">
+                  <span className="text-muted-foreground">{c.name}</span>
+                  <span className="font-medium text-foreground">Paid: {c.paid}</span>
+                </div>
+                <div className="flex gap-2 pl-11 pt-1" onClick={(e) => e.stopPropagation()}>
+                  <Button variant="outline" size="sm" className="h-8 flex-1 text-xs gap-1.5 rounded-xl">
+                    <XCircle className="w-3.5 h-3.5" /> Close
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-8 w-10 px-0 rounded-xl">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Expanded Content */}
+              <AnimatePresence initial={false}>
                 {isExpanded && (
                   <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: "auto" }}
-                    exit={{ height: 0 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden border-t bg-muted/20"
+                    key={`content-${c.id}`}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden bg-muted/20 border-t border-border/40"
                   >
-                    <div className="p-4">
+                    <div className="p-4 md:p-6 md:pl-[88px] relative">
+                      <div className="hidden md:block absolute left-9 top-0 bottom-6 w-px bg-border/60" />
                       <ClientBrandsContent
                         client={c}
                         onEditBrand={handleEditBrand}
@@ -175,10 +156,10 @@ export const ClientStatusTable = ({ clients, onToggleBrandDisabled, onDeleteBran
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           );
         })}
       </div>
-    </>
+    </div>
   );
 };

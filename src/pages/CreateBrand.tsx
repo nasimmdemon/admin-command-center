@@ -173,6 +173,7 @@ const CreateBrand = () => {
             onAddBrand={addBrand}
             onRemoveBrand={removeBrand}
             onUpdateBrand={updateBrand}
+            onNext={next}
           />
         );
       case 2:
@@ -665,9 +666,25 @@ const CreateBrand = () => {
                 {saving ? "Saving…" : "Finish setup & save"}
               </Button>
             ) : (
-              <Button onClick={next} className="gap-2 rounded-xl px-6">
-                Next <ArrowRight className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-3">
+                {isEditMode && (
+                  <Button
+                    variant="default"
+                    disabled={saving}
+                    onClick={() => {
+                      void saveToServer()
+                        .then(() => navigate(ROUTES.HOME))
+                        .catch(() => {});
+                    }}
+                    className="gap-2 rounded-xl px-6 bg-emerald-600 hover:bg-emerald-700 text-white border-0 transition-colors"
+                  >
+                    {saving ? "Saving…" : "Update & Close"}
+                  </Button>
+                )}
+                <Button onClick={next} className="gap-2 rounded-xl px-6">
+                  Next <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
             )}
           </div>
         </div>

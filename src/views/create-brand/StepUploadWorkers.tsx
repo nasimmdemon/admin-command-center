@@ -250,13 +250,13 @@ export const StepUploadWorkers = ({
   const invalidRows = result?.rows.filter((r) => !r.valid) ?? [];
   const duplicateEmailCount = result
     ? (() => {
-        const counts = new Map<string, number>();
-        for (const r of result.rows) {
-          const e = r.row.email?.trim().toLowerCase();
-          if (e) counts.set(e, (counts.get(e) ?? 0) + 1);
-        }
-        return [...counts.values()].filter((c) => c > 1).length;
-      })()
+      const counts = new Map<string, number>();
+      for (const r of result.rows) {
+        const e = r.row.email?.trim().toLowerCase();
+        if (e) counts.set(e, (counts.get(e) ?? 0) + 1);
+      }
+      return [...counts.values()].filter((c) => c > 1).length;
+    })()
     : 0;
   const tree = result ? buildTree(result.rows) : null;
 
@@ -319,9 +319,8 @@ export const StepUploadWorkers = ({
           }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer ${
-            dragOver ? "border-primary bg-tint-blue/30" : "border-border/60 hover:border-primary/50 hover:bg-tint-blue/30"
-          }`}
+          className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 cursor-pointer ${dragOver ? "border-primary bg-tint-blue/30" : "border-border/60 hover:border-primary/50 hover:bg-tint-blue/30"
+            }`}
         >
           <input
             type="file"

@@ -1,0 +1,51 @@
+full_name,brand name,department name,desks,email,password,title,is_manager,client_data_prem,phone_number
+John Smith,Money Makers,qa,US,john.smith1@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100001
+Maria Garcia,Money Makers,co,FR,maria.garcia2@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100002
+David Chen,Money Makers,re,FR,david.chen3@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100003
+Emma Wilson,Money Makers,qa,GB,emma.wilson4@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100004
+James Brown,Money Makers,co,DE,james.brown5@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100005
+Sophie Martin,Money Makers,re,DE,sophie.martin6@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100006
+Oliver Davis,Money Makers,qa,IT,oliver.davis7@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100007
+Isabella Lopez,Money Makers,co,FR,isabella.lopez8@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100008
+Lucas Anderson,Money Makers,re,FR,lucas.anderson9@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100009
+Ava Thomas,Money Makers,qa,CA,ava.thomas10@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100010
+Noah Jackson,Money Makers,co,FR,noah.jackson11@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100011
+Mia White,Money Makers,re,FR,mia.white12@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100012
+Ethan Harris,Money Makers,qa,AU,ethan.harris13@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100013
+Charlotte Clark,Money Makers,co,DE,charlotte.clark14@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100014
+Alexander Lewis,Money Makers,re,DE,alexander.lewis15@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100015
+Amelia Walker,Money Makers,qa,NL,amelia.walker16@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100016
+Benjamin Hall,Money Makers,co,FR,benjamin.hall17@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100017
+Harper Young,Money Makers,re,FR,harper.young18@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100018
+William King,Money Makers,qa,BE,william.king19@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100019
+Evelyn Wright,Money Makers,co,DE,evelyn.wright20@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100020
+Henry Scott,Money Makers,re,DE,henry.scott21@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100021
+Abigail Green,Money Makers,qa,GB,abigail.green22@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100022
+Sebastian Adams,Money Makers,co,FR,sebastian.adams23@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100023
+Emily Baker,Money Makers,re,FR,emily.baker24@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100024
+Michael Nelson,Money Makers,qa,IT,michael.nelson25@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100025
+Elizabeth Hill,Money Makers,co,ES,elizabeth.hill26@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100026
+Daniel Campbell,Money Makers,re,ES,daniel.campbell27@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100027
+Sofia Mitchell,Money Makers,qa,CA,sofia.mitchell28@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100028
+Matthew Roberts,Money Makers,co,FR,matthew.roberts29@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100029
+Aria Turner,Money Makers,re,FR,aria.turner30@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100030
+Joseph Phillips,Money Makers,qa,US,joseph.phillips31@moneymakers.com,SecurePass123,Department Manager,TRUE,Add,35799100031
+Scarlett Evans,Money Makers,co,DE,scarlett.evans32@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100032
+David Parker,Money Makers,re,DE,david.parker33@moneymakers.com,SecurePass123,Super Admin,TRUE,Edit,35799100033
+Grace Edwards,Money Makers,qa,NL,grace.edwards34@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100034
+Andrew Collins,Money Makers,co,FR,andrew.collins35@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100035
+Lily Morris,Money Makers,re,FR,lily.morris36@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100036
+Samuel Reed,Money Makers,qa,US,samuel.reed37@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100037
+Victoria Cox,Money Makers,it,US,victoria.cox38@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100038
+Nathan Ward,Money Makers,qa,GB,nathan.ward39@moneymakers.com,SecurePass123,Worker,TRUE,Add,35799100039
+Zoe Stewart,Money Makers,co,DE,zoe.stewart40@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100040
+Connor Griffin,Money Makers,re,DE,connor.griffin41@moneymakers.com,SecurePass123,Worker,TRUE,Edit,35799100041
+Layla Foster,Money Makers,qa,FR,layla.foster42@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100042
+Owen Simmons,Money Makers,co,ES,owen.simmons43@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100043
+Aiden Hughes,Money Makers,re,ES,aiden.hughes44@moneymakers.com,SecurePass123,Worker,FALSE,Edit,35799100044
+Penelope Price,Money Makers,it,US,penelope.price45@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100045
+Liam Ross,Money Makers,qa,CA,liam.ross46@moneymakers.com,SecurePass123,Worker,TRUE,Add,35799100046
+Madeline Powell,Money Makers,co,FR,madeline.powell47@moneymakers.com,SecurePass123,Worker,FALSE,View,35799100047
+Elijah Cook,Money Makers,re,FR,elijah.cook48@moneymakers.com,SecurePass123,Worker,TRUE,Edit,35799100048
+Chloe Bailey,Money Makers,qa,NL,chloe.bailey49@moneymakers.com,SecurePass123,Department Manager,FALSE,Add,35799100049
+Carter Rivera,Money Makers,co,GB,carter.rivera50@moneymakers.com,SecurePass123,Worker,TRUE,View,35799100050
