@@ -3,7 +3,7 @@
  */
 
 export const DEFAULT_ADMIN_API_BASE_URL = "http://localhost:9052";
-export const DEFAULT_ADMIN_PROD_API_BASE_URL = "https://beadmin.gogamify.xyz";
+export const DEFAULT_ADMIN_PROD_API_BASE_URL = "https://admin-of-admins-be.vercel.app";
 
 /**
  * Pure normalizer for tests and callers that inject a raw base string.
