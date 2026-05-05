@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import type { BrandDesignTokens } from "@/types/brand-experience";
 import { Palette } from "lucide-react";
 import { StepShell, StepCard } from "@/views/shared/StepShell";
+import { GoogleFontCombobox } from "@/components/GoogleFontCombobox";
 
 interface StepBrandDesignProps {
   value: BrandDesignTokens;
@@ -17,31 +18,60 @@ const COLOR_FIELDS: { key: keyof BrandDesignTokens; label: string; desc: string 
   { key: "colorSurface", label: "Surface", desc: "Card and panel surfaces" },
 ];
 
+const FONT_SLOTS = [
+  { n: 1 as const, label: "Font 1 — Primary", placeholder: "e.g. Inter", hint: "Main body & UI font" },
+  { n: 2 as const, label: "Font 2 — Heading", placeholder: "e.g. Playfair Display", hint: "Display & headline font" },
+  { n: 3 as const, label: "Font 3 — Accent", placeholder: "e.g. Space Mono", hint: "Optional accent / mono font" },
+  { n: 4 as const, label: "Font 4 — Extra", placeholder: "Optional", hint: "Fourth slot for extended typography" },
+];
+
 export const StepBrandDesign = ({ value, onChange }: StepBrandDesignProps) => (
   <StepShell
     icon={Palette}
     iconBg="bg-[hsl(250,80%,96%)]"
     iconColor="text-[hsl(250,65%,58%)]"
     title="Brand Design"
-    subtitle="Font slots (up to four) and core color tokens. Use web font family names or stacks (e.g. Inter, system-ui)."
+    subtitle="Select Google Fonts for up to four slots and configure core color tokens. Type a few letters to search and preview fonts live."
   >
     <div className="space-y-4">
       {/* Fonts */}
-      <StepCard className="p-6 space-y-4">
-        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Font slots</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {([1, 2, 3, 4] as const).map((n) => {
+      <StepCard className="p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Font slots</p>
+          <a
+            href="https://fonts.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            Browse Google Fonts ↗
+          </a>
+        </div>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          {FONT_SLOTS.map(({ n, label, placeholder, hint }) => {
             const key = `fontSlot${n}` as keyof BrandDesignTokens;
             return (
               <div key={key} className="space-y-1.5">
-                <Label htmlFor={key} className="text-xs font-semibold text-muted-foreground">Font {n}</Label>
-                <Input
+                <Label htmlFor={key} className="text-xs font-semibold text-foreground/80">
+                  {label}
+                </Label>
+                <p className="text-[11px] text-muted-foreground -mt-0.5">{hint}</p>
+                <GoogleFontCombobox
                   id={key}
-                  className="rounded-xl border-border/50 focus:border-primary/50 h-10 text-sm"
                   value={value[key] as string}
-                  onChange={(e) => onChange({ [key]: e.target.value })}
-                  placeholder={n === 1 ? "e.g. Inter" : "Optional"}
+                  onChange={(v) => onChange({ [key]: v })}
+                  placeholder={placeholder}
                 />
+                {/* Live preview row */}
+                {(value[key] as string) && (
+                  <p
+                    className="text-[13px] text-foreground/80 mt-1 px-1 truncate"
+                    style={{ fontFamily: `"${value[key]}", sans-serif` }}
+                  >
+                    The quick brown fox jumps over the lazy dog
+                  </p>
+                )}
               </div>
             );
           })}

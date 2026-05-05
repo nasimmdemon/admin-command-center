@@ -64,6 +64,7 @@ const CreateBrand = () => {
     currentConfig,
     totalSteps,
     setCreateMode,
+    setUseCase,
   } = useCreateBrand();
   const bi = state.currentBrandSlide;
 
@@ -164,6 +165,8 @@ const CreateBrand = () => {
           <StepCreateMode
             value={state.createMode}
             onChange={setCreateMode}
+            useCase={state.useCase}
+            onUseCaseChange={setUseCase}
           />
         );
       case 1:
@@ -204,6 +207,7 @@ const CreateBrand = () => {
               onBankDetailsChange={(d) => updateBrandConfig(bi, "bankDetails", d)}
               wireDetails={currentConfig.wireDetails}
               onWireDetailsChange={(d) => updateBrandConfig(bi, "wireDetails", d)}
+              useCase={state.useCase}
             />
           </BrandStepWrapper>
         );
@@ -226,6 +230,7 @@ const CreateBrand = () => {
             <StepKyc
               brandLabel={brandLabel}
               brandDomain={state.brands[bi]?.domain || "domain.com"}
+              useCase={state.useCase}
               brandHasKyc={currentConfig.brandHasKyc ?? currentConfig.kycEnabled}
               onBrandHasKycChange={(v) => {
                 updateBrandConfig(bi, "brandHasKyc", v);
@@ -368,13 +373,24 @@ const CreateBrand = () => {
       case 11:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepTraderPlatform value={currentConfig.traderPlatform} onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)} />
+            <StepTraderPlatform
+              value={currentConfig.traderPlatform}
+              onChange={(v) => updateBrandConfig(bi, "traderPlatform", v)}
+              useCase={state.useCase}
+              brandHasKyc={currentConfig.brandHasKyc}
+              enableFileComplaint={currentConfig.enableFileComplaint}
+              onEnableFileComplaintChange={(v) => updateBrandConfig(bi, "enableFileComplaint", v)}
+            />
           </BrandStepWrapper>
         );
       case 12:
         return (
           <BrandStepWrapper brands={state.brands} currentSlide={bi} onPrevSlide={prevSlide} onNextSlide={nextSlide}>
-            <StepTraderMarkets markets={currentConfig.traderMarkets} onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)} />
+            <StepTraderMarkets
+              markets={currentConfig.traderMarkets}
+              onChange={(m) => updateBrandConfig(bi, "traderMarkets", m)}
+              useCase={state.useCase}
+            />
           </BrandStepWrapper>
         );
       case 13:
@@ -402,6 +418,7 @@ const CreateBrand = () => {
                 if (v.value !== undefined) updateBrandConfig(bi, "closePositionFeeValue", v.value);
               }}
               currency={currentConfig.currency}
+              useCase={state.useCase}
             />
           </BrandStepWrapper>
         );
@@ -454,6 +471,9 @@ const CreateBrand = () => {
               onChange={(patch) =>
                 updateBrandConfig(bi, "brandCaseDesign", { ...currentConfig.brandCaseDesign, ...patch })
               }
+              useCase={state.useCase}
+              uiComponentSet={currentConfig.uiComponentSet}
+              onUiComponentSetChange={(v) => updateBrandConfig(bi, "uiComponentSet", v)}
             />
           </BrandStepWrapper>
         );
@@ -646,7 +666,7 @@ const CreateBrand = () => {
             {state.step === 0 ? (
               <Button
                 onClick={next}
-                disabled={!state.createMode}
+                disabled={!state.createMode || !state.useCase}
                 className="gap-2 rounded-xl px-6 bg-gradient-to-r from-[hsl(217,91%,60%)] to-[hsl(250,70%,62%)] hover:opacity-90 transition-opacity border-0"
               >
                 Continue <ArrowRight className="w-4 h-4" />

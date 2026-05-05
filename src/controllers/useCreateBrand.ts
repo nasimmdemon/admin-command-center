@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { TOTAL_BRAND_WIZARD_STEPS } from "@/models/brand-wizard-steps";
 import { BrandConfig, getDefaultBrandConfig } from "@/types/brand-config-per-brand";
+import type { UseCase } from "@/types/brand-config-per-brand";
+export type { UseCase } from "@/types/brand-config-per-brand";
 
 export interface BrandEntry {
   /** Populated by the server after the brand is saved to the database. Used as entity_id for WhatsApp QR sessions. */
@@ -17,6 +19,8 @@ export type CreateMode = "simple" | "same_db" | "same_config" | "from_scratch";
 export interface CreateBrandState {
   step: number;
   createMode: CreateMode | null;
+  /** Use case governs feature enforcement (regulated/unregulated/brand_recovery) */
+  useCase: UseCase | null;
   brands: BrandEntry[];
   brandConfigs: BrandConfig[];
   currentBrandSlide: number;
@@ -33,6 +37,7 @@ export interface CreateBrandLocationState {
 const getDefaultInitialState = (): CreateBrandState => ({
   step: 0,
   createMode: null,
+  useCase: null,
   brands: [{ name: "", domain: "", substituteDomain: "" }],
   brandConfigs: [getDefaultBrandConfig()],
   currentBrandSlide: 0,
@@ -47,6 +52,7 @@ function getInitialStateFromLocation(locationState: CreateBrandLocationState | n
     return {
       step: startStep,
       createMode: "simple",
+      useCase: null,
       brands: [
         {
           name: locationState.editBrand.name,
@@ -78,6 +84,10 @@ export function useCreateBrand() {
 
   const setCreateMode = (mode: CreateMode) => {
     setState((s) => ({ ...s, createMode: mode }));
+  };
+
+  const setUseCase = (uc: UseCase) => {
+    setState((s) => ({ ...s, useCase: uc }));
   };
 
   const addBrand = () =>
@@ -175,6 +185,7 @@ export function useCreateBrand() {
     isEditMode,
     update,
     setCreateMode,
+    setUseCase,
     addBrand,
     removeBrand,
     updateBrand,

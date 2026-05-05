@@ -25,6 +25,14 @@ import {
 } from "./brand-experience";
 export type { BrandCaseDesignConfig, BrandDesignTokens, BrandStatusAutoConfig } from "./brand-experience";
 
+/**
+ * The use case governs which features are enforced, locked, or hidden across the brand wizard.
+ * - regulated: full compliance — KYC required, funding locked, WebTrader gated by KYC + JWT
+ * - unregulated: flexible — KYC optional, funding/dealing editable, WebTrader optional
+ * - brand_recovery: recovery flow — no dealing, no WebTrader, File Complaint feature instead
+ */
+export type UseCase = "regulated" | "unregulated" | "brand_recovery";
+
 /** Per-brand configuration - each brand has its own full config */
 export interface BrandConfig {
   depositMethods: Record<string, DepositMethod>;
@@ -146,6 +154,15 @@ export interface BrandConfig {
   brandCaseDesign: BrandCaseDesignConfig;
   /** Fonts 1–4 and theme colors */
   brandDesign: BrandDesignTokens;
+  /**
+   * UI component set for this brand, derived from use case:
+   * - Regulated → 'brand_1' | 'brand_2' | 'brand_3'
+   * - Unregulated → 'option_1' | 'option_2'
+   * - Brand Recovery → not applicable (CRM-only)
+   */
+  uiComponentSet: string;
+  /** Brand Recovery only: replace dealing/WebTrader with a File Complaint feature */
+  enableFileComplaint: boolean;
 }
 
 const defaultVoipCoverage = { US: ["US", "CA", "MX", "GB", "FR", "DE"], GB: ["GB", "US", "FR", "DE", "ES", "IT"], FR: ["FR", "GB", "DE", "ES", "IT", "BE"] };
@@ -237,6 +254,8 @@ export const getDefaultBrandConfig = (): BrandConfig => ({
   brandStatusRegSelectableIds: [],
   brandCaseDesign: { ...DEFAULT_BRAND_CASE_DESIGN },
   brandDesign: { ...DEFAULT_BRAND_DESIGN_TOKENS },
+  uiComponentSet: "",
+  enableFileComplaint: false,
 });
 
 /** Merge config with defaults to ensure all fields are present in export (handles newly added fields). Skips undefined to avoid overwriting with empty. */

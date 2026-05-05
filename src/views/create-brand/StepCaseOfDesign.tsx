@@ -3,12 +3,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import type { AppBarNamingScheme, BoxStyle, BrandCaseDesignConfig } from "@/types/brand-experience";
-import { Layers } from "lucide-react";
+import type { UseCase } from "@/types/brand-config-per-brand";
+import { Layers, Monitor } from "lucide-react";
 import { StepShell, StepCard } from "@/views/shared/StepShell";
 
 interface StepCaseOfDesignProps {
   value: BrandCaseDesignConfig;
   onChange: (patch: Partial<BrandCaseDesignConfig>) => void;
+  useCase?: UseCase | null;
+  uiComponentSet?: string;
+  onUiComponentSetChange?: (v: string) => void;
 }
 
 const APP_BAR_OPTIONS: { value: AppBarNamingScheme; label: string }[] = [
@@ -23,6 +27,39 @@ const BOX_OPTIONS: { value: BoxStyle; label: string }[] = [
   { value: "sharp", label: "Sharp corners" },
   { value: "soft", label: "Soft / elevated" },
   { value: "outline", label: "Outline" },
+];
+
+/** Options for regulated brands: full brand identity sets */
+const REGULATED_UI_OPTIONS = [
+  {
+    id: "brand_1",
+    label: "Brand 1",
+    desc: "Primary institutional layout — compliance-forward, formal typography.",
+  },
+  {
+    id: "brand_2",
+    label: "Brand 2",
+    desc: "Professional dark variant — high-contrast, trust-focused design.",
+  },
+  {
+    id: "brand_3",
+    label: "Brand 3",
+    desc: "Clean minimalist set — neutral palette, high legibility.",
+  },
+];
+
+/** Options for unregulated brands: flexible layout options */
+const UNREGULATED_UI_OPTIONS = [
+  {
+    id: "option_1",
+    label: "Option 1",
+    desc: "Vibrant consumer layout — dynamic, colorful, engaging.",
+  },
+  {
+    id: "option_2",
+    label: "Option 2",
+    desc: "Compact modern layout — sleek, dark-mode friendly.",
+  },
 ];
 
 const FieldRow = ({
@@ -43,7 +80,76 @@ const FieldRow = ({
   </div>
 );
 
-export const StepCaseOfDesign = ({ value, onChange }: StepCaseOfDesignProps) => (
+function UiComponentSetSelector({
+  useCase,
+  value,
+  onChange,
+}: {
+  useCase: UseCase | null | undefined;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  if (!useCase || useCase === "brand_recovery") return null;
+
+  const options = useCase === "regulated" ? REGULATED_UI_OPTIONS : UNREGULATED_UI_OPTIONS;
+  const label =
+    useCase === "regulated"
+      ? "UI Component Set (Brand 1 / 2 / 3)"
+      : "UI Component Set (Option 1 / 2)";
+  const description =
+    useCase === "regulated"
+      ? "Select the visual identity set for Client, WebTrader, AuthGate, and Admin views across this brand."
+      : "Select the layout option for Client and applicable ecosystem components.";
+
+  return (
+    <StepCard className="p-6 space-y-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+          <Monitor className="w-3.5 h-3.5" /> UI Component Set
+        </p>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {options.map((opt) => {
+          const selected = value === opt.id;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() => onChange(opt.id)}
+              className={[
+                "rounded-xl border-2 p-4 text-left transition-all duration-200 cursor-pointer",
+                selected
+                  ? "border-primary bg-primary/5 shadow-[0_0_0_3px_hsl(217,91%,90%)]"
+                  : "border-border/40 hover:border-border/80 bg-background",
+              ].join(" ")}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-bold text-foreground">{opt.label}</p>
+                <div
+                  className={[
+                    "w-3.5 h-3.5 rounded-full border-2 transition-all",
+                    selected ? "border-primary bg-primary" : "border-muted-foreground/30",
+                  ].join(" ")}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{opt.desc}</p>
+            </button>
+          );
+        })}
+      </div>
+    </StepCard>
+  );
+}
+
+export const StepCaseOfDesign = ({
+  value,
+  onChange,
+  useCase,
+  uiComponentSet = "",
+  onUiComponentSetChange,
+}: StepCaseOfDesignProps) => (
   <StepShell
     icon={Layers}
     iconBg="bg-[hsl(350,80%,96%)]"
@@ -52,6 +158,13 @@ export const StepCaseOfDesign = ({ value, onChange }: StepCaseOfDesignProps) => 
     subtitle="One design case can cover several product variations — micro-differences only (app bar naming, box style). The user flow stays the same."
   >
     <div className="space-y-4">
+      {/* UI Component Set selector (use-case driven) */}
+      <UiComponentSetSelector
+        useCase={useCase}
+        value={uiComponentSet}
+        onChange={onUiComponentSetChange ?? (() => {})}
+      />
+
       <StepCard className="px-6 pb-0">
         <FieldRow
           label="App bar naming scheme"

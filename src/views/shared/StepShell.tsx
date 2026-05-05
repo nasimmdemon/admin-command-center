@@ -83,7 +83,7 @@ export const SettingsRow = ({
   children,
   border = true,
 }: {
-  label: string;
+  label: React.ReactNode;
   description?: string;
   children: React.ReactNode;
   border?: boolean;

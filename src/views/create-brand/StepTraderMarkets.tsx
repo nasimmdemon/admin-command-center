@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Check, Minus } from "lucide-react";
+import { ChevronDown, ChevronRight, Check, Minus, AlertTriangle } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -10,10 +10,12 @@ import {
   MARKET_CATEGORY_LABELS,
 } from "@/lib/symbol-enums/market_symbols_map";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { UseCase } from "@/types/brand-config-per-brand";
 
 interface StepTraderMarketsProps {
   markets: Record<string, boolean>;
   onChange: (markets: Record<string, boolean>) => void;
+  useCase?: UseCase | null;
 }
 
 const Checkbox = ({
@@ -53,10 +55,12 @@ const Checkbox = ({
   );
 };
 
-export const StepTraderMarkets = ({ markets, onChange }: StepTraderMarketsProps) => {
+export const StepTraderMarkets = ({ markets, onChange, useCase }: StepTraderMarketsProps) => {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const isBrandRecovery = useCase === "brand_recovery";
 
   const toggleCategory = (category: string, select: boolean) => {
+    if (isBrandRecovery) return;
     const symbols = MARKET_SYMBOLS_MAP[category];
     if (!symbols) return;
     const next = { ...markets };
@@ -65,6 +69,7 @@ export const StepTraderMarkets = ({ markets, onChange }: StepTraderMarketsProps)
   };
 
   const toggleSymbol = (symbol: string, checked: boolean) => {
+    if (isBrandRecovery) return;
     onChange({ ...markets, [symbol]: checked });
   };
 
@@ -96,67 +101,92 @@ export const StepTraderMarkets = ({ markets, onChange }: StepTraderMarketsProps)
       <p className="text-sm text-muted-foreground">
         Select a category to enable all symbols, then expand to deselect individual symbols.
       </p>
-      <div className="space-y-2">
-        {MARKET_CATEGORY_LABELS.map((category) => {
-          const symbols = MARKET_SYMBOLS_MAP[category];
-          if (!symbols?.length) return null;
-          const isOpen = expanded.has(category);
-          const allSelected = isCategoryFullySelected(category);
-          const someSelected = isCategoryPartiallySelected(category);
 
-          return (
-            <Collapsible
-              key={category}
-              open={isOpen}
-              onOpenChange={() => toggleExpand(category)}
-            >
-              <div className="rounded-xl border border-border/50 overflow-hidden shadow-widget">
-                <div className="flex items-center gap-2 bg-tint-blue/50 p-2.5">
-                  <CollapsibleTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
-                    >
-                      {isOpen ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  <div className="flex-1 min-w-0">
-                    <Checkbox
-                      checked={allSelected}
-                      indeterminate={someSelected}
-                      onChange={(v) => toggleCategory(category, v)}
-                      label={`${category} (${symbols.length} symbols)`}
-                      className="border-0 bg-transparent p-0 hover:bg-transparent"
-                    />
-                  </div>
-                  {someSelected && !allSelected && (
-                    <span className="text-xs text-muted-foreground">
-                      {symbols.filter((s) => markets[s]).length}/{symbols.length} selected
-                    </span>
-                  )}
-                </div>
-                <CollapsibleContent>
-                  <ScrollArea className="h-[200px] border-t">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3">
-                      {symbols.map((symbol) => (
-                        <Checkbox
-                          key={symbol}
-                          checked={!!markets[symbol]}
-                          onChange={(v) => toggleSymbol(symbol, v)}
-                          label={symbol}
-                        />
-                      ))}
+      {/* Brand Recovery lock banner */}
+      {isBrandRecovery && (
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3">
+          <AlertTriangle className="w-4 h-4 text-rose-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-rose-800 mb-0.5">Brand Recovery Mode — Markets Locked</p>
+            <p className="text-xs text-rose-700 leading-relaxed">
+              Trader Markets are not applicable in Brand Recovery mode. No internal dealing or
+              trading is available in this use case.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Markets list — with frosted overlay for Brand Recovery */}
+      <div className={isBrandRecovery ? "relative" : undefined}>
+        {isBrandRecovery && (
+          <div
+            className="absolute inset-0 z-10 rounded-xl cursor-not-allowed"
+            style={{ background: "rgba(255,255,255,0.65)" }}
+            title="Locked in Brand Recovery mode"
+          />
+        )}
+        <div className="space-y-2">
+          {MARKET_CATEGORY_LABELS.map((category) => {
+            const symbols = MARKET_SYMBOLS_MAP[category];
+            if (!symbols?.length) return null;
+            const isOpen = expanded.has(category);
+            const allSelected = isCategoryFullySelected(category);
+            const someSelected = isCategoryPartiallySelected(category);
+
+            return (
+              <Collapsible
+                key={category}
+                open={isOpen}
+                onOpenChange={() => toggleExpand(category)}
+              >
+                <div className="rounded-xl border border-border/50 overflow-hidden shadow-widget">
+                  <div className="flex items-center gap-2 bg-tint-blue/50 p-2.5">
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
+                      >
+                        {isOpen ? (
+                          <ChevronDown className="h-4 w-4" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4" />
+                        )}
+                      </button>
+                    </CollapsibleTrigger>
+                    <div className="flex-1 min-w-0">
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        onChange={(v) => toggleCategory(category, v)}
+                        label={`${category} (${symbols.length} symbols)`}
+                        className="border-0 bg-transparent p-0 hover:bg-transparent"
+                      />
                     </div>
-                  </ScrollArea>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
-          );
-        })}
+                    {someSelected && !allSelected && (
+                      <span className="text-xs text-muted-foreground">
+                        {symbols.filter((s) => markets[s]).length}/{symbols.length} selected
+                      </span>
+                    )}
+                  </div>
+                  <CollapsibleContent>
+                    <ScrollArea className="h-[200px] border-t">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3">
+                        {symbols.map((symbol) => (
+                          <Checkbox
+                            key={symbol}
+                            checked={!!markets[symbol]}
+                            onChange={(v) => toggleSymbol(symbol, v)}
+                            label={symbol}
+                          />
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
