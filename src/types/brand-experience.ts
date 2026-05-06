@@ -58,12 +58,12 @@ export interface BrandCaseDesignConfig {
   variationNotes: string;
 }
 
-/** Fonts (1–4) and core colors for brand theming */
+/** Fonts and core colors for brand theming */
 export interface BrandDesignTokens {
-  fontSlot1: string;
-  fontSlot2: string;
-  fontSlot3: string;
-  fontSlot4: string;
+  fontPrimary: string;
+  fontHeading: string;
+  fontAccent: string;
+  fontExtra: string;
   colorPrimary: string;
   colorSecondary: string;
   colorAccent: string;
@@ -92,10 +92,10 @@ export const DEFAULT_BRAND_CASE_DESIGN: BrandCaseDesignConfig = {
 };
 
 export const DEFAULT_BRAND_DESIGN_TOKENS: BrandDesignTokens = {
-  fontSlot1: "",
-  fontSlot2: "",
-  fontSlot3: "",
-  fontSlot4: "",
+  fontPrimary:       "",
+  fontHeading:       "",
+  fontAccent:        "",
+  fontExtra:         "",
   colorPrimary:      "#2563eb",
   colorSecondary:    "#64748b",
   colorAccent:       "#0ea5e9",

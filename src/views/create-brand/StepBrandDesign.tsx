@@ -29,11 +29,11 @@ const COLOR_FIELDS: { key: keyof BrandDesignTokens; label: string; desc: string;
 
 const COLOR_GROUPS = ["Layout", "Brand", "Typography", "Feedback"] as const;
 
-const FONT_SLOTS = [
-  { n: 1 as const, label: "Font 1 — Primary",  placeholder: "e.g. Inter",            hint: "Main body & UI font" },
-  { n: 2 as const, label: "Font 2 — Heading",  placeholder: "e.g. Playfair Display", hint: "Display & headline font" },
-  { n: 3 as const, label: "Font 3 — Accent",   placeholder: "e.g. Space Mono",       hint: "Optional accent / mono font" },
-  { n: 4 as const, label: "Font 4 — Extra",    placeholder: "Optional",               hint: "Fourth slot for extended typography" },
+const FONT_SLOTS: { key: keyof BrandDesignTokens; label: string; placeholder: string; hint: string }[] = [
+  { key: "fontPrimary", label: "Font 1 — Primary",  placeholder: "e.g. Inter",            hint: "Main body & UI font" },
+  { key: "fontHeading", label: "Font 2 — Heading",  placeholder: "e.g. Playfair Display", hint: "Display & headline font" },
+  { key: "fontAccent",  label: "Font 3 — Accent",   placeholder: "e.g. Space Mono",       hint: "Optional accent / mono font" },
+  { key: "fontExtra",   label: "Font 4 — Extra",    placeholder: "Optional",               hint: "Fourth slot for extended typography" },
 ];
 
 const GROUP_COLORS: Record<string, { dot: string; label: string }> = {
@@ -68,31 +68,28 @@ export const StepBrandDesign = ({ value, onChange }: StepBrandDesignProps) => (
         </div>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          {FONT_SLOTS.map(({ n, label, placeholder, hint }) => {
-            const key = `fontSlot${n}` as keyof BrandDesignTokens;
-            return (
-              <div key={key} className="space-y-1.5">
-                <Label htmlFor={key} className="text-xs font-semibold text-foreground/80">
-                  {label}
-                </Label>
-                <p className="text-[11px] text-muted-foreground -mt-0.5">{hint}</p>
-                <GoogleFontCombobox
-                  id={key}
-                  value={value[key] as string}
-                  onChange={(v) => onChange({ [key]: v })}
-                  placeholder={placeholder}
-                />
-                {(value[key] as string) && (
-                  <p
-                    className="text-[13px] text-foreground/80 mt-1 px-1 truncate"
-                    style={{ fontFamily: `"${value[key]}", sans-serif` }}
-                  >
-                    The quick brown fox jumps over the lazy dog
-                  </p>
-                )}
-              </div>
-            );
-          })}
+          {FONT_SLOTS.map(({ key, label, placeholder, hint }) => (
+            <div key={key} className="space-y-1.5">
+              <Label htmlFor={key} className="text-xs font-semibold text-foreground/80">
+                {label}
+              </Label>
+              <p className="text-[11px] text-muted-foreground -mt-0.5">{hint}</p>
+              <GoogleFontCombobox
+                id={key}
+                value={value[key] as string}
+                onChange={(v) => onChange({ [key]: v })}
+                placeholder={placeholder}
+              />
+              {(value[key] as string) && (
+                <p
+                  className="text-[13px] text-foreground/80 mt-1 px-1 truncate"
+                  style={{ fontFamily: `"${value[key]}", sans-serif` }}
+                >
+                  The quick brown fox jumps over the lazy dog
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       </StepCard>
 

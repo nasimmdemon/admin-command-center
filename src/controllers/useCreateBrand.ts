@@ -138,24 +138,24 @@ export function useCreateBrand() {
    * Called when advancing from Step 0 in same_db / same_config mode.
    * Merges the source brand config into all brandConfigs (stripping sensitive fields),
    * then computes mismatch warnings for the target use case.
+   * Returns the updated state slice so it can be merged atomically in next().
    */
-  const applySourceBrandConfig = () => {
-    setState((s) => {
-      const { sourceBrandSelection, useCase, brandConfigs } = s;
-      if (!sourceBrandSelection?.brandConfig || !useCase) return s;
+  const buildSourceConfigPatch = (s: CreateBrandState) => {
+    const { sourceBrandSelection, useCase, brandConfigs } = s;
+    if (!sourceBrandSelection?.brandConfig || !useCase) return {};
 
-      const stripped = stripSensitiveFields(sourceBrandSelection.brandConfig);
+    const stripped = stripSensitiveFields(sourceBrandSelection.brandConfig);
 
-      // Merge stripped source config into every brand config slot
-      const updatedConfigs = brandConfigs.map((existing) =>
-        buildExportConfig({ ...stripped, ...existing } as Parameters<typeof buildExportConfig>[0])
-      );
+    // Source config overrides defaults — existing (all defaults at this point) fills
+    // only fields missing from the source.
+    const updatedConfigs = brandConfigs.map((existing) =>
+      buildExportConfig({ ...existing, ...stripped } as Parameters<typeof buildExportConfig>[0])
+    );
 
-      // Detect mismatches between source and target use case
-      const warnings = detectConfigMismatches(stripped, useCase);
+    // Detect mismatches between source and target use case
+    const warnings = detectConfigMismatches(stripped, useCase);
 
-      return { ...s, brandConfigs: updatedConfigs, configMismatchWarnings: warnings };
-    });
+    return { brandConfigs: updatedConfigs, configMismatchWarnings: warnings };
   };
 
   /**
@@ -231,19 +231,17 @@ export function useCreateBrand() {
     }));
 
   const next = () => {
-    // Apply source brand config when leaving Step 0 in clone modes
-    const currentStep = state.step;
-    if (
-      currentStep === 0 &&
-      (state.createMode === "same_db" || state.createMode === "same_config") &&
-      state.sourceBrandSelection?.brandConfig
-    ) {
-      applySourceBrandConfig();
-    }
     setState((s) => {
       const maxStep = TOTAL_BRAND_WIZARD_STEPS;
+      const isCloneMode = s.createMode === "same_db" || s.createMode === "same_config";
+      const leavingStep0 = s.step === 0 && isCloneMode && !!s.sourceBrandSelection?.brandConfig;
+
+      // Build config patch atomically in the same setState — no stale closures, no race
+      const configPatch = leavingStep0 ? buildSourceConfigPatch(s) : {};
+
       return {
         ...s,
+        ...configPatch,
         step: Math.min(s.step + 1, maxStep),
         currentBrandSlide: 0,
       };
