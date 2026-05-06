@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { getBrand } from "@/api/services/brands.service";
 import { TOTAL_BRAND_WIZARD_STEPS } from "@/models/brand-wizard-steps";
 import { BrandConfig, getDefaultBrandConfig, buildExportConfig } from "@/types/brand-config-per-brand";
 import type { UseCase } from "@/types/brand-config-per-brand";
@@ -269,6 +270,33 @@ export function useCreateBrand() {
         step: Math.max(minStep, Math.min(step, maxStep)),
       };
     });
+  /**
+   * In edit mode: fetch the brand's existing config from the DB and hydrate
+   * brandConfigs[0] so every step shows the real saved values.
+   */
+  const loadEditBrandConfig = useCallback(async (brandId: string) => {
+    try {
+      const res = await getBrand(brandId);
+      const raw = res.ok
+        ? ((res.data as { data?: { config?: Record<string, unknown> } })?.data
+            ?? (res.data as { config?: Record<string, unknown> } | null))
+        : null;
+      const savedConfig = (raw as { config?: Record<string, unknown> } | null)?.config;
+      if (!savedConfig) return;
+
+      setState((s) => ({
+        ...s,
+        brandConfigs: s.brandConfigs.map((existing, i) =>
+          i === 0
+            ? (buildExportConfig({ ...existing, ...savedConfig } as Parameters<typeof buildExportConfig>[0]))
+            : existing
+        ),
+      }));
+    } catch {
+      // Silently fail — the wizard just shows blank defaults
+    }
+  }, []);
+
 
   const brandLabel = state.brands[state.currentBrandSlide]?.name || state.brands[state.currentBrandSlide]?.domain || `Brand ${state.currentBrandSlide + 1}`;
   const currentConfig = state.brandConfigs[state.currentBrandSlide] ?? getDefaultBrandConfig();
@@ -288,6 +316,7 @@ export function useCreateBrand() {
     removeBrand,
     updateBrand,
     updateBrandConfig,
+    loadEditBrandConfig,
     applyBrandIdsFromSave,
     next,
     prev,

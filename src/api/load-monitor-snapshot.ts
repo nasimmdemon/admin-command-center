@@ -1,4 +1,4 @@
-import type { AdminApiEnvelope, AdminBrand, AdminClient } from "@/api/contract/domain-models";
+import type { AdminBrand, AdminClient } from "@/api/contract/domain-models";
 import { mapBrandDoc, mapClientDoc } from "@/api/map-admin-to-monitor";
 import * as brandsService from "@/api/services/brands.service";
 import * as clientsService from "@/api/services/clients.service";
@@ -20,16 +20,24 @@ export type MonitorSnapshot = {
  * Loads clients, nested brands (via ``client_id``), and summary stats from the API.
  */
 export async function loadMonitorSnapshot(): Promise<MonitorSnapshot> {
-  const statsRes = await statsService.fetchAdminStatsSummary();
-  const stats =
-    statsRes.ok && statsRes.data && typeof statsRes.data === "object"
-      ? (statsRes.data as AdminApiEnvelope<statsService.AdminStatsPayload>).data ??
-        null
-      : null;
+  // Fire stats + clients in parallel
+  const [statsRes, clRes] = await Promise.all([
+    statsService.fetchAdminStatsSummary(),
+    clientsService.listClients(),
+  ]);
 
-  const clRes = await clientsService.listClients();
   if (!clRes.ok) {
     throw new Error(clRes.rawText || `Failed to load clients (HTTP ${clRes.status})`);
+  }
+
+  // Handle both { data: { client_count, ... } } and flat { client_count, ... } shapes
+  let stats: statsService.AdminStatsPayload | null = null;
+  if (statsRes.ok && statsRes.data) {
+    const d = statsRes.data as Record<string, unknown>;
+    const inner = (d.data ?? d) as Partial<statsService.AdminStatsPayload>;
+    if (typeof inner.client_count === "number") {
+      stats = inner as statsService.AdminStatsPayload;
+    }
   }
 
   const rawClients = listFromEnvelope<AdminClient>(clRes.data);
@@ -48,5 +56,17 @@ export async function loadMonitorSnapshot(): Promise<MonitorSnapshot> {
     clients.push(mc);
   }
 
+  // If the stats endpoint returned 0 or failed, derive counts from loaded data
+  if (!stats || (stats.client_count === 0 && clients.length > 0)) {
+    const brandCount = clients.reduce((sum, c) => sum + c.brands.length, 0);
+    stats = {
+      client_count: clients.length,
+      brand_count: brandCount,
+      deposit_count: stats?.deposit_count ?? 0,
+      deposit_amount_total: stats?.deposit_amount_total ?? 0,
+    };
+  }
+
   return { clients, stats };
 }
+

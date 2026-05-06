@@ -54,6 +54,7 @@ const CreateBrand = () => {
     removeBrand,
     updateBrand,
     updateBrandConfig,
+    loadEditBrandConfig,
     applyBrandIdsFromSave,
     next,
     prev,
@@ -70,6 +71,17 @@ const CreateBrand = () => {
     resetMismatchedFields,
   } = useCreateBrand();
   const bi = state.currentBrandSlide;
+
+  // ── Pre-fill edit mode from DB ──────────────────────────────────────────────
+  // When navigating from Monitor → Edit Brand, fetch the real saved config and
+  // hydrate the wizard so every step shows the existing values.
+  useEffect(() => {
+    if (!isEditMode) return;
+    const brandId = locationState?.editBrand?.id;
+    if (!brandId) return;
+    void loadEditBrandConfig(String(brandId));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode]);
 
   const [workerUploadRedirectMessage, setWorkerUploadRedirectMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
