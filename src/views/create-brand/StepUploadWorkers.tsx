@@ -154,7 +154,9 @@ const VALIDATION_RULES: Array<{ field: string; rule: string }> = [
   { field: "phone_number", rule: "Required" },
 ];
 
-/** Generate and download a sample CSV pre-filled with the current wizard brands */
+/** Generate and download a sample CSV pre-filled with the current wizard brands.
+ *  Includes a realistic mix of valid rows and intentionally broken rows so the
+ *  validation UI can be tested immediately after import. */
 function downloadSampleCsv(brands: BrandEntry[]) {
   const headers = [
     "full_name",
@@ -174,40 +176,51 @@ function downloadSampleCsv(brands: BrandEntry[]) {
       ? brands.map((b) => b.name).filter(Boolean)
       : ["MyBrand"];
 
-  const rows: string[][] = [];
+  const firstBrand = brandNames[0];
+
+  // ── VALID rows (3 per brand) ─────────────────────────────────────────────
+  const validRows: string[][] = [];
   brandNames.forEach((brand, bi) => {
-    // One regular worker per brand
-    rows.push([
-      `Worker ${bi + 1} Name`,
-      brand,
-      "CO",
-      "FR",
-      `worker${bi + 1}@example.com`,
-      "Password123!",
-      "Retention Agent",
-      "FALSE",
-      "View",
-      `+1555000${String(bi + 1).padStart(4, "0")}`,
-    ]);
-    // One manager per brand
-    rows.push([
-      `Manager ${bi + 1} Name`,
-      brand,
-      "QA",
-      "",
-      `manager${bi + 1}@example.com`,
-      "Password123!",
-      "QA Lead",
-      "TRUE",
-      "Edit",
-      `+1555001${String(bi + 1).padStart(4, "0")}`,
-    ]);
+    const b = bi + 1;
+    // Regular CO agent (needs a desk)
+    validRows.push([`Alice Worker ${b}`,   brand, "CO", "FR", `alice.worker${b}@example.com`,   "Pass@1234", "Sales Agent",      "FALSE", "View", `+155500${String(b).padStart(5,"0")}`]);
+    // QA manager (no desk required)
+    validRows.push([`Bob Manager ${b}`,    brand, "QA", "",   `bob.manager${b}@example.com`,    "Pass@1234", "QA Lead",          "TRUE",  "Edit", `+155501${String(b).padStart(5,"0")}`]);
+    // RE agent with desk
+    validRows.push([`Carol Retention ${b}`,brand, "RE", "US", `carol.retention${b}@example.com`,"Pass@1234", "Retention Specialist","FALSE","Add", `+155502${String(b).padStart(5,"0")}`]);
+    // IT staff (no desk required)
+    validRows.push([`Dave IT ${b}`,        brand, "IT", "",   `dave.it${b}@example.com`,        "Pass@1234", "IT Support",       "FALSE", "View", `+155503${String(b).padStart(5,"0")}`]);
   });
 
+  // ── INVALID rows (each triggers a different validation rule) ─────────────
+  const invalidRows: string[][] = [
+    // 1. Missing full_name
+    ["",              firstBrand, "QA", "",   "noname@example.com",         "Pass@1234", "Analyst",  "FALSE", "View",  "+15559000001"],
+    // 2. Bad department (not QA/CO/RE/IT)
+    ["Eve BadDept",   firstBrand, "SALES", "", "eve.baddept@example.com",   "Pass@1234", "Salesperson","FALSE","View", "+15559000002"],
+    // 3. Wrong brand (not in wizard)
+    ["Frank Wrong",   "TOTALLY_WRONG_BRAND", "QA", "", "frank.wrong@example.com", "Pass@1234","Analyst","FALSE","View","+15559000003"],
+    // 4. CO without a desk (desk is required for CO)
+    ["Grace NoDeskCO",firstBrand,"CO",  "",   "grace.nodesk@example.com",   "Pass@1234", "Agent",    "FALSE", "View",  "+15559000004"],
+    // 5. Duplicate email (same as the first valid alice row — alice.worker1)
+    ["Henry Dupe",    firstBrand, "IT", "",   `alice.worker1@example.com`,  "Pass@1234", "IT Staff", "FALSE", "View",  "+15559000005"],
+    // 6. Invalid is_manager value
+    ["Iris BadMgr",   firstBrand, "IT", "",   "iris.badmgr@example.com",    "Pass@1234", "IT Staff", "MAYBE", "View",  "+15559000006"],
+    // 7. Invalid client_data_prem value
+    ["Jack BadPerm",  firstBrand, "QA", "",   "jack.badperm@example.com",   "Pass@1234", "Analyst",  "FALSE", "SUPERADMIN", "+15559000007"],
+    // 8. Missing password
+    ["Karen NoPass",  firstBrand, "QA", "",   "karen.nopass@example.com",   "",          "Analyst",  "FALSE", "View",  "+15559000008"],
+    // 9. Missing email entirely
+    ["Leo NoEmail",   firstBrand, "IT", "",   "",                           "Pass@1234", "IT Staff", "FALSE", "View",  "+15559000009"],
+  ];
+
   const escape = (v: string) => (v.includes(",") || v.includes('"') ? `"${v.replace(/"/g, '""')}"` : v);
+
+  const allRows = [...validRows, ...invalidRows];
+
   const csvContent = [
     headers.join(","),
-    ...rows.map((r) => r.map(escape).join(",")),
+    ...allRows.map((r) => r.map(escape).join(",")),
   ].join("\r\n");
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
