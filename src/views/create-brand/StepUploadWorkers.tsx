@@ -154,6 +154,71 @@ const VALIDATION_RULES: Array<{ field: string; rule: string }> = [
   { field: "phone_number", rule: "Required" },
 ];
 
+/** Generate and download a sample CSV pre-filled with the current wizard brands */
+function downloadSampleCsv(brands: BrandEntry[]) {
+  const headers = [
+    "full_name",
+    "brand name",
+    "department name",
+    "desks",
+    "email",
+    "password",
+    "title",
+    "is_manager",
+    "client_data_prem",
+    "phone_number",
+  ];
+
+  const brandNames =
+    brands.map((b) => b.name).filter(Boolean).length > 0
+      ? brands.map((b) => b.name).filter(Boolean)
+      : ["MyBrand"];
+
+  const rows: string[][] = [];
+  brandNames.forEach((brand, bi) => {
+    // One regular worker per brand
+    rows.push([
+      `Worker ${bi + 1} Name`,
+      brand,
+      "CO",
+      "FR",
+      `worker${bi + 1}@example.com`,
+      "Password123!",
+      "Retention Agent",
+      "FALSE",
+      "View",
+      `+1555000${String(bi + 1).padStart(4, "0")}`,
+    ]);
+    // One manager per brand
+    rows.push([
+      `Manager ${bi + 1} Name`,
+      brand,
+      "QA",
+      "",
+      `manager${bi + 1}@example.com`,
+      "Password123!",
+      "QA Lead",
+      "TRUE",
+      "Edit",
+      `+1555001${String(bi + 1).padStart(4, "0")}`,
+    ]);
+  });
+
+  const escape = (v: string) => (v.includes(",") || v.includes('"') ? `"${v.replace(/"/g, '""')}"` : v);
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((r) => r.map(escape).join(",")),
+  ].join("\r\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `sample-workers-${brandNames.join("-").replace(/\s+/g, "_").slice(0, 60)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export const StepUploadWorkers = ({
   brands,
   brandIndex = 0,
@@ -338,15 +403,18 @@ export const StepUploadWorkers = ({
                 <span>Upload Users</span>
               </Button>
               <Button
+                type="button"
                 variant="ghost"
                 size="sm"
-                asChild
                 className="text-muted-foreground hover:text-foreground"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  downloadSampleCsv(brands);
+                }}
               >
-                <a href="/sample-workers-50.csv" download="sample-workers.csv">
-                  <Download className="w-4 h-4 mr-1.5" />
-                  Download sample CSV
-                </a>
+                <Download className="w-4 h-4 mr-1.5" />
+                Download sample CSV
               </Button>
             </div>
           </label>
