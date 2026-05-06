@@ -1,14 +1,20 @@
-import { motion } from "framer-motion";
-import { FileJson, Copy, Sparkles, Database, ShieldCheck, Zap, HeartHandshake } from "lucide-react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Copy, Sparkles, Database, ShieldCheck, Zap, HeartHandshake, ChevronDown, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import type { UseCase } from "@/types/brand-config-per-brand";
+import type { SourceBrandSelection } from "@/controllers/useCreateBrand";
+import { listClients } from "@/api/services/clients.service";
+import { listBrands, getBrand } from "@/api/services/brands.service";
 
-export type CreateMode = "simple" | "same_db" | "same_config" | "from_scratch";
+export type CreateMode = "simple" | "same_db" | "same_config";
 
 interface StepCreateModeProps {
   value: CreateMode | null;
   onChange: (v: CreateMode) => void;
   useCase: UseCase | null;
   onUseCaseChange: (v: UseCase) => void;
+  sourceBrandSelection: SourceBrandSelection | null;
+  onSourceBrandChange: (sel: SourceBrandSelection | null) => void;
 }
 
 const CREATE_OPTIONS: {
@@ -58,18 +64,6 @@ const CREATE_OPTIONS: {
     borderSelected: "border-[hsl(38,80%,55%)]",
     shadowSelected: "shadow-[0_0_0_3px_hsl(38,92%,90%)]",
     tag: "Partial copy",
-  },
-  {
-    id: "from_scratch",
-    label: "From Scratch",
-    desc: "Completely new setup — not 2, not 1.",
-    icon: FileJson,
-    bg: "bg-[hsl(250,80%,97%)]",
-    iconBg: "bg-[hsl(250,80%,92%)]",
-    iconColor: "text-[hsl(250,65%,58%)]",
-    borderSelected: "border-[hsl(250,65%,65%)]",
-    shadowSelected: "shadow-[0_0_0_3px_hsl(250,80%,92%)]",
-    tag: "Advanced",
   },
 ];
 
@@ -193,7 +187,6 @@ function OptionCard<T extends string>({
         />
       )}
 
-      {/* Tag badge */}
       <span
         className={[
           "absolute top-3.5 right-3.5 text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full",
@@ -203,12 +196,10 @@ function OptionCard<T extends string>({
         {opt.tag}
       </span>
 
-      {/* Icon */}
       <div className={`inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4 ${opt.iconBg}`}>
         <Icon className={`w-5 h-5 ${opt.iconColor}`} />
       </div>
 
-      {/* Text */}
       <p className="text-[15px] font-bold text-foreground mb-1 leading-snug">{opt.label}</p>
       <p className="text-xs text-muted-foreground leading-relaxed pr-6">{opt.desc}</p>
       {opt.detail && (
@@ -217,7 +208,6 @@ function OptionCard<T extends string>({
         </p>
       )}
 
-      {/* Selected indicator dot */}
       <div
         className={[
           "absolute bottom-4 right-4 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300",
@@ -238,103 +228,352 @@ function OptionCard<T extends string>({
   );
 }
 
-export const StepCreateMode = ({ value, onChange, useCase, onUseCaseChange }: StepCreateModeProps) => (
-  <div className="space-y-10">
-    {/* ── Section 1: Create Mode ── */}
-    <div className="space-y-5">
-      <div className="space-y-1.5">
-        <h2 className="text-2xl font-bold text-foreground tracking-tight">Create Brand</h2>
-        <p className="text-[15px] text-muted-foreground leading-relaxed">
-          Choose how you'd like to set up your new brand.
+// ─── Source Brand Picker ──────────────────────────────────────────────────────
+
+interface ClientOption { _id: string; name: string; }
+interface BrandOption  { _id: string; name: string; domain?: string; }
+
+function SourceBrandPicker({
+  mode,
+  selection,
+  onChange,
+}: {
+  mode: "same_db" | "same_config";
+  selection: SourceBrandSelection | null;
+  onChange: (sel: SourceBrandSelection | null) => void;
+}) {
+  const [clients, setClients]           = useState<ClientOption[]>([]);
+  const [brands, setBrands]             = useState<BrandOption[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+  const [loadingBrands, setLoadingBrands]   = useState(false);
+  const [loadingConfig, setLoadingConfig]   = useState(false);
+  const [clientError, setClientError]   = useState<string | null>(null);
+  const [brandError, setBrandError]     = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>(selection?.clientId ?? "");
+  const [selectedBrandId, setSelectedBrandId]   = useState<string>(selection?.brandId ?? "");
+
+  // Fetch clients on mount
+  useEffect(() => {
+    setLoadingClients(true);
+    setClientError(null);
+    listClients()
+      .then((res) => {
+        const data = (res.data as { data?: ClientOption[] })?.data ?? (res.data as ClientOption[] | undefined) ?? [];
+        setClients(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setClientError("Failed to load clients. Check your connection."))
+      .finally(() => setLoadingClients(false));
+  }, []);
+
+  // Fetch brands when client changes
+  useEffect(() => {
+    if (!selectedClientId) { setBrands([]); setSelectedBrandId(""); return; }
+    setLoadingBrands(true);
+    setBrandError(null);
+    setBrands([]);
+    setSelectedBrandId("");
+    onChange(null);
+    listBrands(selectedClientId)
+      .then((res) => {
+        const data = (res.data as { data?: BrandOption[] })?.data ?? (res.data as BrandOption[] | undefined) ?? [];
+        setBrands(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setBrandError("Failed to load brands for this client."))
+      .finally(() => setLoadingBrands(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClientId]);
+
+  // Fetch full brand config when brand is selected
+  const handleBrandSelect = async (brandId: string) => {
+    setSelectedBrandId(brandId);
+    if (!brandId) { onChange(null); return; }
+    const client = clients.find((c) => c._id === selectedClientId);
+    const brand  = brands.find((b)  => b._id === brandId);
+    if (!client || !brand) return;
+    setLoadingConfig(true);
+    try {
+      const res = await getBrand(brandId);
+      const raw = (res.data as { data?: { config?: Record<string, unknown> } })?.data ?? (res.data as { config?: Record<string, unknown> } | undefined);
+      const config = (raw as { config?: Record<string, unknown> } | undefined)?.config;
+      onChange({
+        clientId: client._id,
+        clientName: client.name,
+        brandId: brand._id ?? brandId,
+        brandName: brand.name,
+        brandConfig: config,
+      });
+    } catch {
+      setBrandError("Could not load config for this brand.");
+    } finally {
+      setLoadingConfig(false);
+    }
+  };
+
+  const modeLabel = mode === "same_db" ? "Same DB" : "Same Config";
+  const modeColor = mode === "same_db" ? "hsl(160,65%,38%)" : "hsl(38,80%,45%)";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="rounded-2xl border border-border/50 bg-background/80 backdrop-blur-sm p-5 space-y-4"
+      style={{ boxShadow: "0 4px 24px -8px rgba(0,0,0,0.08)" }}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2.5">
+        <div
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ backgroundColor: modeColor }}
+        />
+        <p className="text-xs font-bold uppercase tracking-widest" style={{ color: modeColor }}>
+          {modeLabel} — Select Source Brand
         </p>
       </div>
+      <p className="text-xs text-muted-foreground leading-relaxed -mt-1">
+        {mode === "same_db"
+          ? "Choose which existing brand to clone the database from. Its configuration will be pre-filled into this new brand (sensitive keys excluded)."
+          : "Choose which brand's configuration to copy. New brand will have its own database — only the settings are carried over."}
+      </p>
 
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {CREATE_OPTIONS.map((opt) => (
-          <OptionCard
-            key={opt.id}
-            opt={opt}
-            selected={value === opt.id}
-            onSelect={onChange}
-          />
-        ))}
-      </motion.div>
-    </div>
-
-    {/* ── Divider ── */}
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-border/40" />
-      </div>
-      <div className="relative flex justify-center">
-        <span className="bg-background px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Use Case
-        </span>
-      </div>
-    </div>
-
-    {/* ── Section 2: Use Case ── */}
-    <div className="space-y-5">
+      {/* Client selector */}
       <div className="space-y-1.5">
-        <h3 className="text-xl font-bold text-foreground tracking-tight">Select Use Case</h3>
-        <p className="text-[14px] text-muted-foreground leading-relaxed">
-          The use case defines which features are enforced, locked, or available for this brand. This
-          cannot be changed after setup without resetting affected steps.
-        </p>
+        <label className="text-xs font-semibold text-muted-foreground">Client</label>
+        {clientError ? (
+          <div className="flex items-center gap-2 text-xs text-destructive px-3 py-2 rounded-xl border border-destructive/30 bg-destructive/5">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {clientError}
+          </div>
+        ) : (
+          <div className="relative">
+            <select
+              id="source-client-select"
+              className="w-full appearance-none rounded-xl border border-border/50 bg-background text-sm px-3 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+              value={selectedClientId}
+              disabled={loadingClients}
+              onChange={(e) => setSelectedClientId(e.target.value)}
+            >
+              <option value="">
+                {loadingClients ? "Loading clients…" : "— Select a client —"}
+              </option>
+              {clients.map((c) => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+              {loadingClients
+                ? <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              }
+            </div>
+          </div>
+        )}
       </div>
 
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {USE_CASE_OPTIONS.map((opt) => (
-          <OptionCard
-            key={opt.id}
-            opt={opt}
-            selected={useCase === opt.id}
-            onSelect={onUseCaseChange}
-          />
-        ))}
-      </motion.div>
+      {/* Brand selector */}
+      <AnimatePresence>
+        {selectedClientId && (
+          <motion.div
+            key="brand-select"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden space-y-1.5"
+          >
+            <label className="text-xs font-semibold text-muted-foreground">Brand</label>
+            {brandError ? (
+              <div className="flex items-center gap-2 text-xs text-destructive px-3 py-2 rounded-xl border border-destructive/30 bg-destructive/5">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {brandError}
+              </div>
+            ) : (
+              <div className="relative">
+                <select
+                  id="source-brand-select"
+                  className="w-full appearance-none rounded-xl border border-border/50 bg-background text-sm px-3 pr-8 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+                  value={selectedBrandId}
+                  disabled={loadingBrands || loadingConfig}
+                  onChange={(e) => void handleBrandSelect(e.target.value)}
+                >
+                  <option value="">
+                    {loadingBrands ? "Loading brands…" : brands.length === 0 ? "No brands found" : "— Select a brand —"}
+                  </option>
+                  {brands.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.name}{b.domain ? ` (${b.domain})` : ""}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
+                  {loadingBrands || loadingConfig
+                    ? <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                    : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  }
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Warning when toggling regulated off */}
-      {useCase && useCase !== "regulated" && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
-        >
-          <span className="text-amber-500 text-base mt-0.5">⚠</span>
-          <p className="text-xs text-amber-700 leading-relaxed">
-            <strong>Note:</strong> You have selected a{" "}
-            <strong>non-regulated</strong> use case. Features like KYC enforcement, funding
-            restrictions, and WebTrader gating will be relaxed. Ensure this matches your
-            compliance obligations before proceeding.
-          </p>
-        </motion.div>
-      )}
+      {/* Config loaded badge */}
+      <AnimatePresence>
+        {selection?.brandConfig && (
+          <motion.div
+            key="config-badge"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <p className="text-xs text-emerald-700 font-medium">
+              Config loaded from <strong>{selection.brandName}</strong> — will be pre-filled (API keys &amp; device data excluded)
+            </p>
+          </motion.div>
+        )}
+        {selection && !selection.brandConfig && selectedBrandId && !loadingConfig && (
+          <motion.div
+            key="no-config-badge"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.28 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-amber-200 bg-amber-50"
+          >
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <p className="text-xs text-amber-700">
+              This brand has no saved config yet — the wizard will start with defaults.
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
-      {useCase === "brand_recovery" && (
-        <motion.div
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3"
-        >
-          <span className="text-rose-500 text-base mt-0.5">🔴</span>
-          <p className="text-xs text-rose-700 leading-relaxed">
-            <strong>Brand Recovery mode:</strong> Internal dealing and WebTrader will be
-            disabled. The <em>File Complaint</em> feature will replace trading functionality
-            in the client zone.
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export const StepCreateMode = ({
+  value,
+  onChange,
+  useCase,
+  onUseCaseChange,
+  sourceBrandSelection,
+  onSourceBrandChange,
+}: StepCreateModeProps) => {
+  const showPicker = value === "same_db" || value === "same_config";
+
+  return (
+    <div className="space-y-10">
+      {/* ── Section 1: Create Mode ── */}
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Create Brand</h2>
+          <p className="text-[15px] text-muted-foreground leading-relaxed">
+            Choose how you'd like to set up your new brand.
           </p>
+        </div>
+
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {CREATE_OPTIONS.map((opt) => (
+            <OptionCard
+              key={opt.id}
+              opt={opt}
+              selected={value === opt.id}
+              onSelect={onChange}
+            />
+          ))}
         </motion.div>
-      )}
+
+        {/* Source brand picker (slides in for clone modes) */}
+        <AnimatePresence>
+          {showPicker && (
+            <SourceBrandPicker
+              key="source-picker"
+              mode={value as "same_db" | "same_config"}
+              selection={sourceBrandSelection}
+              onChange={onSourceBrandChange}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── Divider ── */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border/40" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-background px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Use Case
+          </span>
+        </div>
+      </div>
+
+      {/* ── Section 2: Use Case ── */}
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+          <h3 className="text-xl font-bold text-foreground tracking-tight">Select Use Case</h3>
+          <p className="text-[14px] text-muted-foreground leading-relaxed">
+            The use case defines which features are enforced, locked, or available for this brand. This
+            cannot be changed after setup without resetting affected steps.
+          </p>
+        </div>
+
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {USE_CASE_OPTIONS.map((opt) => (
+            <OptionCard
+              key={opt.id}
+              opt={opt}
+              selected={useCase === opt.id}
+              onSelect={onUseCaseChange}
+            />
+          ))}
+        </motion.div>
+
+        {useCase && useCase !== "regulated" && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"
+          >
+            <span className="text-amber-500 text-base mt-0.5">⚠</span>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              <strong>Note:</strong> You have selected a{" "}
+              <strong>non-regulated</strong> use case. Features like KYC enforcement, funding
+              restrictions, and WebTrader gating will be relaxed. Ensure this matches your
+              compliance obligations before proceeding.
+            </p>
+          </motion.div>
+        )}
+
+        {useCase === "brand_recovery" && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3"
+          >
+            <span className="text-rose-500 text-base mt-0.5">🔴</span>
+            <p className="text-xs text-rose-700 leading-relaxed">
+              <strong>Brand Recovery mode:</strong> Internal dealing and WebTrader will be
+              disabled. The <em>File Complaint</em> feature will replace trading functionality
+              in the client zone.
+            </p>
+          </motion.div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};

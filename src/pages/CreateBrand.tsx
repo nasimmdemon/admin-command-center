@@ -65,6 +65,9 @@ const CreateBrand = () => {
     totalSteps,
     setCreateMode,
     setUseCase,
+    setSourceBrandSelection,
+    dismissMismatchWarnings,
+    resetMismatchedFields,
   } = useCreateBrand();
   const bi = state.currentBrandSlide;
 
@@ -167,16 +170,27 @@ const CreateBrand = () => {
             onChange={setCreateMode}
             useCase={state.useCase}
             onUseCaseChange={setUseCase}
+            sourceBrandSelection={state.sourceBrandSelection}
+            onSourceBrandChange={setSourceBrandSelection}
           />
         );
       case 1:
         return (
           <StepBrands
             brands={state.brands}
-            onAddBrand={addBrand}
+            onAddBrand={() => {
+              // Limit to 3 brands in same_db mode
+              if (state.createMode === "same_db" && state.brands.length >= 3) return;
+              addBrand();
+            }}
             onRemoveBrand={removeBrand}
             onUpdateBrand={updateBrand}
             onNext={next}
+            configMismatchWarnings={state.configMismatchWarnings}
+            targetUseCase={state.useCase}
+            sourceBrandName={state.sourceBrandSelection?.brandName}
+            onKeepSourceValues={dismissMismatchWarnings}
+            onResetMismatchedFields={resetMismatchedFields}
           />
         );
       case 2:

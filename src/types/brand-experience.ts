@@ -69,6 +69,11 @@ export interface BrandDesignTokens {
   colorAccent: string;
   colorBackground: string;
   colorSurface: string;
+  colorTextPrimary: string;
+  colorTextSecondary: string;
+  colorDanger: string;
+  colorSuccess: string;
+  colorBorder: string;
 }
 
 export const DEFAULT_BRAND_STATUS_AUTO: BrandStatusAutoConfig = {
@@ -91,9 +96,14 @@ export const DEFAULT_BRAND_DESIGN_TOKENS: BrandDesignTokens = {
   fontSlot2: "",
   fontSlot3: "",
   fontSlot4: "",
-  colorPrimary: "#2563eb",
-  colorSecondary: "#64748b",
-  colorAccent: "#0ea5e9",
-  colorBackground: "#f8fafc",
-  colorSurface: "#ffffff",
+  colorPrimary:      "#2563eb",
+  colorSecondary:    "#64748b",
+  colorAccent:       "#0ea5e9",
+  colorBackground:   "#f8fafc",
+  colorSurface:      "#ffffff",
+  colorTextPrimary:  "#f1f5f9",
+  colorTextSecondary:"#94a3b8",
+  colorDanger:       "#f87171",
+  colorSuccess:      "#34d399",
+  colorBorder:       "#334155",
 };

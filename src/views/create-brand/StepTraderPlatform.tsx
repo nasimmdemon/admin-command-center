@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { MonitorPlay, Ban, LayoutDashboard, ExternalLink, Blocks, Lock, AlertTriangle, FileWarning } from "lucide-react";
+import { MonitorPlay, Ban, LayoutDashboard, ExternalLink, Blocks, AlertTriangle, FileWarning, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/models/routes";
 import { Switch } from "@/components/ui/switch";
@@ -79,12 +79,9 @@ export const StepTraderPlatform = ({
   value,
   onChange,
   useCase,
-  brandHasKyc = true,
   enableFileComplaint = false,
   onEnableFileComplaintChange,
 }: StepTraderPlatformProps) => {
-  const isRegulated = useCase === "regulated";
-  const isUnregulated = useCase === "unregulated";
   const isBrandRecovery = useCase === "brand_recovery";
 
   /** Determine if a given option is disabled based on use case */
@@ -93,25 +90,10 @@ export const StepTraderPlatform = ({
       // Brand Recovery: only NO_TRADING is allowed
       return optId !== "NO_TRADING";
     }
-    if (isRegulated && optId === "DEALING_MENU_WEBTRADER") {
-      // Regulated: WebTrader requires KYC + JWT. Disable if no KYC.
-      return !brandHasKyc;
-    }
     return false;
   };
 
-  const getOptionNote = (optId: string): string | null => {
-    if (isRegulated && optId === "DEALING_MENU_WEBTRADER") {
-      if (!brandHasKyc) {
-        return "Requires KYC enabled (KYC is currently OFF for this brand).";
-      }
-      return "Requires KYC ✓ · JWT integration (TODO — coming soon)";
-    }
-    if (isUnregulated && optId === "DEALING_MENU_WEBTRADER") {
-      return brandHasKyc ? "WebTrader available (KYC enabled)" : "WebTrader available without KYC in unregulated mode";
-    }
-    return null;
-  };
+  const getOptionNote = (_optId: string): string | null => null;
 
   return (
     <div className="space-y-8 mt-2">
@@ -142,24 +124,7 @@ export const StepTraderPlatform = ({
         </motion.div>
       )}
 
-      {/* Regulated WebTrader note */}
-      {isRegulated && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3"
-        >
-          <Lock className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-          <p className="text-xs text-emerald-700 leading-relaxed">
-            <strong>Regulated Mode:</strong> WebTrader access requires{" "}
-            <strong>KYC enabled</strong> and <strong>JWT integration</strong>. The JWT feature is
-            currently pending implementation (marked TODO). Dealing Menu is available without
-            restrictions.
-          </p>
-        </motion.div>
-      )}
 
-      {/* 2×2 Grid matching Step 0 */}
       <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 gap-4"
         variants={containerVariants}

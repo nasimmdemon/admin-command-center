@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ExternalLink, ArrowDownToLine, WalletCards, Building, Lock } from "lucide-react";
+import { ExternalLink, ArrowDownToLine, WalletCards, Building } from "lucide-react";
 import MethodConfigCard from "./MethodConfigCard";
 import {
   DepositMethod, BankDetails, WireTransferDetails, METHOD_LABELS,
@@ -48,7 +48,7 @@ const DepositConfigStep = ({
   const isDuplicateProvider = (key: string) => key === "ipay" || key === "cryptopay"; // iPay/cryptopay configured in Fiat/Crypto sections
   const regularMethods = Object.entries(methods).filter(([key]) => !isProviderMethod(key) && !isDuplicateProvider(key));
   const providerMethods = Object.entries(methods).filter(([key]) => isProviderMethod(key));
-  const isRegulated = useCase === "regulated";
+
 
   return (
     <StepShell
@@ -60,30 +60,8 @@ const DepositConfigStep = ({
     >
       <div className="space-y-6">
 
-        {/* ── Regulated lock banner ── */}
-        {isRegulated && (
-          <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-            <Lock className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-emerald-800 mb-0.5">Regulated Mode — Funding Locked</p>
-              <p className="text-xs text-emerald-700 leading-relaxed">
-                Funding configuration is <strong>locked</strong> in Regulated mode. Deposit methods,
-                fees, and bank details cannot be edited here. Contact your compliance officer to
-                request changes.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Wrap content in a lock overlay for regulated mode */}
-        <div className={isRegulated ? "relative" : undefined}>
-          {isRegulated && (
-            <div
-              className="absolute inset-0 z-10 rounded-xl cursor-not-allowed"
-              style={{ background: "rgba(255,255,255,0.55)" }}
-              title="Locked in Regulated mode"
-            />
-          )}
+        {/* Content wrapper */}
+        <div>
         
         {/* Core Provider Methods (Fiat / Crypto) */}
         {providerMethods.length > 0 && (

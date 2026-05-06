@@ -35,7 +35,7 @@ const Index = () => {
           />
         </div>
 
-        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+        <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
           {INDEX_NAVIGATION_OPTIONS.map((opt) => (
             <StaggerItem key={opt.route}>
               <motion.button
