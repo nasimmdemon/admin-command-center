@@ -141,10 +141,13 @@ const Monitor = () => {
     await refresh();
   };
 
-  const totalBrands =
-    stats?.brand_count ?? clients.reduce((sum, c) => sum + c.brands.length, 0);
-  const totalClients = stats?.client_count ?? clients.length;
-  const depositCount = stats?.deposit_count ?? 0;
+  // Derive counts from the live clients list first — the stats API may return 0
+  // even when data exists (backend aggregation lag or disabled endpoint).
+  const totalClients = clients.length > 0 ? clients.length : (stats?.client_count ?? 0);
+  const totalBrands  = clients.length > 0
+    ? clients.reduce((sum, c) => sum + c.brands.length, 0)
+    : (stats?.brand_count ?? 0);
+  const depositCount  = stats?.deposit_count ?? 0;
   const depositVolume = stats?.deposit_amount_total ?? 0;
 
   return (
@@ -326,18 +329,25 @@ const Monitor = () => {
 
           {/* ── KPI Cards ── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 mb-10">
-            {[
-              { icon: Users, label: "Total clients", value: totalClients, iconBg: "bg-primary/10", iconColor: "text-primary", delay: 0.1 },
-              { icon: DollarSign, label: "Deposit records", value: depositCount, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-600", delay: 0.18 },
-              { icon: Building2, label: "Total brands", value: totalBrands, iconBg: "bg-amber-500/10", iconColor: "text-amber-600", delay: 0.26 },
+          {[
+              { icon: Users,     label: "Total clients",   value: totalClients, iconBg: "bg-primary/10",      iconColor: "text-primary",      delay: 0.1  },
+              { icon: DollarSign,label: "Deposit records", value: depositCount,  iconBg: "bg-emerald-500/10", iconColor: "text-emerald-600",   delay: 0.18 },
+              { icon: Building2, label: "Total brands",    value: totalBrands,  iconBg: "bg-amber-500/10",   iconColor: "text-amber-600",     delay: 0.26 },
             ].map(({ icon, label, value, iconBg, iconColor, delay }) => (
               <motion.div
                 key={label}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay, duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
               >
-                <KPICard icon={icon} label={label} value={value} iconBg={iconBg} iconColor={iconColor} />
+                <KPICard
+                  icon={icon}
+                  label={label}
+                  value={value}
+                  iconBg={iconBg}
+                  iconColor={iconColor}
+                  loading={loading && clients.length === 0}
+                />
               </motion.div>
             ))}
           </div>

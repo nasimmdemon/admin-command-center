@@ -10,15 +10,17 @@ interface KPICardProps {
   suffix?: string;
   iconBg: string;
   iconColor: string;
+  /** Show a pulsing skeleton while data is loading */
+  loading?: boolean;
   /** Optional trend: positive = green up, negative = red down */
   trend?: number;
 }
 
-export const KPICard = ({ icon: Icon, label, value, suffix = "", iconBg, iconColor, trend }: KPICardProps) => (
+export const KPICard = ({ icon: Icon, label, value, suffix = "", iconBg, iconColor, loading, trend }: KPICardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
     className="w-full rounded-2xl bg-card border border-border/30 p-6 shadow-soft hover:shadow-card transition-all duration-300 ease-smooth"
   >
     <div className="flex items-start justify-between gap-2 mb-4">
@@ -33,13 +35,24 @@ export const KPICard = ({ icon: Icon, label, value, suffix = "", iconBg, iconCol
         <Info className="w-3.5 h-3.5" />
       </button>
     </div>
-    <CountUp end={value} suffix={suffix} className="text-2xl md:text-3xl font-bold text-foreground tracking-tight" />
-    <p className="text-sm text-muted-foreground mt-1">{label}</p>
-    {trend != null && (
-      <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend >= 0 ? "text-success" : "text-destructive"}`}>
-        {trend >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-        <span>{trend >= 0 ? "+" : ""}{trend}%</span>
+
+    {loading ? (
+      /* Pulsing skeleton — shown while data is loading */
+      <div className="space-y-2">
+        <div className="h-8 w-16 rounded-lg bg-muted animate-pulse" />
+        <div className="h-4 w-24 rounded-md bg-muted/60 animate-pulse" />
       </div>
+    ) : (
+      <>
+        <CountUp end={value} suffix={suffix} className="text-2xl md:text-3xl font-bold text-foreground tracking-tight" />
+        <p className="text-sm text-muted-foreground mt-1">{label}</p>
+        {trend != null && (
+          <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend >= 0 ? "text-success" : "text-destructive"}`}>
+            {trend >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+            <span>{trend >= 0 ? "+" : ""}{trend}%</span>
+          </div>
+        )}
+      </>
     )}
   </motion.div>
 );
