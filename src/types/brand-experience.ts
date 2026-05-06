@@ -20,6 +20,8 @@ export const REGISTRATION_STATUS_CANDIDATES = [
   { id: "pending_review", label: "Pending review" },
   { id: "follow_up", label: "Follow up" },
   { id: "scheduled", label: "Scheduled" },
+  { id: "converted", label: "Converted" },
+  { id: "burned_client", label: "Burned Client" },
 ] as const;
 
 /** Fixed auto-rejecting statuses (informational; not selectable as “allowed reg” statuses) */
